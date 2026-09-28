@@ -18,6 +18,7 @@ import { ElementorVisualSimulator } from './components/ElementorVisualSimulator'
 import { SeoMarketLab } from './components/SeoMarketLab';
 import { SpeedSecurityAuditor } from './components/SpeedSecurityAuditor';
 import { AiLearningAnalytics } from './components/AiLearningAnalytics';
+import { SmartWidgetLayoutEngine } from './components/SmartWidgetLayoutEngine';
 import { 
   Store, 
   LifeBuoy, 
@@ -109,6 +110,11 @@ export default function App() {
             onChangeConfig={setThemeConfig}
             onRefreshKnowledgeBase={refreshKnowledgeBaseFromServer}
           />
+        )}
+
+        {/* Tab: Smart Widget Layout Engine & Real-time Heatmap */}
+        {activeTab === 'smart-widgets' && (
+          <SmartWidgetLayoutEngine />
         )}
 
         {/* Tab 2: Smart Config Generator using AI */}

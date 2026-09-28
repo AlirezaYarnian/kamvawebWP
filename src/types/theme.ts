@@ -472,3 +472,76 @@ export interface DatabaseHealthReport {
   status: 'needs_optimization' | 'optimized_clean';
   history?: DbCleanupHistoryItem[];
 }
+
+export type WidgetSlotId = 
+  | 'top_announcement_bar'
+  | 'header_sub_hero'
+  | 'sidebar_upper_prime'
+  | 'sidebar_sticky_scroll'
+  | 'in_content_interstitial'
+  | 'floating_bottom_bar'
+  | 'exit_intent_overlay';
+
+export interface SmartWidget {
+  id: string;
+  name: string;
+  nameFa: string;
+  category: 'cta' | 'ai_assistant' | 'social_proof' | 'urgency' | 'cross_sell' | 'lead_magnet' | 'filter';
+  currentSlot: WidgetSlotId;
+  defaultSlot: WidgetSlotId;
+  priority: number;
+  isPinned: boolean;
+  active: boolean;
+  mlConfidenceScore: number; // 0 - 100
+  ctrPercent: number;
+  conversionLiftPercent: number;
+  impressionsCount: number;
+  clicksCount: number;
+  dwellTimeAvgSeconds: number;
+  heatmapEngagementStatus: 'blazing_hot' | 'warm' | 'neutral' | 'cold_deadzone';
+  lastRepositionReason: string;
+  lastRepositionTimestamp: string;
+  contentTitle: string;
+  contentSubtitle: string;
+  actionText: string;
+  accentColor: string;
+}
+
+export interface HeatmapZoneMetric {
+  slotId: WidgetSlotId;
+  nameFa: string;
+  attentionPercentage: number; // 0 - 100%
+  clickDensityScore: number; // 0 - 100
+  avgScrollReachPercent: number; // 0 - 100%
+  activeVisitorsCount: number;
+  bounceRiskRate: number; // 0 - 100%
+  status: 'peak_hot' | 'high_attention' | 'moderate' | 'low_dropout';
+}
+
+export interface HeatmapTelemetryPoint {
+  x: number; // 0 - 100 percentage
+  y: number; // 0 - 100 percentage
+  intensity: number; // 0.1 - 1.0
+  type: 'click' | 'hover_dwell' | 'rage_click';
+  timestamp: string;
+}
+
+export interface SmartLayoutEngineConfig {
+  enabled: boolean;
+  autonomousRepositioning: boolean;
+  learningAlgorithm: 'multi_armed_bandit' | 'reinforcement_deep_q' | 'heuristic_weighted';
+  explorationRateEpsilon: number; // 0.05 - 0.5 (e.g. 0.15 = 15% exploration)
+  dwellTimeWeight: number; // 0.1 - 1.0
+  clickWeight: number; // 0.1 - 1.0
+  scrollReachWeight: number; // 0.1 - 1.0
+  mobileAdaptationMode: boolean;
+  antiFatigueFrequencyCapping: boolean;
+  userIntentAdaptation: boolean;
+  repositionIntervalSeconds: number;
+  totalAutoRepositioningsCount: number;
+  overallCtrLiftPercent: number;
+  bounceReductionPercent: number;
+  revenuePerVisitorLiftPercent: number;
+  activeTestPreset: 'normal' | 'flash_sale_surge' | 'mobile_dropoff_rescue' | 'content_heavy_blog' | 'cart_abandonment';
+}
+

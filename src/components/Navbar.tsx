@@ -17,7 +17,8 @@ import {
   LifeBuoy,
   Eye,
   CheckCircle2,
-  Sparkles
+  Sparkles,
+  Flame
 } from 'lucide-react';
 import { KamvaLogo } from './KamvaLogo';
 
@@ -36,6 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const navItems = [
     { id: 'options', label: 'موتور کاموا استور و تم‌آپشن', icon: Store, badge: 'Store' },
+    { id: 'smart-widgets', label: 'چیدمان هوشمند ویجت‌ها و هیت‌مپ ML', icon: Flame, badge: 'ML Layout', highlight: true },
     { id: 'smart-config', label: 'تولید پیکربندی هوشمند با AI', icon: Wand2, badge: 'Smart AI', highlight: true },
     { id: 'deploy-helper', label: 'دستیار استقرار پروداکشن', icon: Rocket, badge: 'Deploy', highlight: true },
     { id: 'disaster-recovery', label: 'بازیابی بحران و بک‌آپ AI', icon: LifeBuoy, badge: 'Rescue AI', highlight: true },

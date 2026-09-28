@@ -1,0 +1,53 @@
+/*
+Theme Name: KamvaWeb Pro - قالب وردپرس اختصاصی کامواوب با هسته هوش مصنوعی
+Theme URI: https://kamvaweb.com/
+Author: تیم مهندسی کامواوب (KamvaWeb Core)
+Author URI: https://kamvaweb.com/
+Description: قالب اختصاصی فروشگاهی و چندمنظوره کامواوب (KamvaWeb) مجهز به تم‌آپشن جامع فروشگاهی، سیستم عیب‌یابی و خودترمیمی خطاها، مصون از تداخل در آپدیت‌های وردپرس و افزونه‌ها، مغز هوش مصنوعی داخلی بدون وابستگی به سرور خارجی، بهینه‌ساز فوق‌سریع لایت‌هاوس ۹۹/۱۰۰ و سازگاری ۱۰۰٪ با المنتور پرو و ووکامرس.
+Version: 4.2.0
+Tested up to: 7.1
+Requires at least: 6.5
+Requires PHP: 8.2
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: kamvaweb
+Tags: rtl-language-support, kamva-builder, elementor-ready, woocommerce, e-commerce, ai-powered, speed-optimized, security-shield, kamvaweb-core, self-healing
+*/
+
+:root {
+  --kamva-primary: #6366f1;
+  --kamva-primary-hover: #4f46e5;
+  --kamva-secondary: #10b981;
+  --kamva-bg: #0b0f19;
+  --kamva-card-bg: #111827;
+  --kamva-border: rgba(255, 255, 255, 0.08);
+  --kamva-text: #f3f4f6;
+  --kamva-font: 'Vazirmatn', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+body {
+  font-family: var(--kamva-font);
+  direction: rtl;
+  text-align: right;
+  background-color: var(--kamva-bg);
+  color: var(--kamva-text);
+  margin: 0;
+  padding: 0;
+}
+
+/* بهینه‌سازی کانتینرهای المنتور برای حذف اضافه بار DOM */
+.elementor-section.kamva-optimized-dom,
+.elementor-container.kamva-clean-wrapper {
+  display: flex !important;
+  contain: content;
+}
+
+/* استایل شناور ویجت هوش مصنوعی مشاوره و فروش کامواوب */
+.kamva-ai-sales-floater {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  z-index: 99999;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
