@@ -3,6 +3,11 @@ import { defaultThemeConfig, sampleKnowledgeBase } from './data/initialData';
 import { ThemeOptionsConfig, KnowledgeItem } from './types/theme';
 import { Navbar } from './components/Navbar';
 import { ThemeOptionsPanel } from './components/ThemeOptionsPanel';
+import { SmartConfigGenerator } from './components/SmartConfigGenerator';
+import { ProductionDeployer } from './components/ProductionDeployer';
+import { AiDisasterRecovery } from './components/AiDisasterRecovery';
+import { HealthReportDashboard } from './components/HealthReportDashboard';
+import { AiThemeUpdater } from './components/AiThemeUpdater';
 import { NeuralNetworkDashboard } from './components/NeuralNetworkDashboard';
 import { CacheAndImageOptimizer } from './components/CacheAndImageOptimizer';
 import { UserPortalCustomizer } from './components/UserPortalCustomizer';
@@ -12,38 +17,20 @@ import { ElementorVisualSimulator } from './components/ElementorVisualSimulator'
 import { SeoMarketLab } from './components/SeoMarketLab';
 import { SpeedSecurityAuditor } from './components/SpeedSecurityAuditor';
 import { AiLearningAnalytics } from './components/AiLearningAnalytics';
-import { ThemeCodeViewerModal } from './components/ThemeCodeViewerModal';
-import { GitHubExportModal } from './components/GitHubExportModal';
 import { 
-  generateWordPressThemeZip, 
-  generateKamvaCorePluginZip, 
-  triggerDownload 
-} from './utils/zipGenerator';
-import { 
-  Cpu, 
-  Zap, 
-  ShieldCheck, 
-  Boxes, 
-  Download, 
-  FileCode2, 
-  MessageSquareHeart, 
-  Sparkles, 
-  CheckCircle2, 
   Store, 
   LifeBuoy, 
-  FolderGit2,
-  BrainCircuit,
-  Layers
+  Rocket,
+  ShieldCheck,
+  Zap,
+  Wand2,
+  CheckCircle2
 } from 'lucide-react';
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<string>('options');
   const [themeConfig, setThemeConfig] = useState<ThemeOptionsConfig>(defaultThemeConfig);
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeItem[]>(sampleKnowledgeBase);
-  const [isDownloading, setIsDownloading] = useState<boolean>(false);
-  const [isDownloadingPlugin, setIsDownloadingPlugin] = useState<boolean>(false);
-  const [isCodeViewerOpen, setIsCodeViewerOpen] = useState<boolean>(false);
-  const [isGitHubModalOpen, setIsGitHubModalOpen] = useState<boolean>(false);
 
   // Load real persistent knowledge base and theme options from server on mount
   useEffect(() => {
@@ -88,43 +75,13 @@ export default function App() {
     }
   };
 
-  const handleDownloadZip = async () => {
-    try {
-      setIsDownloading(true);
-      const zipBlob = await generateWordPressThemeZip(themeConfig.general.siteName);
-      triggerDownload(zipBlob, 'kamvaweb-wordpress-theme.zip');
-    } catch (error) {
-      console.error('Failed to generate theme zip:', error);
-    } finally {
-      setIsDownloading(false);
-    }
-  };
-
-  const handleDownloadPluginZip = async () => {
-    try {
-      setIsDownloadingPlugin(true);
-      const zipBlob = await generateKamvaCorePluginZip();
-      triggerDownload(zipBlob, 'kamva-core.zip');
-    } catch (error) {
-      console.error('Failed to generate plugin zip:', error);
-    } finally {
-      setIsDownloadingPlugin(false);
-    }
-  };
-
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-indigo-500 selection:text-white">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-[#f05023] selection:text-white">
       
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
-        onDownloadZip={handleDownloadZip}
-        onDownloadPluginZip={handleDownloadPluginZip}
-        isDownloading={isDownloading}
-        isDownloadingPlugin={isDownloadingPlugin}
-        onOpenCodeViewer={() => setIsCodeViewerOpen(true)}
-        onOpenGitHubModal={() => setIsGitHubModalOpen(true)}
       />
 
       {/* Main Content Viewport */}
@@ -139,7 +96,43 @@ export default function App() {
           />
         )}
 
-        {/* Tab 2: Neural Network & Machine Learning Core */}
+        {/* Tab 2: Smart Config Generator using AI */}
+        {activeTab === 'smart-config' && (
+          <SmartConfigGenerator
+            currentConfig={themeConfig}
+            onApplyConfig={setThemeConfig}
+          />
+        )}
+
+        {/* Tab 3: Production Deployment Helper */}
+        {activeTab === 'deploy-helper' && (
+          <ProductionDeployer
+            config={themeConfig}
+          />
+        )}
+
+        {/* Tab: AI Disaster Recovery & Incremental Backups */}
+        {activeTab === 'disaster-recovery' && (
+          <AiDisasterRecovery
+            config={themeConfig}
+          />
+        )}
+
+        {/* Tab: Health Report Dashboard & Monthly PDF */}
+        {activeTab === 'health-report' && (
+          <HealthReportDashboard
+            config={themeConfig}
+          />
+        )}
+
+        {/* Tab: AI-Driven Theme Updater */}
+        {activeTab === 'updater' && (
+          <AiThemeUpdater
+            config={themeConfig}
+          />
+        )}
+
+        {/* Tab 4: Neural Network & Machine Learning Core */}
         {activeTab === 'neural-ml' && (
           <NeuralNetworkDashboard
             neuralConfig={themeConfig.neuralNetwork}
@@ -152,7 +145,7 @@ export default function App() {
           />
         )}
 
-        {/* Tab 3: Cache, Lossless Image Optimizer & Database Cleaner */}
+        {/* Tab 5: Cache, Lossless Image Optimizer & Database Cleaner */}
         {activeTab === 'cache-optimizer' && (
           <CacheAndImageOptimizer
             imageConfig={themeConfig.imageOptimizer}
@@ -172,12 +165,12 @@ export default function App() {
           />
         )}
 
-        {/* Tab 4: AIOS Security & Firewall */}
+        {/* Tab 6: AIOS Security & Firewall */}
         {activeTab === 'speed-security' && (
           <SpeedSecurityAuditor />
         )}
 
-        {/* Tab 5: User Portal & Registration Customizer */}
+        {/* Tab 7: User Portal & Registration Customizer */}
         {activeTab === 'user-portal' && (
           <UserPortalCustomizer
             portalConfig={themeConfig.userPortal}
@@ -190,7 +183,7 @@ export default function App() {
           />
         )}
 
-        {/* Tab 6: Developer Studio & Code Sandbox */}
+        {/* Tab 8: Developer Studio & Code Sandbox */}
         {activeTab === 'developer-studio' && (
           <DeveloperStudio
             devConfig={themeConfig.developerStudio}
@@ -203,12 +196,12 @@ export default function App() {
           />
         )}
 
-        {/* Tab 7: Google Intelligence & SEO Marketing */}
+        {/* Tab 9: Google Intelligence & SEO Marketing */}
         {activeTab === 'seo-market' && (
           <SeoMarketLab />
         )}
 
-        {/* Tab 8: Live AI Sales Assistant */}
+        {/* Tab 10: Live AI Sales Assistant */}
         {activeTab === 'sales-ai' && (
           <AiSalesWidgetLiveDemo
             knowledgeBase={knowledgeBase}
@@ -217,7 +210,7 @@ export default function App() {
           />
         )}
 
-        {/* Tab 9: Elementor Studio Simulator */}
+        {/* Tab 11: Elementor Studio Simulator */}
         {activeTab === 'elementor' && (
           <ElementorVisualSimulator
             config={themeConfig}
@@ -225,7 +218,7 @@ export default function App() {
           />
         )}
 
-        {/* Tab 10: Learning Analytics & Conversion Tracking */}
+        {/* Tab 12: Learning Analytics & Conversion Tracking */}
         {activeTab === 'analytics' && (
           <AiLearningAnalytics />
         )}
@@ -233,12 +226,12 @@ export default function App() {
       </main>
 
       {/* Bottom Sticky Status / Bar */}
-      <div className="sticky bottom-0 z-40 bg-slate-900/90 backdrop-blur-md border-t border-slate-800 py-2.5 px-4">
+      <div className="sticky bottom-0 z-40 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 py-2.5 px-4">
         <div className="max-w-7xl mx-auto flex flex-wrap items-center justify-between gap-3 text-xs">
           <div className="flex items-center gap-4">
-            <span className="flex items-center gap-1.5 text-indigo-300 font-bold bg-indigo-500/15 px-2.5 py-0.5 rounded-md border border-indigo-500/25">
-              <Store className="w-3.5 h-3.5 text-indigo-400" />
-              کامواوب پرو (Kamva Core & Store)
+            <span className="flex items-center gap-1.5 text-[#ff805d] font-bold bg-[#f05023]/15 px-2.5 py-0.5 rounded-md border border-[#f05023]/25">
+              <Store className="w-3.5 h-3.5 text-[#f05023]" />
+              پلتفرم پروداکشن کامواوب پرو (Kamva Core & Store)
             </span>
             <span className="flex items-center gap-1.5 text-blue-400 font-semibold bg-blue-500/10 px-2 py-0.5 rounded border border-blue-500/20">
               <span className="w-2 h-2 rounded-full bg-blue-400 animate-pulse"></span>
@@ -246,11 +239,7 @@ export default function App() {
             </span>
             <span className="flex items-center gap-1.5 text-amber-400 font-medium">
               <LifeBuoy className="w-3.5 h-3.5 text-amber-400" />
-              سیستم خودترمیمی و مصونیت از آپدیت‌ها: فعال
-            </span>
-            <span className="hidden md:flex items-center gap-1.5 text-purple-400 font-medium">
-              <Layers className="w-3.5 h-3.5 text-purple-400" />
-              افزونه قابل‌نصب kamva-core: آماده تحویل
+              ساندباکس خودترمیمی خطاها: فعال
             </span>
             <span className="hidden md:flex items-center gap-1.5 text-emerald-400 font-medium">
               <CheckCircle2 className="w-3.5 h-3.5 text-emerald-400" />
@@ -259,29 +248,14 @@ export default function App() {
           </div>
 
           <div className="flex items-center gap-3 text-slate-400 font-mono text-[11px]">
-            <span>PHP 8.2+</span>
+            <span>PHP 8.2+ Production</span>
             <span>•</span>
             <span>MySQL 8.0</span>
             <span>•</span>
-            <span className="text-emerald-400 font-bold">بدون وابستگی خارجی</span>
+            <span className="text-emerald-400 font-bold">کاملاً بومی و پایدار</span>
           </div>
         </div>
       </div>
-
-      {/* Code Viewer Modal */}
-      <ThemeCodeViewerModal
-        isOpen={isCodeViewerOpen}
-        onClose={() => setIsCodeViewerOpen(false)}
-        onDownloadZip={handleDownloadZip}
-        isDownloading={isDownloading}
-      />
-
-      {/* GitHub Export Modal */}
-      <GitHubExportModal
-        isOpen={isGitHubModalOpen}
-        onClose={() => setIsGitHubModalOpen(false)}
-        siteName={themeConfig.general.siteName}
-      />
 
     </div>
   );
