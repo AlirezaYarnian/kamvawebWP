@@ -435,6 +435,175 @@ app.post('/api/stability/self-heal', (req, res) => {
 });
 
 // ==========================================
+// 4.1 KAMVA QUERY ANALYZER & DATABASE INDEX OPTIMIZER
+// ==========================================
+app.get('/api/database/query-analyzer', (req, res) => {
+  const mockQueries = [
+    {
+      id: 'query_1',
+      sql: "SELECT meta_key, meta_value FROM wp_postmeta WHERE post_id IN (SELECT ID FROM wp_posts WHERE post_type = 'product') AND meta_key = '_price' AND meta_value > 100000;",
+      execution_time: '124.5 ms',
+      raw_time_sec: 0.1245,
+      page_context: 'کاتالوگ اصلی فروشگاه (Shop Page)',
+      caller: 'WooCommerce Product Query Filter',
+      suggestion: {
+        index_id: 'idx_kamva_postmeta_key_val',
+        table: 'wp_postmeta',
+        columns: 'meta_key(191), meta_value(191)',
+        index_sql: 'CREATE INDEX idx_kamva_postmeta_key_val ON wp_postmeta (meta_key(191), meta_value(191));',
+        reason: 'کوئری‌های فیلتر محصولات بر اساس متاداده (مانند قیمت، ویژگی‌ها و وضعیت انبار) روی جدول wp_postmeta بدون ایندکس ترکیبی باعث Full Table Scan می‌شوند.',
+        impact: 'کاهش زمان پاسخگویی فیلترهای ووکامرس تا ۷۵٪ و افزایش سرعت بارگذاری کاتالوگ فروشگاه.',
+      },
+      timestamp: new Date().toISOString(),
+    },
+    {
+      id: 'query_2',
+      sql: "SELECT * FROM wp_posts WHERE post_type = 'product' AND post_status = 'publish' ORDER BY post_date DESC LIMIT 24;",
+      execution_time: '78.2 ms',
+      raw_time_sec: 0.0782,
+      page_context: 'دسته‌بندی محصولات (Product Category)',
+      caller: 'WP_Query Archive Loader',
+      suggestion: {
+        index_id: 'idx_kamva_posts_type_status_date',
+        table: 'wp_posts',
+        columns: 'post_type, post_status, post_date',
+        index_sql: 'CREATE INDEX idx_kamva_posts_type_status_date ON wp_posts (post_type(20), post_status(20), post_date);',
+        reason: 'کوئری اصلی لیست محصولات ووکامرس مرتب‌سازی بر اساس تاریخ و وضعیت انتشار را روی تمام پست‌ها اجرا می‌کند.',
+        impact: 'افزایش چشمگیر سرعت لود آرشیو محصولات و صفحات دسته‌بندی بالای ۵۰٪.',
+      },
+      timestamp: new Date().toISOString(),
+    },
+    {
+      id: 'query_3',
+      sql: "SELECT * FROM wp_woocommerce_order_itemmeta WHERE meta_key LIKE '%shipping%' OR meta_key LIKE '%total%';",
+      execution_time: '92.1 ms',
+      raw_time_sec: 0.0921,
+      page_context: 'صفحه پرداخت (Checkout)',
+      caller: 'WC_Order_Data_Store_CPT',
+      suggestion: {
+        index_id: 'idx_kamva_order_itemmeta_key',
+        table: 'wp_woocommerce_order_itemmeta',
+        columns: 'meta_key(191), meta_value(191)',
+        index_sql: 'CREATE INDEX idx_kamva_order_itemmeta_key ON wp_woocommerce_order_itemmeta (meta_key(191), meta_value(191));',
+        reason: 'گزارش‌های فروشگاه و محاسبات سبد خرید در صفحه تسویه حساب بدون ایندکس روی ایتم‌متای سفارش با کندی مواجه می‌شوند.',
+        impact: 'بهبود سرعت پردازش سفارشات و تسویه حساب تا ۶۰٪.',
+      },
+      timestamp: new Date().toISOString(),
+    }
+  ];
+
+  const indexSuggestions = [
+    {
+      id: 'idx_kamva_postmeta_key_val',
+      table: 'wp_postmeta',
+      columns: 'meta_key(191), meta_value(191)',
+      index_sql: 'CREATE INDEX idx_kamva_postmeta_key_val ON wp_postmeta (meta_key(191), meta_value(191));',
+      reason: 'کوئری‌های فیلتر محصولات بر اساس متاداده (مانند قیمت، ویژگی‌ها و وضعیت انبار) روی جدول wp_postmeta بدون ایندکس ترکیبی باعث Full Table Scan می‌شوند.',
+      impact: 'کاهش زمان پاسخگویی فیلترهای ووکامرس تا ۷۵٪ و افزایش سرعت بارگذاری کاتالوگ فروشگاه.',
+      target_page: 'کاتالوگ اصلی فروشگاه (Shop Page)',
+      applied: false,
+    },
+    {
+      id: 'idx_kamva_posts_type_status_date',
+      table: 'wp_posts',
+      columns: 'post_type, post_status, post_date',
+      index_sql: 'CREATE INDEX idx_kamva_posts_type_status_date ON wp_posts (post_type(20), post_status(20), post_date);',
+      reason: 'کوئری اصلی لیست محصولات ووکامرس مرتب‌سازی بر اساس تاریخ و وضعیت انتشار را روی تمام پست‌ها اجرا می‌کند.',
+      impact: 'افزایش چشمگیر سرعت لود آرشیو محصولات و صفحات دسته‌بندی بالای ۵۰٪.',
+      target_page: 'دسته‌بندی محصولات (Product Category)',
+      applied: false,
+    },
+    {
+      id: 'idx_kamva_order_itemmeta_key',
+      table: 'wp_woocommerce_order_itemmeta',
+      columns: 'meta_key(191), meta_value(191)',
+      index_sql: 'CREATE INDEX idx_kamva_order_itemmeta_key ON wp_woocommerce_order_itemmeta (meta_key(191), meta_value(191));',
+      reason: 'گزارش‌های فروشگاه و محاسبات سبد خرید در صفحه تسویه حساب بدون ایندکس روی ایتم‌متای سفارش با کندی مواجه می‌شوند.',
+      impact: 'بهبود سرعت پردازش سفارشات و تسویه حساب تا ۶۰٪.',
+      target_page: 'صفحه پرداخت (Checkout)',
+      applied: false,
+    }
+  ];
+
+  return res.json({
+    success: true,
+    total_slow_queries: mockQueries.length,
+    slow_queries: mockQueries,
+    index_suggestions: indexSuggestions,
+    system_status: {
+      savequeries_enabled: true,
+      slow_threshold_sec: 0.05,
+      monitored_store_pages: ['Shop', 'Product Category', 'Single Product', 'Cart', 'Checkout', 'Search'],
+    },
+  });
+});
+
+app.post('/api/database/apply-index-optimization', (req, res) => {
+  const { index_id } = req.body || {};
+  return res.json({
+    success: true,
+    message: 'ایندکس دیتابیس با موفقیت روی جدول مربوطه ایجاد و بهینه‌سازی شد.',
+    index_id,
+    applied: true,
+    applied_at: new Date().toISOString(),
+  });
+});
+
+// ==========================================
+// 4.2 KAMVA DATABASE MIGRATIONS & SCHEMA MANAGER
+// ==========================================
+app.get('/api/database/migrations', (req, res) => {
+  return res.json({
+    success: true,
+    installed_version: '1.3.0',
+    target_version: '1.3.0',
+    migrations_up_to_date: true,
+    tables_integrity: {
+      kamva_nexus_ai_crawls: {
+        table_name: 'wp_kamva_nexus_ai_crawls',
+        exists: true,
+        rows: 42,
+      },
+      kamva_nexus_ai_behavior: {
+        table_name: 'wp_kamva_nexus_ai_behavior',
+        exists: true,
+        rows: 156,
+      },
+      kamva_nexus_ai_slow_queries: {
+        table_name: 'wp_kamva_nexus_ai_slow_queries',
+        exists: true,
+        rows: 8,
+      }
+    }
+  });
+});
+
+app.post('/api/database/run-migrations', (req, res) => {
+  return res.json({
+    success: true,
+    message: 'جداول و ساختار دیتابیس قالب کامواوب با موفقیت بروزرسانی و بازسازی شدند.',
+    version: '1.3.0',
+    tables_integrity: {
+      kamva_nexus_ai_crawls: {
+        table_name: 'wp_kamva_nexus_ai_crawls',
+        exists: true,
+        rows: 42,
+      },
+      kamva_nexus_ai_behavior: {
+        table_name: 'wp_kamva_nexus_ai_behavior',
+        exists: true,
+        rows: 156,
+      },
+      kamva_nexus_ai_slow_queries: {
+        table_name: 'wp_kamva_nexus_ai_slow_queries',
+        exists: true,
+        rows: 8,
+      }
+    }
+  });
+});
+
+// ==========================================
 // 5. AI CHAT & CONSULTATION (Autonomous Local + Gemini Boost)
 // ==========================================
 app.post('/api/ai/chat', async (req, res) => {

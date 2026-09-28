@@ -30,7 +30,7 @@ export const UserPortalCustomizer: React.FC<UserPortalCustomizerProps> = ({
   portalConfig,
   onUpdateConfig,
 }) => {
-  const [activePreview, setActivePreview] = useState<'login' | 'dashboard'>('login');
+  const [activePreview, setActivePreview] = useState<'login' | 'dashboard' | 'bot'>('login');
   const [newFieldLabel, setNewFieldLabel] = useState('');
   const [newFieldType, setNewFieldType] = useState<'text' | 'tel' | 'email' | 'select'>('text');
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -282,6 +282,14 @@ export const UserPortalCustomizer: React.FC<UserPortalCustomizerProps> = ({
                 >
                   پیشخوان کاربر
                 </button>
+                <button
+                  onClick={() => setActivePreview('bot')}
+                  className={`px-2.5 py-1 rounded font-bold cursor-pointer transition-colors ${
+                    activePreview === 'bot' ? 'bg-indigo-600 text-white' : 'text-slate-400 hover:text-white'
+                  }`}
+                >
+                  چت‌بات و مشاور
+                </button>
               </div>
             </div>
 
@@ -319,7 +327,7 @@ export const UserPortalCustomizer: React.FC<UserPortalCustomizerProps> = ({
                   </button>
                 </div>
               </div>
-            ) : (
+            ) : activePreview === 'dashboard' ? (
               <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3 text-right text-xs">
                 <div className="flex items-center gap-3 p-3 bg-slate-900 rounded-xl border border-slate-800">
                   <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">
@@ -338,6 +346,33 @@ export const UserPortalCustomizer: React.FC<UserPortalCustomizerProps> = ({
                       <span className="text-[10px] text-slate-400 block">مشاهده و مدیریت</span>
                     </div>
                   ))}
+                </div>
+              </div>
+            ) : (
+              <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3 text-right text-xs">
+                <div className="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl flex items-center gap-2">
+                  <MessageSquare className="w-4 h-4 text-indigo-400 shrink-0" />
+                  <div>
+                    <span className="font-bold text-white text-xs block">پشتیبانی و چت‌بات هوشمند پنل کاربری</span>
+                    <span className="text-[10px] text-slate-400">پاسخ‌دهی خودکار + ارجاع مودبانه به مشاور فروش</span>
+                  </div>
+                </div>
+
+                <div className="space-y-2 text-[11px] bg-slate-900/80 p-3 rounded-xl border border-slate-800">
+                  <div className="bg-indigo-600/30 text-indigo-200 p-2 rounded-lg text-right">
+                    <strong>کاربر:</strong> آیا لپ‌تاپ گیمینگ ایسوس با اقساط ۲۴ ماهه موجود دارید؟
+                  </div>
+                  <div className="bg-slate-800 text-slate-100 p-2.5 rounded-lg text-right space-y-2 border border-slate-700">
+                    <p className="leading-relaxed">
+                      با سلام و نهایت احترام، پاسخ دقیق این پرسش تخصصی در پایگاه دانش ثبت نشده است. بسیار خوشحال می‌شوم اگر اجازه دهید شما را به **مشاور ارشد فروشگاه** وصل کنم تا اطلاعات دقیق و کد تخفیف اختصاصی تقدیم‌تان کنند.
+                    </p>
+                    <button
+                      onClick={() => alert('ارتباط مستقیم با مشاور فروش برقرار شد.')}
+                      className="w-full py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-[11px] rounded-lg transition-all shadow cursor-pointer flex items-center justify-center gap-1"
+                    >
+                      <span>درخواست ارتباط با مشاور فروشگاه</span>
+                    </button>
+                  </div>
                 </div>
               </div>
             )}

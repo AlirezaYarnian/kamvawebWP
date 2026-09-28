@@ -29,6 +29,7 @@ require_once KAMVAWEB_THEME_DIR . '/inc/file-media-security-scanner.php';
 // ۵. بهینه‌ساز فوق‌سریع منابع و افزایش سرعت لایت‌هاوس ۹۹/۱۰۰
 require_once KAMVAWEB_THEME_DIR . '/inc/speed-optimizer.php';
 require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-cache-manager.php';
+require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-query-analyzer.php';
 
 // ۶. موتور سئو، تولید خودکار اسکیما JSON-LD و رصد رقبا
 require_once KAMVAWEB_THEME_DIR . '/inc/seo-engine.php';
@@ -41,6 +42,7 @@ require_once KAMVAWEB_THEME_DIR . '/inc/class-smart-widget-engine.php';
 
 // ۹. بریج و موتور مهاجرت هوشمند از قالب‌های قدیمی به NexusAI / کامواوب
 require_once KAMVAWEB_THEME_DIR . '/inc/theme-migrator-bridge.php';
+require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-migration-manager.php';
 
 // ۱۰. کتابخانه الگوهای سراسری و کامپوننت‌های نکسوس (NexusAI Global Pattern Library)
 require_once KAMVAWEB_THEME_DIR . '/inc/nexus-pattern-library.php';
