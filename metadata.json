@@ -1,0 +1,6 @@
+{
+  "name": "NexusAI - قالب اختصاصی وردپرس با هسته هوش مصنوعی",
+  "description": "قالب وردپرس اختصاصی با هسته هوش مصنوعی داخلی، بهینه‌ساز فوق‌سریع منابع و افزونه‌ها، امنیت کامل All-in-One، سازگاری پیشرفته با المنتور و ویجت هوشمند مشاوره و فروش",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
