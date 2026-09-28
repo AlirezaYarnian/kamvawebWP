@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { defaultThemeConfig, sampleKnowledgeBase } from './data/initialData';
 import { ThemeOptionsConfig, KnowledgeItem } from './types/theme';
 import { Navbar } from './components/Navbar';
+import { WordPressLivePreview } from './components/WordPressLivePreview';
 import { ThemeOptionsPanel } from './components/ThemeOptionsPanel';
 import { SmartConfigGenerator } from './components/SmartConfigGenerator';
 import { ProductionDeployer } from './components/ProductionDeployer';
@@ -31,6 +32,7 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<string>('options');
   const [themeConfig, setThemeConfig] = useState<ThemeOptionsConfig>(defaultThemeConfig);
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeItem[]>(sampleKnowledgeBase);
+  const [isLivePreviewMode, setIsLivePreviewMode] = useState<boolean>(false);
 
   // Load real persistent knowledge base and theme options from server on mount
   useEffect(() => {
@@ -75,6 +77,17 @@ export default function App() {
     }
   };
 
+  // If in Live Store Frontend Mode, render the full WordPress Frontend
+  if (isLivePreviewMode) {
+    return (
+      <WordPressLivePreview
+        config={themeConfig}
+        knowledgeBase={knowledgeBase}
+        onSwitchToAdmin={() => setIsLivePreviewMode(false)}
+      />
+    );
+  }
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-[#f05023] selection:text-white">
       
@@ -82,6 +95,8 @@ export default function App() {
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
+        onToggleLivePreview={() => setIsLivePreviewMode(true)}
+        isLivePreview={isLivePreviewMode}
       />
 
       {/* Main Content Viewport */}

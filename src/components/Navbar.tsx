@@ -15,6 +15,7 @@ import {
   ArrowUpCircle,
   Activity,
   LifeBuoy,
+  Eye,
   CheckCircle2,
   Sparkles
 } from 'lucide-react';
@@ -23,12 +24,15 @@ import { KamvaLogo } from './KamvaLogo';
 interface NavbarProps {
   activeTab: string;
   setActiveTab: (tab: string) => void;
-  onOpenCodeViewer?: () => void;
+  onToggleLivePreview?: () => void;
+  isLivePreview?: boolean;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   activeTab,
   setActiveTab,
+  onToggleLivePreview,
+  isLivePreview,
 }) => {
   const navItems = [
     { id: 'options', label: 'موتور کاموا استور و تم‌آپشن', icon: Store, badge: 'Store' },
@@ -77,30 +81,41 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Quick Production Actions */}
           <div className="flex items-center gap-2">
             
+            {/* Live Frontend Store Preview Button */}
+            {onToggleLivePreview && (
+              <button
+                onClick={onToggleLivePreview}
+                className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 hover:from-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-indigo-900/40 transition-all active:scale-95 cursor-pointer ring-2 ring-indigo-400/40"
+              >
+                <Eye className="w-4 h-4" />
+                <span>پیش‌نمایش فرانت‌اند زنده قالب</span>
+              </button>
+            )}
+
             {/* Smart Config Generator Shortcut */}
             <button
               onClick={() => setActiveTab('smart-config')}
-              className={`flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer ${
+              className={`hidden sm:flex items-center gap-1.5 px-3 py-1.5 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer ${
                 activeTab === 'smart-config'
                   ? 'bg-gradient-to-r from-[#f05023] to-orange-600 text-white shadow-lg shadow-[#f05023]/30 ring-1 ring-[#f05023]'
                   : 'bg-slate-900 hover:bg-slate-800 text-[#ff8b6b] border border-[#f05023]/30'
               }`}
             >
               <Wand2 className="w-3.5 h-3.5" />
-              <span>پیکربندی هوشمند با AI</span>
+              <span>پیکربندی هوشمند</span>
             </button>
 
             {/* Production Deployer Shortcut */}
             <button
               onClick={() => setActiveTab('deploy-helper')}
-              className={`flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer ${
+              className={`hidden md:flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold rounded-xl transition-all active:scale-95 cursor-pointer ${
                 activeTab === 'deploy-helper'
                   ? 'bg-gradient-to-r from-emerald-600 to-teal-600 text-white shadow-lg shadow-emerald-900/40 ring-1 ring-emerald-400'
                   : 'bg-gradient-to-r from-emerald-950/60 to-slate-900 hover:from-emerald-900/40 text-emerald-300 border border-emerald-500/30'
               }`}
             >
               <Rocket className="w-3.5 h-3.5 text-emerald-400" />
-              <span>دستیار استقرار پروداکشن</span>
+              <span>استقرار پروداکشن</span>
             </button>
           </div>
         </div>
