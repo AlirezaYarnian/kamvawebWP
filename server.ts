@@ -1823,54 +1823,95 @@ app.post('/api/media/optimize-image', (req, res) => {
   });
 });
 
-// Autonomous local matcher with Persian n-gram and token scoring
-function findLocalAutonomousAnswer(userQuery: string, knowledgeBase: any[]): string {
-  const query = (userQuery || '').toLowerCase();
+// Elite Persian Salesperson & E-commerce Consultant Dataset
+const expertSalesDataset = [
+  {
+    keywords: ['سلام', 'درود', 'خسته نباشید', 'صبح بخیر', 'عصر بخیر', 'شروع', 'راهنمایی'],
+    answer: 'سلام و درود بر شما! 🌸 من مشاور اختصاصی و دستیار هوشمند فروشگاه هستم. با کمال میل آماده‌ام تا بر اساس نیاز، بودجه و سلیقه‌تان، بهترین محصولات را با بالاترین کیفیت و تخفیف ویژه به شما پیشنهاد دهم. چه کالایی مد نظرتان هست؟'
+  },
+  {
+    keywords: ['قیمت', 'ارزان', 'گران', 'تخفیف', 'کد تخفیف', 'حراج', 'پيشنهاد', 'هزینه'],
+    answer: '💰 کلیه محصولات ما با قیمت مصوب شرکتی و پایین‌ترین نرخ بازار عرضه می‌شوند. همچنین همین حالا می‌توانید از کد تخفیف ویژه VIP-KAMVA با ۷٪ تخفیف آنی در سبد خرید خود استفاده کنید. آیا مایلید لینک خرید مستقیم را برایتان ارسال کنم؟'
+  },
+  {
+    keywords: ['ارسال', 'پست', 'تیپاکس', 'پیک', 'زمان تحویل', 'شهرستان', 'کرایه', 'حمل'],
+    answer: '🚚 شرایط ارسال بسیار سریع و امن است:\n• ارسال در تهران: زیر ۴ ساعت با پیک موتوری یا اکسپرس\n• ارسال به شهرستان‌ها: طی ۲۴ الی ۴۸ ساعت کاری از طریق پست پیشتاز و تیپاکس\n• تمامی مرسوله‌ها دارای بیمه کامل حمل‌ونقل هستند.'
+  },
+  {
+    keywords: ['گارانتی', 'ضمانت', 'اصالت', 'مرجوعی', 'بازگشت', 'خراب', 'پشتیبانی'],
+    answer: '🛡️ آرامش خاطر شما هدف اصلی ماست:\n• ۷ روز ضمانت بازگشت وجه بی‌قید و شرط در صورت نارضایتی\n• گارانتی اصلی و شرکتی معتبر برای تمامی کالاهای دیجیتال\n• پشتیبانی فنی ۲۴ ساعته در تمام روزهای هفته.'
+  },
+  {
+    keywords: ['لپ‌تاپ', 'کامواوب', 'x15', 'سیستم', 'پردازنده', 'مهندسی', 'اولترابوک'],
+    answer: '💻 «اولترابوک مهندسی KamvaBook X15» پرفروش‌ترین و قدرتمندترین محصول ماست:\n• پردازنده پرسرعت نسل جدید با ۱۶ گیگابایت رم\n• بدنه آلومینیومی بسیار باریک و شیک\n• صفحه نمایش 4K خیره‌کننده\n💰 قیمت مصوب: ۳۴,۵۰۰,۰۰۰ تومان\n🎁 پیشنهاد ویژه: کیف چرمی اهدایی + ارسال رایگان\n\nآیا مایلید این شاهکار مهندسی را به سبد خریدتان اضافه کنید؟'
+  },
+  {
+    keywords: ['هدفون', 'anc', 'موزیک', 'صدا', 'میکروفون', 'هدفون مانیتورینگ', 'پرو ساوند'],
+    answer: '🎧 «هدفون مانیتورینگ Kamva Pro Sound ANC»:\n• مجهز به حذف نویز فعال (Active Noise Cancellation)\n• بیس عمیق و تفکیک صدای استودیویی\n• باتری قدرتمند با شارژدهی ۴۰ ساعته\n💰 قیمت مصوب: ۲,۸50,000 تومان\n🎁 پیشنهاد ویژه: ۲۰٪ تخفیف خرید همراه با لپ‌تاپ'
+  }
+];
 
-  if (!knowledgeBase || knowledgeBase.length === 0) {
-    return 'سلام! من دستیار هوشمند و مشاور فروش قالب اختصاصی «کامواوب» هستم. تمامی صفحات و پایگاه دانش وبسایت توسط خزشگر داخلی بررسی شده و آماده‌ام تا بهترین گزینه‌ها را به شما معرفی کنم. مایلید درباره کدام محصول یا خدمات راهنمایی‌تان کنم؟';
+// Autonomous local matcher with elite Persian e-commerce dataset & token scoring
+function findLocalAutonomousAnswer(userQuery: string, knowledgeBase: any[]): string {
+  const query = (userQuery || '').toLowerCase().trim();
+
+  // 1. Check expert static sales dataset first for natural consultative greetings & ecommerce queries
+  for (const exp of expertSalesDataset) {
+    for (const kw of exp.keywords) {
+      if (query.includes(kw)) {
+        return exp.answer;
+      }
+    }
   }
 
-  let bestItem: any = null;
-  let highestScore = 0;
+  // 2. Check persistent dynamic knowledge base
+  if (knowledgeBase && knowledgeBase.length > 0) {
+    let bestItem: any = null;
+    let highestScore = 0;
 
-  for (const item of knowledgeBase) {
-    let score = 0;
-    const q = (item.title || item.question || '').toLowerCase();
-    const a = (item.content || item.answer || '').toLowerCase();
-    const keywords = item.keywords || [];
+    for (const item of knowledgeBase) {
+      let score = 0;
+      const q = (item.title || item.question || '').toLowerCase();
+      const a = (item.content || item.answer || '').toLowerCase();
+      const keywords = item.keywords || [];
 
-    for (const kw of keywords) {
-      if (typeof kw === 'string' && query.includes(kw.toLowerCase())) {
-        score += 6;
+      for (const kw of keywords) {
+        if (typeof kw === 'string' && query.includes(kw.toLowerCase())) {
+          score += 8;
+        }
+      }
+
+      const words = query.split(/[\s,،.?!]+/).filter((w: string) => w.length > 1);
+      for (const word of words) {
+        if (q.includes(word)) score += 5;
+        if (a.includes(word)) score += 2;
+      }
+
+      if (score > highestScore) {
+        highestScore = score;
+        bestItem = item;
       }
     }
 
-    const words = query.split(/[\s,،.?!]+/).filter((w: string) => w.length > 2);
-    for (const word of words) {
-      if (q.includes(word)) score += 4;
-      if (a.includes(word)) score += 1.5;
-    }
-
-    if (score > highestScore) {
-      highestScore = score;
-      bestItem = item;
+    if (bestItem && highestScore > 0) {
+      let responseText = `🛒 بر اساس پایگاه دانش تخصصی فروشگاه (درباره "${bestItem.title || 'محصول'}"):
+      
+${bestItem.content || bestItem.answer}`;
+      if (bestItem.price) {
+        responseText += `\n\n💰 قیمت مصوب و به‌روز: ${bestItem.price}`;
+      }
+      if (bestItem.conversionTrigger) {
+        responseText += `\n🎁 پیشنهاد تشویقی خرید: ${bestItem.conversionTrigger}`;
+      }
+      responseText += '\n\n✨ پیشنهاد مشاور: این کالا هم‌اکنون با گارانتی اصلی در انبار موجود است. آیا مایلید راهنمایی ثبت سفارش فوری را برایتان انجام دهم؟';
+      return responseText;
     }
   }
 
-  if (bestItem && highestScore > 0) {
-    let responseText = `${bestItem.content || bestItem.answer}`;
-    if (bestItem.price) {
-      responseText += `\n\n💰 قیمت مصوب: ${bestItem.price}`;
-    }
-    if (bestItem.conversionTrigger) {
-      responseText += `\n🎁 پیشنهاد ویژه: ${bestItem.conversionTrigger}`;
-    }
-    responseText += '\n\n(آیا مایلید این سفارش را برایتان نهایی کنم یا نیاز به مقایسه با مدل دیگری دارید؟)';
-    return responseText;
-  }
+  // 3. Persuasive consultative fallback if no direct match found
+  return `سلام! من مشاور اختصاصی فروشگاه هستم. سوال شما را با دقت بررسی کردم. در حال حاضر محصولات پرچمدار ما همراه با **گارانتی اصالت ۷ روزه** و **ارسال فوری** آماده تحویل هستند. 
 
-  return `با توجه به بررسی خزشگر داخلی کامواوب و پایگاه دانش فروشگاه، ما بهترین کالاهای دارای گارانتی معتبر و ارسال سریع را در اختیارتان قرار می‌دهیم. لطفاً نام محصول یا ویژگی مورد نظرتان را بفرمایید تا دقیقاً همان را همراه با قیمت و شرایط ویژه به شما معرفی کنم.`;
+لطفاً بفرمایید به دنبال چه محصول، دستگاه یا برندی هستید تا مشخصات فنی، قیمت دقیق و بهترین پیشنهاد تخفیف‌دار را خدمتتان تقدیم کنم؟`;
 }
 
 // API: Smart Config Generator using AI Core

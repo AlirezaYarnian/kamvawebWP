@@ -40,7 +40,7 @@ export const DeveloperStudio: React.FC<DeveloperStudioProps> = ({
   devConfig,
   onUpdateConfig,
 }) => {
-  const [activeEditorTab, setActiveEditorTab] = useState<'php' | 'patterns' | 'css' | 'js' | 'hooks' | 'diagnostics' | 'auto-docs'>('patterns');
+  const [activeEditorTab, setActiveEditorTab] = useState<'php' | 'patterns' | 'css' | 'js' | 'hooks' | 'custom-hooks' | 'diagnostics' | 'auto-docs'>('patterns');
   const [selectedSnippetId, setSelectedSnippetId] = useState<string>(devConfig.customPhpSnippets[0]?.id || '');
   const [newSnippetTitle, setNewSnippetTitle] = useState('');
   const [newSnippetHook, setNewSnippetHook] = useState('init');
@@ -69,6 +69,39 @@ export const DeveloperStudio: React.FC<DeveloperStudioProps> = ({
   const [docsData, setDocsData] = useState<any[]>([]);
   const [isScanningDocs, setIsScanningDocs] = useState(false);
   const [copiedDocId, setCopiedDocId] = useState<string | null>(null);
+  // Custom Hook Manager State
+  const [newHookName, setNewHookName] = useState('wp_enqueue_scripts');
+  const [newHookTitle, setNewHookTitle] = useState('');
+  const [newHookType, setNewHookType] = useState<'action' | 'filter'>('action');
+  const [newHookPriority, setNewHookPriority] = useState<number>(10);
+  const [newHookArgs, setNewHookArgs] = useState<number>(1);
+  const [newHookCode, setNewHookCode] = useState('// کدهای اجرایی هوک\n');
+
+  const handleRegisterCustomHook = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newHookName.trim() || !newHookTitle.trim()) return;
+
+    const prefix = newHookType === 'action' ? 'add_action' : 'add_filter';
+    const generatedPhp = `// هوک سفارشی ثبت شده در مدیریتگر هوک کامواوب\n${prefix}('${newHookName.trim()}', function($param1 = null, $param2 = null) {\n    ${newHookCode.trim()}\n}, ${newHookPriority}, ${newHookArgs});`;
+
+    const newSnippet = {
+      id: `hook-${Date.now()}`,
+      title: newHookTitle.trim(),
+      code: generatedPhp,
+      active: true,
+      hook: newHookName.trim(),
+      priority: newHookPriority,
+    };
+
+    onUpdateConfig({
+      customPhpSnippets: [newSnippet, ...devConfig.customPhpSnippets],
+    });
+
+    setNewHookTitle('');
+    setNewHookCode('// کدهای اجرایی هوک\n');
+    setToastMessage('هوک سفارشی جدید با موفقیت ثبت شد و در سندباکس بدون نیاز به ویرایش functions.php فعال گردید.');
+    setTimeout(() => setToastMessage(null), 4000);
+  };
 
   const fetchDocs = async () => {
     setIsScanningDocs(true);
@@ -349,6 +382,18 @@ try {
               <BookOpen className="w-3.5 h-3.5" />
               <span>کاوشگر هوک‌ها</span>
             </button>
+
+            <button
+              onClick={() => setActiveEditorTab('custom-hooks')}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeEditorTab === 'custom-hooks' 
+                  ? 'bg-gradient-to-r from-cyan-600 to-indigo-600 text-white shadow-lg shadow-cyan-900/40 ring-1 ring-cyan-400' 
+                  : 'text-cyan-300 bg-cyan-950/40 border border-cyan-500/30 hover:bg-cyan-900/50'
+              }`}
+            >
+              <Filter className="w-3.5 h-3.5 text-cyan-300" />
+              <span>مدیریت هوک‌های سفارشی</span>
+            </button>
           </div>
         </div>
       </div>
@@ -526,6 +571,172 @@ try {
 
               </div>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB: CUSTOM HOOK MANAGER (ADD ACTION / FILTER GUI)       */}
+      {/* ======================================================== */}
+      {activeEditorTab === 'custom-hooks' && (
+        <div className="space-y-6">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl">
+            <div className="border-b border-slate-800 pb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+              <div>
+                <div className="flex items-center gap-2">
+                  <Filter className="w-5 h-5 text-cyan-400" />
+                  <h3 className="text-xl font-bold text-white">
+                    مدیریت هوک‌های سفارشی وردپرس (Custom Hook Manager)
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">
+                  ثبت، مدیریت و اجرای اکشن‌ها و فیلترهای سفارشی وردپرس (`add_action` و `add_filter`) از طریق رابط گرافیکی ایزوله بدون نیاز به ویرایش مستقیم فایل `functions.php`.
+                </p>
+              </div>
+            </div>
+
+            {/* Register New Hook Form */}
+            <form onSubmit={handleRegisterCustomHook} className="bg-slate-950 p-6 rounded-2xl border border-slate-800 space-y-4">
+              <h4 className="text-xs font-bold text-cyan-300 uppercase tracking-wider flex items-center gap-1.5">
+                <Plus className="w-4 h-4 text-cyan-400" />
+                <span>ثبت هوک جدید وردپرس</span>
+              </h4>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-300 font-bold block">عنوان / نامک هوک:</label>
+                  <input
+                    type="text"
+                    value={newHookTitle}
+                    onChange={(e) => setNewHookTitle(e.target.value)}
+                    placeholder="مثال: اعمال تخفیف ویژه سبد خرید"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-300 font-bold block">نام هوک وردپرس (Hook Name):</label>
+                  <input
+                    type="text"
+                    value={newHookName}
+                    onChange={(e) => setNewHookName(e.target.value)}
+                    placeholder="مثال: woocommerce_cart_calculate_fees"
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white font-mono placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                    dir="ltr"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-300 font-bold block">نوع هوک:</label>
+                  <select
+                    value={newHookType}
+                    onChange={(e) => setNewHookType(e.target.value as any)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-cyan-500"
+                  >
+                    <option value="action">اکشن (add_action)</option>
+                    <option value="filter">فیلتر (add_filter)</option>
+                  </select>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-300 font-bold block">اولویت اجرا (Priority - پیش‌فرض 10):</label>
+                  <input
+                    type="number"
+                    value={newHookPriority}
+                    onChange={(e) => setNewHookPriority(parseInt(e.target.value) || 10)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <label className="text-xs text-slate-300 font-bold block">تعداد آرگومان‌های پذیرفته‌شده (Accepted Args):</label>
+                  <input
+                    type="number"
+                    value={newHookArgs}
+                    onChange={(e) => setNewHookArgs(parseInt(e.target.value) || 1)}
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3.5 py-2 text-xs text-white font-mono focus:outline-none focus:border-cyan-500"
+                  />
+                </div>
+              </div>
+
+              <div className="space-y-1.5">
+                <label className="text-xs text-slate-300 font-bold block">کد PHP تابعی که باید روی هوک اجرا شود (Callback Body):</label>
+                <textarea
+                  rows={4}
+                  value={newHookCode}
+                  onChange={(e) => setNewHookCode(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3.5 text-xs text-cyan-300 font-mono focus:outline-none focus:border-cyan-500 leading-relaxed"
+                  dir="ltr"
+                  placeholder="// کدهای داخلی تابع کال‌بک..."
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={!newHookTitle.trim() || !newHookName.trim()}
+                className="px-6 py-2.5 bg-gradient-to-r from-cyan-600 to-indigo-600 hover:from-cyan-500 hover:to-indigo-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-cyan-600/30 transition-all cursor-pointer disabled:opacity-40 flex items-center gap-2"
+              >
+                <Plus className="w-4 h-4" />
+                <span>ثبت و فعال‌سازی هوک در سندباکس</span>
+              </button>
+            </form>
+
+            {/* Registered Hooks List */}
+            <div className="space-y-4 pt-2">
+              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">
+                هوک‌های سفارشی ثبت‌شده ({devConfig.customPhpSnippets.length})
+              </h4>
+
+              <div className="space-y-3">
+                {devConfig.customPhpSnippets.map((snippet) => (
+                  <div key={snippet.id} className="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3 hover:border-cyan-500/40 transition-all">
+                    <div className="flex items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                      <div className="flex items-center gap-2.5">
+                        <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full uppercase ${
+                          snippet.code.includes('add_filter') 
+                            ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                            : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                        }`}>
+                          {snippet.code.includes('add_filter') ? 'add_filter' : 'add_action'}
+                        </span>
+                        <h5 className="text-sm font-bold text-white">{snippet.title}</h5>
+                        <span className="text-xs text-slate-400 font-mono bg-slate-900 px-2 py-0.5 rounded">
+                          Hook: {snippet.hook} (P: {snippet.priority})
+                        </span>
+                      </div>
+
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => handleToggleSnippet(snippet.id)}
+                          className={`px-3 py-1 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                            snippet.active
+                              ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
+                              : 'bg-slate-800 text-slate-400'
+                          }`}
+                        >
+                          {snippet.active ? 'فعال' : 'متوقف'}
+                        </button>
+
+                        <button
+                          onClick={() => handleDeleteSnippet(snippet.id)}
+                          className="p-1.5 text-slate-500 hover:text-rose-400 transition-colors"
+                          title="حذف هوک"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="bg-[#080c14] border border-slate-900 rounded-xl p-3 text-xs text-slate-200 font-mono overflow-x-auto" dir="ltr">
+                      <pre><code>{snippet.code}</code></pre>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
           </div>
         </div>
       )}

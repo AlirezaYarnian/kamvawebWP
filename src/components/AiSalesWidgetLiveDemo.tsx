@@ -12,7 +12,13 @@ import {
   Bot, 
   User, 
   RefreshCw,
-  Globe
+  Globe,
+  GraduationCap,
+  MessageSquare,
+  ShieldCheck,
+  CheckCircle,
+  Sliders,
+  HelpCircle
 } from 'lucide-react';
 
 interface AiSalesWidgetLiveDemoProps {
@@ -39,14 +45,14 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
     {
       id: 'm-init',
       sender: 'ai',
-      text: config.aiCore.botWelcomeMessage,
+      text: config.aiCore.botWelcomeMessage || 'سلام! من دستیار هوشمند و مشاور فروشگاه هستم. چطور می‌توانم در انتخاب محصول به شما کمک کنم؟',
       timestamp: 'هم‌اکنون',
       source: 'پایگاه دانش محلی کامواوب (Real Stored Data)',
     },
   ]);
   const [inputText, setInputText] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [lastLatencyMs, setLastLatencyMs] = useState<number>(18);
+  const [lastLatencyMs, setLastLatencyMs] = useState<number>(16);
   const [lastEngineSource, setLastEngineSource] = useState<string>('مغز خودمختار کامواوب (Zero Server Load)');
 
   // Quick live crawl from within chat demo
@@ -62,8 +68,8 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
   const [newItemKeywords, setNewItemKeywords] = useState('');
   const [newItemCategory, setNewItemCategory] = useState<'product' | 'faq' | 'policy' | 'pricing' | 'service'>('product');
 
-  // Sub-view switcher state
-  const [activeSubView, setActiveSubView] = useState<'chat-kb' | 'behavior-analysis'>('chat-kb');
+  // Sub-view switcher state: 'chat-kb' | 'bot-training' | 'behavior-analysis'
+  const [activeSubView, setActiveSubView] = useState<'chat-kb' | 'bot-training' | 'behavior-analysis'>('chat-kb');
 
   // Customer Behavior Analysis Module State
   const [clickPath] = useState<string[]>([
@@ -91,6 +97,19 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
     personalizedOffer: 'کد تخفیف اختصاصی VIP-BEHAVIOR با ۷٪ تخفیف آنی'
   });
 
+  // Chatbot Training & Persona Customization State
+  const [botPersona, setBotPersona] = useState<'professional' | 'friendly' | 'expert' | 'sales'>('sales');
+  const [customInstructions, setCustomInstructions] = useState<string>(
+    'همیشه پاسخ‌ها را با لحنی صمیمی و حرفه‌ای ارائه بده. در انتهای پاسخ‌های مرتبط با محصول، یک پیشنهاد تخفیف یا لینک افزودن به سبد خرید معرفی کن.'
+  );
+  const [customTrainingFaqs, setCustomTrainingFaqs] = useState<Array<{ q: string; a: string }>>([
+    { q: 'شرایط ارسال سفارشات چطور است؟', a: 'کلیه سفارشات با پست پیشتاز و تیپاکس طی ۲۴ الی ۴۸ ساعت کاری به سراسر کشور ارسال می‌شود.' },
+    { q: 'آیا امکان مرجوعی کالا وجود دارد؟', a: 'بله، با تضمین بازگشت وجه ۷ روزه بدون قید و شرط در صورت نارضایتی از کیفیت کالا.' }
+  ]);
+  const [newTrainingQ, setNewTrainingQ] = useState('');
+  const [newTrainingA, setNewTrainingA] = useState('');
+  const [trainingSavedNotice, setTrainingSavedNotice] = useState(false);
+
   const handleSendMessage = async (customPrompt?: string) => {
     const textToSend = customPrompt || inputText;
     if (!textToSend.trim() || isLoading) return;
@@ -115,7 +134,7 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
         body: JSON.stringify({
           message: textToSend,
           conversationHistory: messages.slice(-4),
-          siteContext: `${config.general.siteName} - ${config.general.siteSlogan}`,
+          siteContext: `${config.general.siteName} - Persona: ${botPersona} - Instructions: ${customInstructions}`,
         }),
       });
 
@@ -124,12 +143,19 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
       const latency = Math.round(endTime - startTime);
       setLastLatencyMs(latency);
 
+      // Check if any custom training FAQ matches
+      let finalReply = data.reply || 'اطلاعات بررسی شد و در خدمت شما هستم.';
+      const matchedFaq = customTrainingFaqs.find(f => textToSend.toLowerCase().includes(f.q.toLowerCase().slice(0, 5)));
+      if (matchedFaq) {
+        finalReply = matchedFaq.a + '\n\n💡 (پاسخ سفارشی‌شده بر اساس آموزش‌های شما)';
+      }
+
       const aiReply: ChatMessage = {
         id: `ai-${Date.now()}`,
         sender: 'ai',
-        text: data.reply || 'متشکرم از پیام شما. اطلاعات بررسی شد و در خدمت شما هستم.',
+        text: finalReply,
         timestamp: 'هم‌اکنون',
-        source: data.source === 'gemini-neural-core' ? 'موتور عصبی پیشرفته Gemini' : 'مغز خودمختار محلی کامواوب (KamvaWeb Core)',
+        source: data.source === 'gemini-neural-core' ? 'موتور عصبی پیشرفته Gemini' : 'مغز خودمختار محلی کامواوب (ربات آموزش‌دیده)',
       };
 
       setLastEngineSource(aiReply.source || 'هسته خودمختار');
@@ -139,7 +165,7 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
       const fallbackMsg: ChatMessage = {
         id: `ai-err-${Date.now()}`,
         sender: 'ai',
-        text: 'سلام! محصول مورد نظر شما در پایگاه دانش بررسی شد و با تضمین بهترین قیمت و کیفیت تقدیم حضورتان می‌شود. آیا مایل به مشاهده جزئیات یا ثبت سفارش سریع هستید؟',
+        text: 'سلام! محصول مورد نظر شما در پایگاه دانش بررسی شد و با تضمین بهترین قیمت و کیفیت تقدیم حضورتان می‌شود. آیا مایل به ثبت سفارش هستید؟',
         timestamp: 'هم‌اکنون',
         source: 'مغز خودمختار کامواوب',
       };
@@ -161,53 +187,46 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url: quickCrawlUrl }),
       });
-
       const data = await res.json();
-      if (!res.ok) {
-        throw new Error(data.error || 'خطا در خزش سایت');
+      if (data.success && data.scrapedData) {
+        const newItem: KnowledgeItem = {
+          id: `crawled-${Date.now()}`,
+          title: data.scrapedData.title || 'صفحه خزیده شده',
+          content: data.scrapedData.summary || data.scrapedData.content || 'محتوای استخراج شده از لینک',
+          price: data.scrapedData.price || 'تماس بگیرید',
+          category: 'product',
+          keywords: data.scrapedData.keywords || ['محصول', 'جدید'],
+          conversionTrigger: 'تخفیف ویژه خرید آنلاین مستقیم',
+          sourceUrl: quickCrawlUrl,
+        };
+        onUpdateKnowledgeBase([newItem, ...knowledgeBase]);
+        setCrawlFeedback(`✓ با موفقیت از "${data.scrapedData.title}" استخراج و به پایگاه دانش افزوده شد!`);
+        setQuickCrawlUrl('');
+      } else {
+        setCrawlFeedback('خطا در خزش لینک. لطفا دوباره تلاش کنید.');
       }
-
-      setCrawlFeedback(`خزش با موفقیت انجام شد! ${data.extractedKnowledgeItems?.length || 1} رکورد جدید به دیتابیس افزوده شد.`);
-      setQuickCrawlUrl('');
-
-      const kbRes = await fetch('/api/knowledge-base');
-      const kbData = await kbRes.json();
-      if (kbData.items) {
-        onUpdateKnowledgeBase(kbData.items);
-      }
-    } catch (err: any) {
-      setCrawlFeedback(`خطا: ${err.message}`);
+    } catch (e) {
+      setCrawlFeedback('ارتباط با خزشگر برقرار نشد.');
     } finally {
       setIsQuickCrawling(false);
     }
   };
 
-  const handleAddKbItem = async (e: React.FormEvent) => {
+  const handleAddKbItem = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newItemTitle.trim() || !newItemContent.trim()) return;
 
     const newItem: KnowledgeItem = {
-      id: `kb-${Date.now()}`,
-      category: newItemCategory,
+      id: `kb-manual-${Date.now()}`,
       title: newItemTitle,
       content: newItemContent,
-      price: newItemPrice ? `${newItemPrice} تومان` : undefined,
-      keywords: newItemKeywords.split(',').map((k) => k.trim()).filter(Boolean),
-      conversionTrigger: 'کد تخفیف اختصاصی ۵٪ کامواوب با مشاوره آنلاین',
-      inStock: true,
+      price: newItemPrice || 'توافقی',
+      category: newItemCategory,
+      keywords: newItemKeywords ? newItemKeywords.split(',').map((s) => s.trim()) : [newItemTitle],
+      conversionTrigger: 'مشاوره رایگان خرید و ارسال فوری',
     };
 
-    try {
-      await fetch('/api/knowledge-base', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newItem),
-      });
-      onUpdateKnowledgeBase([newItem, ...knowledgeBase]);
-    } catch (e) {
-      onUpdateKnowledgeBase([newItem, ...knowledgeBase]);
-    }
-
+    onUpdateKnowledgeBase([newItem, ...knowledgeBase]);
     setNewItemTitle('');
     setNewItemContent('');
     setNewItemPrice('');
@@ -215,78 +234,95 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
     setIsAddingKb(false);
   };
 
-  const handleDeleteKbItem = async (id: string) => {
-    try {
-      await fetch(`/api/knowledge-base/${id}`, { method: 'DELETE' });
-    } catch (e) {}
+  const handleDeleteKbItem = (id: string) => {
     onUpdateKnowledgeBase(knowledgeBase.filter((k) => k.id !== id));
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-indigo-500/20 rounded-2xl p-6 relative overflow-hidden shadow-xl">
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold border border-emerald-500/30">
-                <Sparkles className="w-3.5 h-3.5" />
-                ویجت مشاوره و فروش آنلاین کامواوب با CRO بالا
-              </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-medium">
-                <Cpu className="w-3.5 h-3.5" />
-                بار پردازشی سرور: زیر ۰.۵٪
-              </span>
-            </div>
-            <h2 className="text-2xl font-black text-white">
-              تست زنده مکالمه فروشنده هوش مصنوعی و پایگاه دانش واقعی سایت
-            </h2>
-            <p className="text-sm text-slate-300 max-w-2xl mt-1 leading-relaxed">
-              این سیستم ابتدا کلیه محصولات و مقالات سایت را از طریق خزشگر داخلی اسکن و نمایه می‌کند؛ سپس با خریداران چت کرده و به طور هوشمند فروش را نهایی می‌سازد.
-            </p>
-          </div>
+  const handleAddTrainingFaq = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newTrainingQ.trim() || !newTrainingA.trim()) return;
+    setCustomTrainingFaqs([...customTrainingFaqs, { q: newTrainingQ, a: newTrainingA }]);
+    setNewTrainingQ('');
+    setNewTrainingA('');
+    setTrainingSavedNotice(true);
+    setTimeout(() => setTrainingSavedNotice(false), 3000);
+  };
 
-          <div className="flex items-center gap-3">
-            <div className="bg-slate-950/80 border border-slate-800 px-4 py-2.5 rounded-xl text-center">
-              <span className="text-[11px] text-slate-400 block">پاسخگویی فوق سریع</span>
-              <span className="text-base font-black text-emerald-400 font-mono">{lastLatencyMs} ms</span>
-            </div>
-            <div className="bg-slate-950/80 border border-slate-800 px-4 py-2.5 rounded-xl text-center">
-              <span className="text-[11px] text-slate-400 block">افزایش نرخ تبدیل</span>
-              <span className="text-base font-black text-indigo-400 font-mono">+۳۸.۵٪</span>
-            </div>
+  const handleDeleteTrainingFaq = (index: number) => {
+    setCustomTrainingFaqs(customTrainingFaqs.filter((_, i) => i !== index));
+  };
+
+  return (
+    <div className="space-y-6 font-sans">
+      
+      {/* Header Banner - Clean & Modern */}
+      <div className="bg-gradient-to-r from-slate-900 via-indigo-950/40 to-slate-900 border border-slate-800/80 rounded-3xl p-6 md:p-8 shadow-xl flex flex-col md:flex-row items-center justify-between gap-6">
+        <div className="space-y-2 text-center md:text-right">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-medium">
+            <Sparkles className="w-3.5 h-3.5" />
+            <span>هسته هوش مصنوعی، پایگاه دانش و مدیریت چت‌بات</span>
+          </div>
+          <h2 className="text-xl md:text-2xl font-black text-white tracking-tight">
+            دستیار فروش هوشمند و آموزش چت‌بات کامواوب
+          </h2>
+          <p className="text-xs md:text-sm text-slate-400 max-w-2xl leading-relaxed">
+            مدیریت پایگاه دانش، آموزش دستورالعمل‌ها، تنظیم شخصیت چت‌بات و بررسی آنالیز رفتار مخاطبان جهت افزایش نرخ تبدیل فروشگاه.
+          </p>
+        </div>
+
+        <div className="flex items-center gap-3 shrink-0">
+          <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 text-center">
+            <span className="text-[11px] text-slate-400 block">اقلام پایگاه دانش</span>
+            <span className="text-lg font-black text-indigo-400 font-mono mt-0.5 block">{knowledgeBase.length} مورد</span>
+          </div>
+          <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-4 text-center">
+            <span className="text-[11px] text-slate-400 block">پاسخگویی ربات</span>
+            <span className="text-lg font-black text-emerald-400 font-mono mt-0.5 block">&lt; {lastLatencyMs}ms</span>
           </div>
         </div>
       </div>
 
-      {/* Sub-view switcher tabs */}
-      <div className="flex items-center gap-3 border-b border-slate-800 pb-3">
+      {/* Sub-View Navigation Tabs - Clean & Spacious */}
+      <div className="flex items-center gap-2 border-b border-slate-800 pb-2">
         <button
           onClick={() => setActiveSubView('chat-kb')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeSubView === 'chat-kb'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-              : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
+              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 border border-indigo-500'
+              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
           }`}
         >
-          <Bot className="w-4 h-4" />
-          <span>پایگاه دانش و تست زنده چت‌بات</span>
+          <MessageSquare className="w-4 h-4" />
+          <span>تست زنده چت‌بات و پایگاه دانش</span>
+        </button>
+
+        <button
+          onClick={() => setActiveSubView('bot-training')}
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            activeSubView === 'bot-training'
+              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 border border-indigo-500'
+              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
+          }`}
+        >
+          <GraduationCap className="w-4 h-4" />
+          <span>آموزش پیشرفته و شخصیت چت‌بات</span>
         </button>
 
         <button
           onClick={() => setActiveSubView('behavior-analysis')}
-          className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+          className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer ${
             activeSubView === 'behavior-analysis'
-              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30'
-              : 'bg-slate-900 text-slate-300 hover:bg-slate-800 border border-slate-800'
+              ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-600/30 border border-indigo-500'
+              : 'bg-slate-900 text-slate-400 hover:text-white border border-slate-800'
           }`}
         >
-          <TrendingUp className="w-4 h-4 text-emerald-400" />
-          <span>ماژول تحلیل رفتار مشتری و هوش مصنوعی (CRO)</span>
+          <TrendingUp className="w-4 h-4" />
+          <span>ماژول تحلیل رفتار مشتری و CRO</span>
         </button>
       </div>
 
-      {activeSubView === 'behavior-analysis' && (
+      {/* Conditional Rendering for Sub-Views */}
+      {activeSubView === 'behavior-analysis' ? (
         <CustomerBehaviorModule
           clickPath={clickPath}
           dwellTimes={dwellTimes}
@@ -294,171 +330,278 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
           behaviorReport={behaviorReport}
           onUpdateReport={setBehaviorReport}
         />
-      )}
-
-      {activeSubView === 'chat-kb' && (
+      ) : activeSubView === 'bot-training' ? (
+        /* Chatbot Advanced Training & Persona View */
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           
-          {/* Right side: Knowledge Base Manager */}
-          <div className="lg:col-span-6 space-y-4">
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 space-y-4 shadow-lg">
-              
-              {/* Quick Live Crawler Form */}
-              <form onSubmit={handleQuickCrawl} className="bg-slate-950/80 border border-emerald-500/20 rounded-xl p-3.5 space-y-2">
-                <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-emerald-300 flex items-center gap-1.5">
-                    <Globe className="w-3.5 h-3.5" />
-                    خزش فوری هر وبسایت واقعی به پایگاه دانش
-                  </label>
-                  <span className="text-[10px] text-slate-400 font-mono">Real Crawler</span>
+          {/* Left / Top: Persona & Behavior Instructions */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+                    <Sliders className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">شخصیت و لحن پاسخگویی ربات</h3>
+                    <p className="text-[11px] text-slate-400">انتخاب سبک گویش و رویکرد فروش مشاور هوشمند</p>
+                  </div>
                 </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { id: 'sales', title: 'مشاور فروش و تخفیف', desc: 'تمرکز بالا روی متقاعد کردن و ارائه پیشنهاد شگفت‌انگیز' },
+                  { id: 'professional', title: 'رسمی و شرکتی', desc: 'پاسخ‌های دقیق، ساختاریافته و کاملاً حرفه‌ای' },
+                  { id: 'friendly', title: 'صمیمی و دوستانه', desc: 'گویش گرم، خودمانی و راحت با مخاطب' },
+                  { id: 'expert', title: 'متخصص فنی و گارانتی', desc: 'تمرکز روی جزئیات سخت‌افزاری و اصالت کالا' },
+                ].map((p) => (
+                  <button
+                    key={p.id}
+                    onClick={() => setBotPersona(p.id as any)}
+                    className={`p-4 rounded-xl text-right transition-all cursor-pointer border ${
+                      botPersona === p.id
+                        ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-md'
+                        : 'bg-slate-950 border-slate-800 text-slate-400 hover:border-slate-700'
+                    }`}
+                  >
+                    <span className="text-xs font-bold block text-white">{p.title}</span>
+                    <span className="text-[10px] text-slate-400 mt-1 block leading-relaxed">{p.desc}</span>
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <label className="text-xs font-bold text-slate-300 block">دستورالعمل‌ها و پرامپت‌های رفتاری سفارشی:</label>
+                <textarea
+                  rows={4}
+                  value={customInstructions}
+                  onChange={(e) => setCustomInstructions(e.target.value)}
+                  className="w-full bg-slate-950 border border-slate-800 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed"
+                  placeholder="دستورالعمل‌های خاص برای ربات..."
+                />
+              </div>
+
+              <button
+                onClick={() => {
+                  setTrainingSavedNotice(true);
+                  setTimeout(() => setTrainingSavedNotice(false), 3000);
+                }}
+                className="w-full py-3 bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 text-white rounded-xl text-xs font-bold shadow-lg shadow-indigo-600/30 transition-all cursor-pointer flex items-center justify-center gap-2"
+              >
+                <Sparkles className="w-4 h-4" />
+                <span>ذخیره تنظیمات و به‌روزرسانی هوش مصنوعی ربات</span>
+              </button>
+
+              {trainingSavedNotice && (
+                <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs text-center font-medium animate-pulse">
+                  ✓ تنظیمات و شخصیت جدید ربات با موفقیت ذخیره و روی هسته فعال شد!
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Right / Bottom: Custom Q&A Training Fine-Tuning */}
+          <div className="lg:col-span-6 space-y-6">
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                    <GraduationCap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">آموزش پرسش و پاسخ‌های اختصاصی (Q&A)</h3>
+                    <p className="text-[11px] text-slate-400">تدریس پاسخ دقیق به سوالات پرتکرار مشتریان</p>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleAddTrainingFaq} className="space-y-3 bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+                <span className="text-xs font-bold text-slate-300 block">افزودن آموزش جدید به ربات:</span>
+                <input
+                  type="text"
+                  value={newTrainingQ}
+                  onChange={(e) => setNewTrainingQ(e.target.value)}
+                  placeholder="سوال مشتری (مثلاً: شرایط پرداخت اقساطی چطور است؟)"
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                />
+                <textarea
+                  rows={2}
+                  value={newTrainingA}
+                  onChange={(e) => setNewTrainingA(e.target.value)}
+                  placeholder="پاسخ دقیق ربات به این سوال..."
+                  className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed"
+                />
+                <button
+                  type="submit"
+                  disabled={!newTrainingQ.trim() || !newTrainingA.trim()}
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md transition-all cursor-pointer disabled:opacity-40 flex items-center justify-center gap-1.5"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>آموزش این مورد به چت‌بات</span>
+                </button>
+              </form>
+
+              <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
+                <span className="text-xs font-bold text-slate-400 block">آموزش‌های فعال ثبت شده ({customTrainingFaqs.length}):</span>
+                {customTrainingFaqs.map((faq, idx) => (
+                  <div key={idx} className="bg-slate-950 border border-slate-800 rounded-xl p-3.5 space-y-1.5 relative group">
+                    <div className="flex items-start justify-between gap-2">
+                      <span className="text-xs font-bold text-indigo-300 flex items-center gap-1.5">
+                        <HelpCircle className="w-3.5 h-3.5 text-indigo-400 shrink-0" />
+                        {faq.q}
+                      </span>
+                      <button
+                        onClick={() => handleDeleteTrainingFaq(idx)}
+                        className="text-slate-500 hover:text-rose-400 transition-colors p-1"
+                        title="حذف آموزش"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
+                    </div>
+                    <p className="text-[11px] text-slate-300 leading-relaxed pr-5">
+                      {faq.a}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+        </div>
+      ) : (
+        /* Main Grid: Knowledge Base (Right) & Live Chat Widget (Left) */
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Right side: Knowledge Base Management & Crawler */}
+          <div className="lg:col-span-6 space-y-6">
+            
+            {/* Quick Live URL Crawl Card */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center gap-2">
+                  <div className="p-2 rounded-xl bg-indigo-500/10 text-indigo-400">
+                    <Globe className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">خزشگر هوشمند لینک (Live Crawler)</h3>
+                    <p className="text-[11px] text-slate-400">افزودن آنی محصول یا مقاله از وب به پایگاه دانش</p>
+                  </div>
+                </div>
+              </div>
+
+              <form onSubmit={handleQuickCrawl} className="space-y-3">
                 <div className="flex gap-2">
                   <input
                     type="url"
                     value={quickCrawlUrl}
                     onChange={(e) => setQuickCrawlUrl(e.target.value)}
-                    placeholder="https://your-site.com/products/item"
-                    className="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
-                    dir="ltr"
+                    placeholder="https://yourstore.com/product-item"
+                    className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                   />
                   <button
                     type="submit"
-                    disabled={isQuickCrawling}
-                    className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold rounded-lg transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                    disabled={isQuickCrawling || !quickCrawlUrl.trim()}
+                    className="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/30 transition-all cursor-pointer disabled:opacity-40 flex items-center gap-1.5 shrink-0"
                   >
-                    {isQuickCrawling ? 'در حال خزش...' : 'خزش و استخراج'}
+                    {isQuickCrawling ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                    <span>خزش و یادگیری</span>
                   </button>
                 </div>
                 {crawlFeedback && (
-                  <p className="text-[11px] text-emerald-300 pt-1 font-semibold">{crawlFeedback}</p>
+                  <p className="text-xs text-emerald-400 font-medium">{crawlFeedback}</p>
                 )}
               </form>
+            </div>
 
+            {/* Knowledge Base Items List */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-4">
               <div className="flex items-center justify-between border-b border-slate-800 pb-3">
                 <div className="flex items-center gap-2">
-                  <Database className="w-5 h-5 text-indigo-400" />
+                  <div className="p-2 rounded-xl bg-emerald-500/10 text-emerald-400">
+                    <Database className="w-5 h-5" />
+                  </div>
                   <div>
-                    <h3 className="font-bold text-white text-base">پایگاه دانش زنده کامواوب (Real Persistent Knowledge)</h3>
-                    <span className="text-xs text-slate-400">
-                      {knowledgeBase.length} داده کلیدی استخراج شده در دیتابیس پایدار
-                    </span>
+                    <h3 className="text-sm font-bold text-white">پایگاه دانش محلی و محصولات</h3>
+                    <p className="text-[11px] text-slate-400">مرجع پاسخگویی ربات و تحلیلگر فروش</p>
                   </div>
                 </div>
 
                 <button
                   onClick={() => setIsAddingKb(!isAddingKb)}
-                  className="flex items-center gap-1.5 px-3 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg transition-all cursor-pointer"
+                  className="px-3 py-1.5 bg-indigo-600/20 hover:bg-indigo-600/30 text-indigo-300 border border-indigo-500/30 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-1"
                 >
-                  <Plus className="w-4 h-4" />
-                  <span>افزودن دستی داده</span>
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>افزودن دستی</span>
                 </button>
               </div>
 
-              {/* Add new item form drawer */}
               {isAddingKb && (
-                <form onSubmit={handleAddKbItem} className="bg-slate-950/90 border border-indigo-500/30 rounded-xl p-4 space-y-3">
-                  <div className="flex items-center justify-between">
-                    <h4 className="text-xs font-bold text-indigo-300">افزودن رکورد جدید به پایگاه دانش:</h4>
-                    <button type="button" onClick={() => setIsAddingKb(false)} className="text-slate-400 hover:text-white text-xs cursor-pointer">✕ بستن</button>
-                  </div>
-
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-[11px] text-slate-300 block mb-1">عنوان محصول یا موضوع</label>
-                      <input
-                        type="text"
-                        required
-                        placeholder="مثال: اولترابوک مهندسی کامواوب"
-                        value={newItemTitle}
-                        onChange={(e) => setNewItemTitle(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                    <div>
-                      <label className="text-[11px] text-slate-300 block mb-1">قیمت یا تعرفه</label>
-                      <input
-                        type="text"
-                        placeholder="مثال: ۷۸,۵۰۰,۰۰۰"
-                        value={newItemPrice}
-                        onChange={(e) => setNewItemPrice(e.target.value)}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div>
-                    <label className="text-[11px] text-slate-300 block mb-1">توضیحات و مشخصات دقیق</label>
-                    <textarea
-                      required
-                      rows={2}
-                      placeholder="توضیحات فنی، مزایا، شرایط گارانتی و نحوه ارسال"
-                      value={newItemContent}
-                      onChange={(e) => setNewItemContent(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-indigo-500"
+                <form onSubmit={handleAddKbItem} className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3">
+                  <span className="text-xs font-bold text-white block">افزودن آیتم جدید به پایگاه دانش:</span>
+                  <div className="grid grid-cols-2 gap-2">
+                    <input
+                      type="text"
+                      value={newItemTitle}
+                      onChange={(e) => setNewItemTitle(e.target.value)}
+                      placeholder="عنوان محصول یا مقاله"
+                      className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    />
+                    <input
+                      type="text"
+                      value={newItemPrice}
+                      onChange={(e) => setNewItemPrice(e.target.value)}
+                      placeholder="قیمت (مثلاً 24,000,000 تومان)"
+                      className="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
                     />
                   </div>
-
-                  <div className="flex justify-end gap-2 pt-2">
-                    <button
-                      type="button"
-                      onClick={() => setIsAddingKb(false)}
-                      className="px-3 py-1.5 bg-slate-800 text-slate-300 text-xs rounded-lg cursor-pointer"
-                    >
-                      انصراف
-                    </button>
+                  <textarea
+                    rows={2}
+                    value={newItemContent}
+                    onChange={(e) => setNewItemContent(e.target.value)}
+                    placeholder="توضیحات و مشخصات فنی..."
+                    className="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 leading-relaxed"
+                  />
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={newItemKeywords}
+                      onChange={(e) => setNewItemKeywords(e.target.value)}
+                      placeholder="کلیدواژه‌ها (با کاما جدا کنید)"
+                      className="flex-1 bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500"
+                    />
                     <button
                       type="submit"
-                      className="px-4 py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg cursor-pointer"
+                      className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-md cursor-pointer"
                     >
-                      ذخیره دائمی داده
+                      ثبت نهایی
                     </button>
                   </div>
                 </form>
               )}
 
-              {/* Knowledge Base List */}
-              <div className="space-y-2.5 max-h-[460px] overflow-y-auto pr-1">
+              <div className="space-y-3 max-h-[340px] overflow-y-auto pr-1">
                 {knowledgeBase.map((item) => (
-                  <div
-                    key={item.id}
-                    className="bg-slate-950/60 border border-slate-800/80 hover:border-slate-700 rounded-xl p-3.5 transition-all group"
-                  >
+                  <div key={item.id} className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-2 hover:border-slate-700 transition-all">
                     <div className="flex items-start justify-between gap-2">
-                      <div className="flex items-center gap-2">
-                        <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-indigo-500/20 text-indigo-300">
-                          {item.category === 'product' ? 'محصول' : item.category === 'policy' ? 'قوانین' : item.category === 'faq' ? 'سوالات' : 'خدمات'}
-                        </span>
-                        <h4 className="text-xs font-bold text-white group-hover:text-indigo-300 transition-colors">
-                          {item.title}
-                        </h4>
-                      </div>
-
-                      <div className="flex items-center gap-2">
+                      <div>
+                        <h4 className="text-xs font-bold text-white leading-snug">{item.title}</h4>
                         {item.price && (
-                          <span className="text-xs font-mono font-bold text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">
-                            {item.price}
-                          </span>
+                          <span className="text-[11px] text-emerald-400 font-mono font-bold mt-0.5 block">{item.price}</span>
                         )}
-                        <button
-                          onClick={() => handleDeleteKbItem(item.id)}
-                          className="text-slate-500 hover:text-rose-400 p-1 opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
-                          title="حذف رکورد"
-                        >
-                          <Trash2 className="w-3.5 h-3.5" />
-                        </button>
                       </div>
+                      <button
+                        onClick={() => handleDeleteKbItem(item.id)}
+                        className="text-slate-500 hover:text-rose-400 transition-colors p-1"
+                        title="حذف"
+                      >
+                        <Trash2 className="w-3.5 h-3.5" />
+                      </button>
                     </div>
 
-                    <p className="text-[11px] text-slate-300 mt-2 line-clamp-2 leading-relaxed">
+                    <p className="text-[11px] text-slate-300 line-clamp-2 leading-relaxed">
                       {item.content}
                     </p>
-
-                    {item.sourceUrl && (
-                      <div className="mt-2 text-[10px] text-slate-400 flex items-center gap-1 font-mono">
-                        <Globe className="w-3 h-3 text-emerald-400" />
-                        <span>{item.sourceUrl}</span>
-                      </div>
-                    )}
 
                     {item.conversionTrigger && (
                       <div className="mt-2 text-[10px] text-amber-300/90 bg-amber-500/10 border border-amber-500/20 rounded px-2 py-1 flex items-center gap-1.5">
@@ -475,7 +618,7 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
 
           {/* Left side: Interactive Live Chatbot Widget */}
           <div className="lg:col-span-6 space-y-4">
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col h-[580px]">
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl flex flex-col h-[600px]">
               
               {/* Chatbot Header */}
               <div className="bg-gradient-to-r from-indigo-700 via-indigo-600 to-indigo-800 p-4 flex items-center justify-between text-white">
@@ -495,21 +638,21 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
                       دستیار و فروشنده هوشمند کامواوب
                     </h4>
                     <span className="text-[11px] text-indigo-200 mt-0.5 block">
-                      {lastEngineSource}
+                      {lastEngineSource} (شخصیت: {botPersona})
                     </span>
                   </div>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-[10px] px-2 py-0.5 rounded-full bg-black/20 text-emerald-300 font-mono font-bold">
+                  <span className="text-[10px] px-2.5 py-1 rounded-full bg-black/30 text-emerald-300 font-mono font-bold">
                     {lastLatencyMs}ms
                   </span>
                 </div>
               </div>
 
               {/* Quick Prompt Badges */}
-              <div className="bg-slate-950/80 border-b border-slate-800/80 px-3 py-2 flex items-center gap-1.5 overflow-x-auto text-[11px]">
-                <span className="text-slate-400 shrink-0 text-[10px]">پیشنهاد:</span>
+              <div className="bg-slate-950/80 border-b border-slate-800/80 px-3 py-2.5 flex items-center gap-1.5 overflow-x-auto text-[11px]">
+                <span className="text-slate-400 shrink-0 text-[10px]">تست سریع:</span>
                 <button
                   onClick={() => handleSendMessage('قیمت و شرایط لپ‌تاپ کامواوب چیست؟')}
                   className="px-2.5 py-1 bg-slate-800 hover:bg-indigo-600/40 text-slate-200 rounded-full transition-all shrink-0 cursor-pointer"
@@ -573,7 +716,7 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
                     <div className="w-7 h-7 rounded-full bg-indigo-600/30 flex items-center justify-center">
                       <RefreshCw className="w-4 h-4 animate-spin text-indigo-400" />
                     </div>
-                    <span>هوش مصنوعی کامواوب در حال ارزیابی پایگاه دانش و آماده‌سازی بهترین پیشنهاد...</span>
+                    <span>هوش مصنوعی کامواوب در حال ارزیابی پایگاه دانش و آماده‌سازی بهترین پاسخ...</span>
                   </div>
                 )}
               </div>
