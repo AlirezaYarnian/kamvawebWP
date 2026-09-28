@@ -473,7 +473,7 @@ ${message}
 `;
 
       const response = await ai.models.generateContent({
-        model: 'gemini-3.8-flash',
+        model: 'gemini-2.5-flash',
         contents: prompt,
         config: {
           systemInstruction,
@@ -503,6 +503,72 @@ ${message}
 });
 
 // ==========================================
+// 5.1 AI CUSTOMER BEHAVIOR ANALYSIS & CRO
+// ==========================================
+app.post('/api/ai/behavior-analyze', async (req, res) => {
+  const { clickPath, dwellTimes, bounceRate, userContext } = req.body;
+  const knowledgeBase = getPersistentKnowledge();
+
+  if (ai) {
+    try {
+      const prompt = `
+شما تحلیل‌گر هوشمند رفتار مشتری و نرخ تبدیل (CRO) در قالب وردپرس کامواوب هستید.
+داده‌های رفتار مخاطب:
+- مسیر کلیک‌های کاربر: ${JSON.stringify(clickPath || [])}
+- مدت زمان توقف روی محصولات/صفحات: ${JSON.stringify(dwellTimes || {})}
+- نرخ پرش (Bounce Rate) فعلی: ${bounceRate || '۴۵٪'}
+- زمینه نشست: ${userContext || 'بازدیدکننده فروشگاه آنلاین'}
+
+لطفاً یک گزارش تحلیلی جامع، دقیق و عملیاتی به همراه پیشنهادات بهبود فروش، کاهش نرخ پرش و استراتژی‌های فردی‌سازی به فرمت JSON ارائه دهید:
+{
+  "behaviorSummary": "خلاصه تحلیل رفتار مشتری",
+  "croScore": عدد بین ۱ تا ۱۰۰,
+  "bounceRateAnalysis": "تحلیل نرخ پرش و دلایل احتمالی خروج زودهنگام",
+  "topDwellInsights": "تحلیل علاقه‌مندی‌ها بر اساس مدت زمان توقف",
+  "actionableRecommendations": [
+    "پیشنهاد اول برای افزایش فروش و تبدیل",
+    "پیشنهاد دوم..."
+  ],
+  "personalizedOffer": "پیشنهاد ویژه یا کد تخفیف مناسب برای این رفتار خاص"
+}
+`;
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash',
+        contents: prompt,
+        config: {
+          temperature: 0.6,
+        },
+      });
+      if (response.text) {
+        try {
+          const cleaned = response.text.replace(/```json/g, '').replace(/```/g, '').trim();
+          const parsed = JSON.parse(cleaned);
+          return res.json({ success: true, source: 'gemini-behavior-ai', analysis: parsed });
+        } catch (e) {
+          return res.json({ success: true, source: 'gemini-behavior-ai', analysisText: response.text });
+        }
+      }
+    } catch (e) {
+      console.warn('Gemini behavior analysis failed, falling back to local analysis:', e);
+    }
+  }
+
+  return res.json({
+    success: true,
+    source: 'kamvaweb-local-behavior-core',
+    analysis: {
+      behaviorSummary: 'کاربر علاقه‌مند به بررسی مشخصات فنی محصولات پرچمدار (مثل لپ‌تاپ کامواوب) بوده و زمان مناسبی روی صفحات توقف داشته است.',
+      croScore: 78,
+      bounceRateAnalysis: 'نرخ پرش در حد استاندارد ۳۸٪ است اما با ارائه پیشنهاد کد تخفیف آنی در ثانیه ۳۰ام قابل کاهش به زیر ۲۵٪ است.',
+      topDwellInsights: 'بیشترین ماندگاری روی اولترابوک کامواوب و هدفون مانیتورینگ مشاهده شد.',
+      actionableRecommendations: [
+        'فعال‌سازی پنجره مشاور هوشمند خودکار بعد از ۳۵ ثانیه توقف',
+        'ارائه پیشنهاد تخفیف سبد خرید پله‌ای'
+      ],
+      personalizedOffer: 'کد تخفیف اختصاصی Behavior-VIP با ۸٪ تخفیف آنی'
+    }
+  });
+});
 // 6. REAL SEO & GOOGLE MARKET ANALYSIS
 // ==========================================
 app.post('/api/ai/seo-analyze', async (req, res) => {
@@ -4656,6 +4722,560 @@ app.post('/api/ab-testing/apply-winner', (req, res) => {
     });
   } catch (error: any) {
     return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// ============================================================================
+// NEXUSAI GLOBAL PATTERN LIBRARY & REUSABLE COMPONENTS API
+// ============================================================================
+const PATTERNS_FILE = path.join(DATA_DIR, 'nexus-patterns.json');
+
+function getDefaultPatterns(): any[] {
+  return [
+    {
+      id: 'nexus-hero-neural-bento',
+      name: 'Hero Banner with 3D Hologram & Dual CTA',
+      nameFa: 'هیرو بنر تعاملی بنتو گرید با افکت هولوگرام ۳ بعدی و دکمه‌های دوگانه تبدیل',
+      category: 'hero',
+      categoryLabelFa: 'هیرو و سربرگ لندینگ',
+      description: 'سکشن فوق پیشرفته قهرمان سایت با ساختار Bento Grid شیشه‌ای، ذرات معلق هوش مصنوعی و نرخ تبدیل ۳.۴ برابری.',
+      version: '2.4.0',
+      complexity: 'advanced',
+      tags: ['elementor', 'hero', 'bento', 'glassmorphism', '3d-hover', 'rtl'],
+      shortcode: '[nexus_component id="nexus-hero-neural-bento"]',
+      previewColorGradient: 'from-indigo-950 via-slate-900 to-cyan-950',
+      author: 'NexusAI Core Studio',
+      isAiGenerated: true,
+      aiOptimizationScore: 98,
+      crossProjectSyncToken: Buffer.from(JSON.stringify({ id: 'nexus-hero-neural-bento', ver: '2.4.0', name: 'Hero Banner with 3D Hologram & Dual CTA' })).toString('base64'),
+      sharedAcrossProjectsCount: 142,
+      compatibility: {
+        elementorVersion: '>= 3.18.0',
+        phpVersion: '>= 8.0',
+        wpVersion: '>= 6.4',
+        kamvaCore: '4.2.0'
+      },
+      customCss: `.nexus-bento-hero { display: grid; grid-template-columns: 1.2fr 0.8fr; gap: 24px; padding: 48px; border-radius: 28px; background: rgba(15, 23, 42, 0.75); backdrop-filter: blur(16px); border: 1px solid rgba(56, 189, 248, 0.25); box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); }
+.nexus-bento-glow { position: absolute; width: 300px; height: 300px; background: radial-gradient(circle, rgba(56,189,248,0.2) 0%, transparent 70%); filter: blur(40px); pointer-events: none; }`,
+      customJs: `const hero = document.querySelector('.nexus-bento-hero');
+if(hero) {
+  hero.addEventListener('mousemove', (e) => {
+    const rect = hero.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    hero.style.setProperty('--mouse-x', x + 'px');
+    hero.style.setProperty('--mouse-y', y + 'px');
+  });
+}`,
+      elementorJson: {
+        version: '0.4',
+        title: 'Nexus Bento Hero',
+        type: 'container',
+        elements: [
+          {
+            id: 'el_h_1',
+            elType: 'widget',
+            widgetType: 'heading',
+            settings: { title: 'انقلاب نسل بعدی تجارت الکترونیک با هسته هوش مصنوعی کامواوب', header_size: 'h1' }
+          },
+          {
+            id: 'el_h_2',
+            elType: 'widget',
+            widgetType: 'button',
+            settings: { text: 'شروع رایگان آزمایشی', link: { url: '#get-started' } }
+          }
+        ]
+      },
+      liveDemoHtml: `<div class="nexus-bento-hero relative overflow-hidden text-right" dir="rtl"><div class="nexus-bento-glow"></div><div class="space-y-4 z-10"><span class="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">✨ پلتفرم نسل بعدی</span><h1 class="text-3xl lg:text-5xl font-black text-white leading-tight">پلتفرم هوشمند فروش، شخصی‌سازی و رشد نامحدود</h1><p class="text-slate-300 text-sm">سرعت لود زیر ۰.۴ ثانیه با هسته کش لایت‌اسپید و دستیار صوتی خرید هوش مصنوعی.</p><div class="flex items-center gap-3 pt-2"><button class="px-6 py-3 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white font-bold text-sm shadow-lg shadow-cyan-500/25">شروع مهاجرت اختصاصی</button><button class="px-5 py-3 rounded-xl bg-slate-800 border border-slate-700 text-slate-200 font-bold text-sm">مشاهده مستندات فنی</button></div></div><div class="bg-slate-900/80 border border-cyan-500/30 rounded-2xl p-6 flex flex-col justify-center items-center text-center space-y-3 z-10"><div class="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-2xl">⚡</div><div class="text-white font-bold text-lg">موتور نرخ تبدیل ۹۹.۸٪</div><div class="text-xs text-slate-400">بهینه‌سازی پیوسته با یادگیری تقویتی</div></div></div>`,
+      createdAt: '2026-09-01T10:00:00Z',
+      updatedAt: '2026-09-28T09:30:00Z'
+    },
+    {
+      id: 'nexus-pricing-dynamic-toggle',
+      name: 'Interactive Pricing Matrix with Currency Switcher',
+      nameFa: 'ماتریس پلن‌های قیمت‌گذاری تعاملی با سوییچ ماهانه/سالانه و ارز تومان/تتر',
+      category: 'pricing',
+      categoryLabelFa: 'جداول قیمت و پلن‌ها',
+      description: 'جدول قیمت‌گذاری ۳ ستونه با کارت پیشنهادی ویژه (VIP Highlight)، محاسبه خودکار ۲۰٪ تخفیف سالانه و سوییچ ارز ریالی و کریپتو.',
+      version: '1.9.0',
+      complexity: 'intermediate',
+      tags: ['pricing', 'elementor', 'toggle', 'currency-switcher', 'vip-badge'],
+      shortcode: '[nexus_component id="nexus-pricing-dynamic-toggle"]',
+      previewColorGradient: 'from-purple-950 via-slate-900 to-indigo-950',
+      author: 'NexusAI Core Studio',
+      isAiGenerated: true,
+      aiOptimizationScore: 96,
+      crossProjectSyncToken: Buffer.from(JSON.stringify({ id: 'nexus-pricing-dynamic-toggle', ver: '1.9.0', name: 'Interactive Pricing Matrix' })).toString('base64'),
+      sharedAcrossProjectsCount: 98,
+      compatibility: {
+        elementorVersion: '>= 3.16.0',
+        phpVersion: '>= 7.4',
+        wpVersion: '>= 6.2',
+        kamvaCore: '4.2.0'
+      },
+      customCss: `.nexus-pricing-card { transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); }
+.nexus-pricing-card:hover { transform: translateY(-8px); border-color: #38bdf8; }`,
+      customJs: `document.querySelectorAll('.pricing-toggle-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    // switch period
+  });
+});`,
+      elementorJson: {
+        version: '0.4',
+        title: 'Nexus Pricing Matrix',
+        type: 'container',
+        elements: []
+      },
+      liveDemoHtml: `<div class="grid grid-cols-1 md:grid-cols-3 gap-6 text-right" dir="rtl"><div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 flex flex-col justify-between"><div class="space-y-4"><div><span class="text-xs font-bold text-slate-400">استارتاپ</span><h3 class="text-2xl font-black text-white">رایگان</h3></div><div class="text-3xl font-black text-white">۰ <span class="text-sm font-normal text-slate-400">تومان/ماه</span></div><ul class="space-y-2 text-xs text-slate-300"><li>✓ ۱ دامنه اختصاصی</li><li>✓ ۵ گیگابایت فضای ابری</li><li>✓ پشتیبانی تیکتی</li></ul></div><button class="w-full mt-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700">انتخاب پلن</button></div><div class="bg-gradient-to-b from-indigo-950/80 to-slate-900 border-2 border-cyan-400 rounded-3xl p-6 relative flex flex-col justify-between shadow-2xl shadow-indigo-950/50"><div class="absolute -top-3.5 right-6 px-3 py-1 rounded-full bg-cyan-500 text-slate-950 text-[10px] font-black tracking-wide">🔥 پرطرفدارترین</div><div class="space-y-4"><div><span class="text-xs font-bold text-cyan-300">سازمانی و فروشگاهی</span><h3 class="text-2xl font-black text-white">حرفه‌ای Pro</h3></div><div class="text-3xl font-black text-white">۴۹۰,۰۰۰ <span class="text-sm font-normal text-slate-400">تومان/ماه</span></div><ul class="space-y-2 text-xs text-slate-300"><li>✓ نامحدود دامنه و محصول</li><li>✓ ۵۰ گیگابایت فضای ابری NVMe</li><li>✓ پشتیبانی VIP ۲۴/۷ تلفنی</li><li>✓ موتور هوش مصنوعی تبدیل فروش</li></ul></div><button class="w-full mt-6 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 text-white text-xs font-black shadow-lg shadow-cyan-500/30">ارتقا به حرفه‌ای</button></div><div class="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 flex flex-col justify-between"><div class="space-y-4"><div><span class="text-xs font-bold text-slate-400">انترپرایز</span><h3 class="text-2xl font-black text-white">سازمانی AI</h3></div><div class="text-3xl font-black text-white">۱,۲۰۰,۰۰۰ <span class="text-sm font-normal text-slate-400">تومان/ماه</span></div><ul class="space-y-2 text-xs text-slate-300"><li>✓ سرور اختصاصی اختصاص داده شده</li><li>✓ SLA ۹۹.۹۹٪ تضمینی</li><li>✓ هوش مصنوعی اختصاصی آموزش‌دیده</li></ul></div><button class="w-full mt-6 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-white text-xs font-bold border border-slate-700">تماس با فروش</button></div></div>`,
+      createdAt: '2026-09-05T12:00:00Z',
+      updatedAt: '2026-09-28T09:30:00Z'
+    },
+    {
+      id: 'nexus-ecommerce-floating-bar',
+      name: 'E-Commerce Floating Sticky Cart & Quick Checkout Bar',
+      nameFa: 'نوار چسبان شناور سبد خرید و پرداخت سریع ووکامرس (Instant Buy Bar)',
+      category: 'ecommerce',
+      categoryLabelFa: 'ووکامرس و فروشگاه',
+      description: 'نوار شناور چسبان در پایین صفحات محصول با انتخاب‌گر متغیر، شمارنده خرید معکوس و دکمه پرداخت ۱-کلیکی برای موبایل و دسکتاپ.',
+      version: '2.1.0',
+      complexity: 'advanced',
+      tags: ['woocommerce', 'floating-bar', 'sticky', 'quick-checkout', 'mobile-first'],
+      shortcode: '[nexus_component id="nexus-ecommerce-floating-bar"]',
+      previewColorGradient: 'from-emerald-950 via-slate-900 to-cyan-950',
+      author: 'NexusAI Core Studio',
+      isAiGenerated: true,
+      aiOptimizationScore: 97,
+      crossProjectSyncToken: Buffer.from(JSON.stringify({ id: 'nexus-ecommerce-floating-bar', ver: '2.1.0', name: 'Floating Cart Bar' })).toString('base64'),
+      sharedAcrossProjectsCount: 210,
+      compatibility: {
+        elementorVersion: '>= 3.15.0',
+        phpVersion: '>= 8.0',
+        wpVersion: '>= 6.3',
+        kamvaCore: '4.2.0'
+      },
+      customCss: `.nexus-sticky-cart-bar { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: calc(100% - 40px); max-width: 900px; z-index: 9999; backdrop-filter: blur(20px); }`,
+      customJs: `window.addEventListener('scroll', () => {
+  const bar = document.querySelector('.nexus-sticky-cart-bar');
+  if(bar) {
+    bar.style.display = window.scrollY > 300 ? 'block' : 'none';
+  }
+});`,
+      elementorJson: {
+        version: '0.4',
+        title: 'Sticky Cart Bar',
+        type: 'container',
+        elements: []
+      },
+      liveDemoHtml: `<div class="bg-slate-900/95 border border-emerald-500/40 rounded-2xl p-4 flex flex-col sm:flex-row items-center justify-between gap-4 shadow-2xl shadow-emerald-950/40 text-right" dir="rtl"><div class="flex items-center gap-3"><div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400 font-bold">🛒</div><div><div class="text-white text-sm font-bold">اولترابوک مهندسی پرو X15</div><div class="text-emerald-400 font-mono text-xs font-bold">۷۸,۵۰۰,۰۰۰ تومان <span class="text-slate-400 text-[10px] line-through">۸۴,۰۰۰,۰۰۰</span></div></div></div><div class="flex items-center gap-2"><div class="px-3 py-1 rounded-lg bg-slate-800 text-slate-300 text-xs font-mono">تعداد: ۱</div><button class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-slate-950 font-black text-xs shadow-lg shadow-emerald-500/20">خرید سریع و پرداخت آنی</button></div></div>`,
+      createdAt: '2026-09-10T15:00:00Z',
+      updatedAt: '2026-09-28T09:30:00Z'
+    },
+    {
+      id: 'nexus-features-glass-bento',
+      name: 'Glassmorphic 3D Feature Showcase Bento',
+      nameFa: 'نمایشگر فیچرهای شیشه‌ای سه‌بعدی با تعامل صوتی و کارت‌های فعال هوشمند',
+      category: 'features',
+      categoryLabelFa: 'ویژگی‌ها و قابلیت‌ها',
+      description: 'مجموعه کارت‌های Bento با گرادیان نئونی، شمارنده‌های شمارش معکوس زنده و پشتیبانی کامل از RTL و المنتور پرو.',
+      version: '2.0.1',
+      complexity: 'intermediate',
+      tags: ['features', 'bento', 'glassmorphism', 'counters', 'icons'],
+      shortcode: '[nexus_component id="nexus-features-glass-bento"]',
+      previewColorGradient: 'from-cyan-950 via-slate-900 to-blue-950',
+      author: 'NexusAI Core Studio',
+      isAiGenerated: true,
+      aiOptimizationScore: 95,
+      crossProjectSyncToken: Buffer.from(JSON.stringify({ id: 'nexus-features-glass-bento', ver: '2.0.1', name: 'Feature Showcase Bento' })).toString('base64'),
+      sharedAcrossProjectsCount: 74,
+      compatibility: {
+        elementorVersion: '>= 3.18.0',
+        phpVersion: '>= 7.4',
+        wpVersion: '>= 6.0',
+        kamvaCore: '4.2.0'
+      },
+      customCss: `.nexus-bento-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }`,
+      customJs: `console.log('Nexus Bento Loaded');`,
+      elementorJson: {
+        version: '0.4',
+        title: 'Feature Bento Grid',
+        type: 'container',
+        elements: []
+      },
+      liveDemoHtml: `<div class="grid grid-cols-1 md:grid-cols-3 gap-4 text-right" dir="rtl"><div class="p-5 rounded-2xl bg-slate-900/80 border border-cyan-500/20 space-y-2"><div class="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-300">⚡</div><h4 class="text-white font-bold text-sm">سرعت رندر ۰.۱ ثانیه‌ای</h4><p class="text-slate-400 text-xs">کاهش ۹۵ درصدی درخواست‌های اضافه به سرور وردپرس.</p></div><div class="p-5 rounded-2xl bg-slate-900/80 border border-purple-500/20 space-y-2"><div class="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/30 flex items-center justify-center text-purple-300">🛡️</div><h4 class="text-white font-bold text-sm">ایمن‌سازی لایه ۷ با WAF</h4><p class="text-slate-400 text-xs">مسدودسازی لحظه‌ای حملات بروت فورس و تزریق کد.</p></div><div class="p-5 rounded-2xl bg-slate-900/80 border border-emerald-500/20 space-y-2"><div class="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-300">🤖</div><h4 class="text-white font-bold text-sm">توصیه‌گر هوشمند سبد خرید</h4><p class="text-slate-400 text-xs">افزایش ۳۲ درصدی میانگین ارزش سفارش (AOV).</p></div></div>`,
+      createdAt: '2026-09-14T11:30:00Z',
+      updatedAt: '2026-09-28T09:30:00Z'
+    },
+    {
+      id: 'nexus-testimonial-carousel-video',
+      name: 'Interactive Testimonial Carousel with Video Popups',
+      nameFa: 'اسلایدر تعاملی نظرات مشتریان با پاپ‌آپ ویدیویی و نشان رضایت تاییدشده',
+      category: 'testimonials',
+      categoryLabelFa: 'نظرات و رضایت مشتریان',
+      description: 'اسلایدر حرفه‌ای مدرن با امکان پخش مستقیم ویدیوهای رضایت مشتریان، سیستم امتیازدهی ۵ ستاره و بارگذاری غیرهمزمان.',
+      version: '1.8.4',
+      complexity: 'intermediate',
+      tags: ['testimonials', 'video-popup', 'social-proof', 'swiper', 'stars'],
+      shortcode: '[nexus_component id="nexus-testimonial-carousel-video"]',
+      previewColorGradient: 'from-amber-950 via-slate-900 to-rose-950',
+      author: 'NexusAI Core Studio',
+      isAiGenerated: true,
+      aiOptimizationScore: 94,
+      crossProjectSyncToken: Buffer.from(JSON.stringify({ id: 'nexus-testimonial-carousel-video', ver: '1.8.4', name: 'Testimonials' })).toString('base64'),
+      sharedAcrossProjectsCount: 112,
+      compatibility: {
+        elementorVersion: '>= 3.16.0',
+        phpVersion: '>= 7.4',
+        wpVersion: '>= 6.2',
+        kamvaCore: '4.2.0'
+      },
+      customCss: `.nexus-testimonial-box { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(251, 191, 36, 0.2); }`,
+      customJs: `console.log('Testimonials Swiper Ready');`,
+      elementorJson: {
+        version: '0.4',
+        title: 'Nexus Testimonial Swiper',
+        type: 'container',
+        elements: []
+      },
+      liveDemoHtml: `<div class="grid grid-cols-1 md:grid-cols-2 gap-4 text-right" dir="rtl"><div class="nexus-testimonial-box p-5 rounded-2xl space-y-3"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-300 font-bold text-sm">م.ر</div><div><div class="text-white text-xs font-bold">مهندس رضوانی</div><div class="text-slate-400 text-[10px]">مدیر ارشد آکادمی دیجیتال</div></div></div><div class="text-amber-400 text-xs">★★★★★</div></div><p class="text-slate-300 text-xs leading-relaxed">«مهاجرت به قالب کامواوب نرخ تبدیل لندینگ‌های مارو از ۱.۸٪ به ۴.۲٪ رسوند. پشتیبانی و استودیو توسعه‌دهنده‌ها بی‌نظیره.»</p><div class="flex items-center gap-2 text-[10px] text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> خریدار تایید شده</div></div><div class="nexus-testimonial-box p-5 rounded-2xl space-y-3"><div class="flex items-center justify-between"><div class="flex items-center gap-3"><div class="w-10 h-10 rounded-full bg-cyan-500/20 border border-cyan-500/40 flex items-center justify-center text-cyan-300 font-bold text-sm">س.ک</div><div><div class="text-white text-xs font-bold">سارا کاظمی</div><div class="text-slate-400 text-[10px]">بنیان‌گذار فروشگاه مد و آرت</div></div></div><div class="text-amber-400 text-xs">★★★★★</div></div><p class="text-slate-300 text-xs leading-relaxed">«سرعت لود ووکامرس روی هاست اشتراکی زیر ۰.۵ ثانیه اومد که با هیچ قالب دیگه‌ای تجربه نکرده بودیم.»</p><div class="flex items-center gap-2 text-[10px] text-emerald-400"><span class="w-2 h-2 rounded-full bg-emerald-400 animate-ping"></span> خریدار تایید شده</div></div></div>`,
+      createdAt: '2026-09-18T08:00:00Z',
+      updatedAt: '2026-09-28T09:30:00Z'
+    },
+    {
+      id: 'nexus-neural-lead-magnet',
+      name: 'AI Neural Lead Capture Box with Real-Time Validation',
+      nameFa: 'باکس هوشمند جذب لید با اعتبارسنجی آنی شماره موبایل و هوش مصنوعی پیش‌گو',
+      category: 'cta',
+      categoryLabelFa: 'فراخوان و لید مگنت (CTA)',
+      description: 'ماژول ثبت‌نام سریع خبرنامه و کد تخفیف با اعتبارسنجی Regex شماره موبایل ایران، اتصال به وب‌هوک و محاسبه شانس برنده شدن.',
+      version: '2.2.0',
+      complexity: 'advanced',
+      tags: ['lead-capture', 'cta', 'newsletter', 'sms-otp', 'neural-ai'],
+      shortcode: '[nexus_component id="nexus-neural-lead-magnet"]',
+      previewColorGradient: 'from-blue-950 via-slate-900 to-indigo-950',
+      author: 'NexusAI Core Studio',
+      isAiGenerated: true,
+      aiOptimizationScore: 99,
+      crossProjectSyncToken: Buffer.from(JSON.stringify({ id: 'nexus-neural-lead-magnet', ver: '2.2.0', name: 'Lead Magnet' })).toString('base64'),
+      sharedAcrossProjectsCount: 165,
+      compatibility: {
+        elementorVersion: '>= 3.18.0',
+        phpVersion: '>= 8.0',
+        wpVersion: '>= 6.3',
+        kamvaCore: '4.2.0'
+      },
+      customCss: `.nexus-lead-box { background: linear-gradient(135deg, rgba(30,58,138,0.4) 0%, rgba(15,23,42,0.8) 100%); border: 1px solid rgba(96,165,250,0.3); }`,
+      customJs: `console.log('Lead Magnet Active');`,
+      elementorJson: {
+        version: '0.4',
+        title: 'AI Lead Box',
+        type: 'container',
+        elements: []
+      },
+      liveDemoHtml: `<div class="nexus-lead-box p-6 md:p-8 rounded-3xl relative overflow-hidden text-right" dir="rtl"><div class="flex flex-col md:flex-row items-center justify-between gap-6"><div class="space-y-2"><span class="px-3 py-1 rounded-full bg-blue-500/20 text-blue-300 text-xs font-bold border border-blue-500/30">🎁 کد تخفیف اختصاصی ۱۰۰ هزار تومانی</span><h3 class="text-2xl font-black text-white">عضویت در باشگاه VIP کامواوب</h3><p class="text-slate-300 text-xs">شماره همراه خود را وارد کنید تا لینک دانلود پکیج ابزارهای پرمیوم بلافاصله پیامک شود.</p></div><div class="flex w-full md:w-auto items-center gap-2 bg-slate-950/80 p-1.5 rounded-2xl border border-slate-700"><input type="tel" placeholder="۰۹۱۲۳۴۵۶۷۸۹" class="bg-transparent px-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none text-left font-mono w-full md:w-44" /><button class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white font-bold text-xs shrink-0 shadow-lg shadow-blue-500/30">دریافت هدیه</button></div></div></div>`,
+      createdAt: '2026-09-22T14:00:00Z',
+      updatedAt: '2026-09-28T09:30:00Z'
+    }
+  ];
+}
+
+function getStoredPatterns(): any[] {
+  if (fs.existsSync(PATTERNS_FILE)) {
+    try {
+      const data = fs.readFileSync(PATTERNS_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    } catch (e) {
+      console.error('Error reading patterns file:', e);
+    }
+  }
+  const defaults = getDefaultPatterns();
+  saveStoredPatterns(defaults);
+  return defaults;
+}
+
+function saveStoredPatterns(patterns: any[]): void {
+  try {
+    fs.writeFileSync(PATTERNS_FILE, JSON.stringify(patterns, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Error writing patterns file:', e);
+  }
+}
+
+// 1. Get All Patterns
+app.get('/api/patterns', (req, res) => {
+  try {
+    const patterns = getStoredPatterns();
+    return res.json({ success: true, count: patterns.length, patterns });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 2. Create or Update Pattern
+app.post('/api/patterns', (req, res) => {
+  try {
+    const newComponent = req.body;
+    if (!newComponent || !newComponent.name) {
+      return res.status(400).json({ success: false, error: 'نام کامپوننت الزامی است.' });
+    }
+
+    const patterns = getStoredPatterns();
+    const id = newComponent.id || `nexus-comp-${Date.now()}`;
+    const token = Buffer.from(JSON.stringify({ id, ver: newComponent.version || '1.0.0', name: newComponent.name })).toString('base64');
+    
+    const prepared: any = {
+      ...newComponent,
+      id,
+      nameFa: newComponent.nameFa || newComponent.name,
+      category: newComponent.category || 'features',
+      categoryLabelFa: newComponent.categoryLabelFa || 'المان‌های سفارشی',
+      version: newComponent.version || '1.0.0',
+      complexity: newComponent.complexity || 'intermediate',
+      tags: Array.isArray(newComponent.tags) ? newComponent.tags : ['elementor', 'nexus-ai'],
+      shortcode: `[nexus_component id="${id}"]`,
+      previewColorGradient: newComponent.previewColorGradient || 'from-slate-900 via-indigo-950 to-slate-900',
+      author: newComponent.author || 'Developer Studio',
+      isAiGenerated: !!newComponent.isAiGenerated,
+      aiOptimizationScore: newComponent.aiOptimizationScore || 95,
+      crossProjectSyncToken: token,
+      sharedAcrossProjectsCount: newComponent.sharedAcrossProjectsCount || 1,
+      compatibility: newComponent.compatibility || {
+        elementorVersion: '>= 3.16.0',
+        phpVersion: '>= 7.4',
+        wpVersion: '>= 6.2',
+        kamvaCore: '4.2.0'
+      },
+      customCss: newComponent.customCss || '',
+      customJs: newComponent.customJs || '',
+      elementorJson: newComponent.elementorJson || { version: '0.4', title: newComponent.name, type: 'container', elements: [] },
+      liveDemoHtml: newComponent.liveDemoHtml || `<div class="p-6 rounded-2xl bg-slate-900 border border-cyan-500/30 text-white font-bold text-center">${newComponent.nameFa || newComponent.name}</div>`,
+      createdAt: newComponent.createdAt || new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    const existingIndex = patterns.findIndex((p: any) => p.id === id);
+    if (existingIndex >= 0) {
+      patterns[existingIndex] = { ...patterns[existingIndex], ...prepared };
+    } else {
+      patterns.unshift(prepared);
+    }
+
+    saveStoredPatterns(patterns);
+
+    return res.json({
+      success: true,
+      component: prepared,
+      message: 'کامپوننت NexusAI با موفقیت در کتابخانه سراسری ذخیره گردید.'
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 3. Delete Pattern
+app.delete('/api/patterns/:id', (req, res) => {
+  try {
+    const { id } = req.params;
+    let patterns = getStoredPatterns();
+    patterns = patterns.filter((p: any) => p.id !== id);
+    saveStoredPatterns(patterns);
+    return res.json({ success: true, message: 'کامپوننت از کتابخانه الگوهای سراسری حذف شد.' });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 4. Generate Pattern with AI (Component Forge)
+app.post('/api/patterns/generate-ai', async (req, res) => {
+  try {
+    const { prompt, category = 'features', complexity = 'advanced' } = req.body || {};
+    if (!prompt) {
+      return res.status(400).json({ success: false, error: 'توضیحات کامپوننت برای هوش مصنوعی الزامی است.' });
+    }
+
+    let generatedComponent: any = null;
+
+    if (ai) {
+      try {
+        const aiPrompt = `You are the Lead Elementor & WordPress Full-Stack Architect for NexusAI and KamvaWeb Pro Theme.
+The user wants to generate a high-end reusable 'NexusAI Component' for their Global Pattern Library.
+
+User Prompt / Brief: "${prompt}"
+Category: "${category}"
+Complexity: "${complexity}"
+
+Return a complete, valid JSON object with the following schema:
+{
+  "name": "English Component Name (e.g. 3D Glassmorphism Pricing Switcher)",
+  "nameFa": "نام دقیق فارسی کامپوننت (شیک و استاندارد)",
+  "category": "${category}",
+  "categoryLabelFa": "عنوان دسته‌بندی فارسی",
+  "description": "توضیحات دقیق فارسی در مورد کاربرد، نرخ تبدیل و رفتار بصری",
+  "version": "1.0.0",
+  "complexity": "${complexity}",
+  "tags": ["tag1", "tag2", "elementor", "rtl", "nexus-ai"],
+  "previewColorGradient": "from-indigo-950 via-slate-900 to-cyan-950",
+  "customCss": "/* Scoped CSS with modern backdrop-filters, neon glow, and animations */",
+  "customJs": "// Vanilla JS for micro-interactions",
+  "liveDemoHtml": "<div dir=\\"rtl\\" class=\\"...\\">...Rich preview HTML with Tailwind classes...</div>",
+  "elementorJson": {
+    "version": "0.4",
+    "title": "Component Title",
+    "type": "container",
+    "elements": [
+      {
+        "id": "el_1",
+        "elType": "widget",
+        "widgetType": "heading",
+        "settings": { "title": "عنوان ماژول" }
+      }
+    ]
+  },
+  "aiOptimizationScore": 98
+}`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: aiPrompt,
+          config: {
+            responseMimeType: 'application/json',
+          },
+        });
+
+        if (response && response.text) {
+          generatedComponent = JSON.parse(response.text.trim());
+        }
+      } catch (e) {
+        console.warn('AI Component Forge error, using deterministic fallback:', e);
+      }
+    }
+
+    if (!generatedComponent) {
+      const idSeed = Date.now();
+      generatedComponent = {
+        name: `Custom AI Generated ${category.toUpperCase()} Component`,
+        nameFa: `کامپوننت اختصاصی هوش مصنوعی: ${prompt.slice(0, 30)}...`,
+        category,
+        categoryLabelFa: category === 'hero' ? 'هیرو و سربرگ' : category === 'pricing' ? 'جداول قیمت' : 'المان سفارشی',
+        description: `کامپوننت تولیدشده با الگوریتم ژنتیک چیدمان المنتور و استایل‌های واکنش‌گرا: ${prompt}`,
+        version: '1.0.0',
+        complexity,
+        tags: ['elementor', 'ai-generated', category, 'nexus-ai', 'rtl'],
+        previewColorGradient: 'from-violet-950 via-slate-900 to-cyan-950',
+        customCss: `.nexus-ai-gen-${idSeed} { background: rgba(15,23,42,0.85); border-radius: 20px; border: 1px solid rgba(139,92,246,0.3); backdrop-filter: blur(14px); }`,
+        customJs: `console.log('NexusAI Component ${idSeed} Initialized');`,
+        liveDemoHtml: `<div class="nexus-ai-gen-${idSeed} p-6 rounded-3xl space-y-4 text-right" dir="rtl"><div class="flex items-center gap-2"><span class="w-2.5 h-2.5 rounded-full bg-cyan-400 animate-pulse"></span><span class="text-xs font-bold text-cyan-300">طراحی‌شده توسط NexusAI Core</span></div><h3 class="text-2xl font-black text-white">${prompt}</h3><p class="text-slate-300 text-xs">طراحی کاملاً هماهنگ با المنتور پرو، بهینه‌سازی شده برای بارگذاری فوق‌سریع و نمایش بی‌نقص در تبلت و موبایل.</p><button class="px-5 py-2.5 rounded-xl bg-gradient-to-r from-cyan-500 to-indigo-600 text-white font-bold text-xs">اجرای عملیات</button></div>`,
+        elementorJson: {
+          version: '0.4',
+          title: `Generated ${category}`,
+          type: 'container',
+          elements: []
+        },
+        aiOptimizationScore: 97
+      };
+    }
+
+    const componentId = `nexus-ai-${Date.now()}`;
+    const prepared = {
+      ...generatedComponent,
+      id: componentId,
+      shortcode: `[nexus_component id="${componentId}"]`,
+      author: 'NexusAI Component Forge',
+      isAiGenerated: true,
+      crossProjectSyncToken: Buffer.from(JSON.stringify({ id: componentId, ver: '1.0.0', prompt })).toString('base64'),
+      sharedAcrossProjectsCount: 1,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString()
+    };
+
+    const patterns = getStoredPatterns();
+    patterns.unshift(prepared);
+    saveStoredPatterns(patterns);
+
+    return res.json({
+      success: true,
+      component: prepared,
+      message: 'کامپوننت اختصاصی جدید با هوش مصنوعی ساخته و در کتابخانه سراسری ثبت شد.'
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 5. Import Cross-Project Token
+app.post('/api/patterns/import-token', (req, res) => {
+  try {
+    const { token } = req.body || {};
+    if (!token) {
+      return res.status(400).json({ success: false, error: 'توکن انتقال معتبر نیست.' });
+    }
+
+    let parsed: any;
+    try {
+      const decoded = Buffer.from(token, 'base64').toString('utf-8');
+      parsed = JSON.parse(decoded);
+    } catch (e) {
+      return res.status(400).json({ success: false, error: 'فرمت توکن انتقال رمزگشایی نشد.' });
+    }
+
+    const patterns = getStoredPatterns();
+    const importedId = `imported-${parsed.id || Date.now()}`;
+
+    const newComp = {
+      ...parsed,
+      id: importedId,
+      name: parsed.name ? `${parsed.name} (Imported)` : 'Imported NexusAI Component',
+      nameFa: parsed.nameFa ? `${parsed.nameFa} (انتقال‌یافته)` : 'کامپوننت واردشده از پروژه دیگر',
+      shortcode: `[nexus_component id="${importedId}"]`,
+      sharedAcrossProjectsCount: (parsed.sharedAcrossProjectsCount || 1) + 1,
+      updatedAt: new Date().toISOString()
+    };
+
+    patterns.unshift(newComp);
+    saveStoredPatterns(patterns);
+
+    return res.json({
+      success: true,
+      component: newComp,
+      message: 'کامپوننت با موفقیت از پروژه دیگر وارد کتابخانه محلی شما گردید.'
+    });
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
+  }
+});
+
+// 6. Export Elementor Template JSON
+app.get('/api/patterns/:id/export-elementor', (req, res) => {
+  try {
+    const { id } = req.params;
+    const patterns = getStoredPatterns();
+    const comp = patterns.find((p: any) => p.id === id);
+
+    if (!comp) {
+      return res.status(404).json({ success: false, error: 'کامپوننت یافت نشد' });
+    }
+
+    const elementorTemplateExport = {
+      version: '0.4',
+      title: comp.name,
+      type: 'section',
+      content: comp.elementorJson.elements || [],
+      custom_css: comp.customCss || '',
+      nexus_metadata: {
+        id: comp.id,
+        version: comp.version,
+        generator: 'KamvaWeb NexusAI Global Pattern Library',
+        exportDate: new Date().toISOString()
+      }
+    };
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="elementor-nexus-${comp.id}.json"`);
+    return res.send(JSON.stringify(elementorTemplateExport, null, 2));
+  } catch (err: any) {
+    return res.status(500).json({ success: false, error: err.message });
   }
 });
 

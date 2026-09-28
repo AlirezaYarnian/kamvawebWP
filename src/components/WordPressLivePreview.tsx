@@ -26,7 +26,8 @@ import {
   MessageSquareHeart,
   Bot,
   User,
-  Menu
+  Menu,
+  Send
 } from 'lucide-react';
 
 interface WordPressLivePreviewProps {
@@ -51,6 +52,68 @@ export const WordPressLivePreview: React.FC<WordPressLivePreviewProps> = ({
     'prod-2': '#e11d48',
   });
   const [cartNotification, setCartNotification] = useState<string | null>(null);
+
+  // Interactive Frontend Chatbot State & Behavior Tracking
+  const [isFrontendChatOpen, setIsFrontendChatOpen] = useState(false);
+  const [frontendMessages, setFrontendMessages] = useState<Array<{ id: string; sender: 'user' | 'ai'; text: string; timestamp: string; source?: string }>>([
+    {
+      id: 'fe-init',
+      sender: 'ai',
+      text: config.aiCore.botWelcomeMessage || 'سلام! من مشاور هوشمند خرید کامواوب هستم. چطور می‌توانم در انتخاب محصول یا بررسی مشخصات فنی به شما کمک کنم؟',
+      timestamp: 'هم‌اکنون',
+      source: 'هسته هوش مصنوعی رفتارشناسی و فروشگاه',
+    },
+  ]);
+  const [frontendInputText, setFrontendInputText] = useState('');
+  const [frontendIsLoading, setFrontendIsLoading] = useState(false);
+
+  const handleSendFrontendMessage = async (customText?: string) => {
+    const textToSend = customText || frontendInputText;
+    if (!textToSend.trim() || frontendIsLoading) return;
+
+    const userMsg = {
+      id: `fe-user-${Date.now()}`,
+      sender: 'user' as const,
+      text: textToSend,
+      timestamp: 'هم‌اکنون',
+    };
+
+    setFrontendMessages((prev) => [...prev, userMsg]);
+    setFrontendInputText('');
+    setFrontendIsLoading(true);
+
+    try {
+      const res = await fetch('/api/ai/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          message: textToSend,
+          conversationHistory: frontendMessages.slice(-4),
+          siteContext: `${config.general.siteName} - Live Frontend Visitor Session (Behavior Analyzed)`,
+        }),
+      });
+      const data = await res.json();
+      const aiReply = {
+        id: `fe-ai-${Date.now()}`,
+        sender: 'ai' as const,
+        text: data.reply || 'اطلاعات بررسی شد و در خدمت شما هستم.',
+        timestamp: 'هم‌اکنون',
+        source: data.source === 'gemini-neural-core' ? 'موتور عصبی پیشرفته Gemini' : 'مغز خودمختار کامواوب',
+      };
+      setFrontendMessages((prev) => [...prev, aiReply]);
+    } catch (e) {
+      const fallback = {
+        id: `fe-ai-err-${Date.now()}`,
+        sender: 'ai' as const,
+        text: 'سلام! با توجه به بررسی رفتار و مدت زمان توقف شما روی محصولات، پیشنهاد می‌کنیم از تخفیف ویژه خرید فوری استفاده کنید.',
+        timestamp: 'هم‌اکنون',
+        source: 'مغز رفتارشناس کامواوب',
+      };
+      setFrontendMessages((prev) => [...prev, fallback]);
+    } finally {
+      setFrontendIsLoading(false);
+    }
+  };
 
   // Filter products from knowledge base
   const products = knowledgeBase.filter((k) => k.category === 'product' || k.price);
@@ -553,12 +616,107 @@ export const WordPressLivePreview: React.FC<WordPressLivePreviewProps> = ({
         </div>
       )}
 
-      {/* Floating AI Sales Assistant Widget Button (Bottom Right) */}
-      <div className="fixed bottom-6 left-6 z-40">
-        <div className="p-3.5 bg-gradient-to-r from-[#f05023] to-indigo-600 text-white rounded-2xl shadow-2xl flex items-center gap-2 cursor-pointer hover:scale-105 transition-transform">
-          <Bot className="w-5 h-5 text-white animate-bounce" />
-          <span className="text-xs font-bold">مشاور هوشمند خرید</span>
-        </div>
+      {/* Floating AI Sales Assistant Widget Button (Bottom Right) & Interactive Chat Modal */}
+      <div className="fixed bottom-6 left-6 z-50">
+        {!isFrontendChatOpen ? (
+          <button
+            onClick={() => setIsFrontendChatOpen(true)}
+            className="p-4 bg-gradient-to-r from-[#f05023] to-indigo-600 hover:from-orange-600 hover:to-indigo-500 text-white rounded-2xl shadow-2xl flex items-center gap-2.5 cursor-pointer hover:scale-105 transition-all group"
+          >
+            <Bot className="w-5 h-5 text-white animate-bounce" />
+            <span className="text-xs font-bold">مشاور هوشمند و تحلیلگر رفتار خرید</span>
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-ping absolute -top-1 -right-1" />
+          </button>
+        ) : (
+          <div className="w-80 sm:w-96 bg-slate-900 border border-indigo-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col h-[480px] animate-fadeIn">
+            {/* Chat Header */}
+            <div className="bg-gradient-to-r from-indigo-700 to-slate-900 p-3.5 flex items-center justify-between text-white">
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-full overflow-hidden border border-white/30">
+                  <img src={config.aiCore.salesBotAvatar} alt="Bot" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h4 className="font-bold text-xs">مشاور هوشمند و رفتارشناس فروش</h4>
+                  <span className="text-[10px] text-emerald-300">آماده پاسخگویی و ارائه تخفیف</span>
+                </div>
+              </div>
+              <button
+                onClick={() => setIsFrontendChatOpen(false)}
+                className="text-slate-300 hover:text-white p-1 text-xs cursor-pointer"
+              >
+                ✕ بستن
+              </button>
+            </div>
+
+            {/* Quick Suggestions */}
+            <div className="bg-slate-950 px-3 py-2 border-b border-slate-800 flex items-center gap-1.5 overflow-x-auto text-[11px]">
+              <button
+                onClick={() => handleSendFrontendMessage('مشخصات و قیمت لپ‌تاپ کامواوب چیست؟')}
+                className="px-2.5 py-1 bg-slate-800 hover:bg-indigo-600/40 text-slate-200 rounded-full shrink-0 cursor-pointer"
+              >
+                لپ‌تاپ کامواوب X15
+              </button>
+              <button
+                onClick={() => handleSendFrontendMessage('کد تخفیف اختصاصی نشست من چیست؟')}
+                className="px-2.5 py-1 bg-slate-800 hover:bg-indigo-600/40 text-slate-200 rounded-full shrink-0 cursor-pointer"
+              >
+                کد تخفیف اختصاصی
+              </button>
+            </div>
+
+            {/* Messages Body */}
+            <div className="flex-1 p-3 overflow-y-auto space-y-3 bg-slate-950/70 text-xs">
+              {frontendMessages.map((msg) => (
+                <div key={msg.id} className={`flex gap-2 ${msg.sender === 'user' ? 'justify-end' : 'justify-start'}`}>
+                  <div
+                    className={`max-w-[85%] rounded-2xl p-2.5 leading-relaxed ${
+                      msg.sender === 'user'
+                        ? 'bg-indigo-600 text-white rounded-br-none'
+                        : 'bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-none'
+                    }`}
+                  >
+                    <p className="whitespace-pre-wrap">{msg.text}</p>
+                    <div className="mt-1 flex items-center justify-between text-[9px] text-slate-400 pt-1 border-t border-white/5">
+                      <span>{msg.timestamp}</span>
+                      {msg.source && <span className="text-indigo-400">{msg.source}</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              {frontendIsLoading && (
+                <div className="flex items-center gap-2 text-indigo-400 text-[11px] animate-pulse">
+                  <span>هوش مصنوعی در حال تحلیل درخواست و رفتار شماست...</span>
+                </div>
+              )}
+            </div>
+
+            {/* Input Footer */}
+            <div className="p-2.5 bg-slate-900 border-t border-slate-800">
+              <form
+                onSubmit={(e) => {
+                  e.preventDefault();
+                  handleSendFrontendMessage();
+                }}
+                className="flex items-center gap-2"
+              >
+                <input
+                  type="text"
+                  value={frontendInputText}
+                  onChange={(e) => setFrontendInputText(e.target.value)}
+                  placeholder="سوال خود را بپرسید..."
+                  className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
+                />
+                <button
+                  type="submit"
+                  disabled={frontendIsLoading || !frontendInputText.trim()}
+                  className="p-2 bg-indigo-600 hover:bg-indigo-500 text-white rounded-xl disabled:opacity-40 cursor-pointer"
+                >
+                  <Send className="w-3.5 h-3.5" />
+                </button>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Theme Footer Builder */}

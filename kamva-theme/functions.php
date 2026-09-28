@@ -41,6 +41,12 @@ require_once KAMVAWEB_THEME_DIR . '/inc/class-smart-widget-engine.php';
 // ۹. بریج و موتور مهاجرت هوشمند از قالب‌های قدیمی به NexusAI / کامواوب
 require_once KAMVAWEB_THEME_DIR . '/inc/theme-migrator-bridge.php';
 
+// ۱۰. کتابخانه الگوهای سراسری و کامپوننت‌های نکسوس (NexusAI Global Pattern Library)
+require_once KAMVAWEB_THEME_DIR . '/inc/nexus-pattern-library.php';
+
+// ۱۱. ماژول تحلیل رفتار مشتری و بهینه‌سازی نرخ تبدیل (Customer Behavior & CRO Engine)
+require_once KAMVAWEB_THEME_DIR . '/inc/customer-behavior.php';
+
 // راه‌اندازی کنترل‌پنل تم‌آپشن در پیشخوان وردپرس
 if (is_admin()) {
     require_once KAMVAWEB_THEME_DIR . '/admin/theme-options.php';

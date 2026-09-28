@@ -29,6 +29,7 @@ import {
   Tag
 } from 'lucide-react';
 import { DeveloperStudioConfig } from '../types/theme';
+import { GlobalPatternLibrary } from './GlobalPatternLibrary';
 
 interface DeveloperStudioProps {
   devConfig: DeveloperStudioConfig;
@@ -39,7 +40,7 @@ export const DeveloperStudio: React.FC<DeveloperStudioProps> = ({
   devConfig,
   onUpdateConfig,
 }) => {
-  const [activeEditorTab, setActiveEditorTab] = useState<'php' | 'css' | 'js' | 'hooks' | 'diagnostics' | 'auto-docs'>('php');
+  const [activeEditorTab, setActiveEditorTab] = useState<'php' | 'patterns' | 'css' | 'js' | 'hooks' | 'diagnostics' | 'auto-docs'>('patterns');
   const [selectedSnippetId, setSelectedSnippetId] = useState<string>(devConfig.customPhpSnippets[0]?.id || '');
   const [newSnippetTitle, setNewSnippetTitle] = useState('');
   const [newSnippetHook, setNewSnippetHook] = useState('init');
