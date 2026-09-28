@@ -67,7 +67,9 @@ type WidgetType =
   | 'gamified-spin-wheel'
   | 'floating-multi-channel'
   | 'product-hotspots'
-  | 'price-drop-alert';
+  | 'price-drop-alert'
+  | 'trust-badges'
+  | 'before-after-slider';
 
 export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> = ({
   config,
@@ -963,6 +965,25 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
                     <button className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md">
                       ارزان شد خبر بده 🔔
                     </button>
+                  </div>
+                )}
+
+                {/* WIDGET 16: TRUST BADGES */}
+                {selectedWidget === 'trust-badges' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-emerald-500/40 grid grid-cols-2 gap-2 text-[11px] text-center">
+                    <div className="p-2 bg-slate-950 rounded-lg border border-slate-800 text-emerald-400 font-bold">🛡️ ضمانت اصالت ۱۰۰٪</div>
+                    <div className="p-2 bg-slate-950 rounded-lg border border-slate-800 text-amber-400 font-bold">⚡ ارسال هم‌روز</div>
+                  </div>
+                )}
+
+                {/* WIDGET 17: BEFORE AFTER SLIDER */}
+                {selectedWidget === 'before-after-slider' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-amber-500/40 space-y-2 text-xs text-center">
+                    <span className="font-bold text-amber-400 block">اسلایدر مقایسه قبل و بعد</span>
+                    <div className="h-20 bg-gradient-to-r from-red-950 via-slate-950 to-emerald-950 rounded-xl border border-slate-800 flex items-center justify-around font-mono text-[10px]">
+                      <span className="text-rose-400">قبل: ۶.۲ ثانیه 🐌</span>
+                      <span className="text-emerald-400">بعد: ۰.۳ ثانیه ✨</span>
+                    </div>
                   </div>
                 )}
 

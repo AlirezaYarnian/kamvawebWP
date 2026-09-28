@@ -113,6 +113,12 @@ function kamvaweb_register_elementor_ai_widgets($widgets_manager) {
     require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-floating-multi-channel.php';
     require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-product-hotspots.php';
     require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-price-drop-alert.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-smart-comparison.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-installment-calculator.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-trust-badges.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-flash-sale-countdown.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-sticky-mobile-cart.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-before-after-slider.php';
 
     $widgets_manager->register(new \KamvaWeb_Elementor_Sales_Bot_Widget());
     $widgets_manager->register(new \KamvaWeb_Elementor_Product_Advisor_Widget());
@@ -122,6 +128,12 @@ function kamvaweb_register_elementor_ai_widgets($widgets_manager) {
     $widgets_manager->register(new \KamvaWeb_Elementor_Floating_Multi_Channel_Widget());
     $widgets_manager->register(new \KamvaWeb_Elementor_Product_Hotspots_Widget());
     $widgets_manager->register(new \KamvaWeb_Elementor_Price_Drop_Alert_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Smart_Comparison_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Installment_Calculator_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Trust_Badges_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Flash_Sale_Countdown_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Sticky_Mobile_Cart_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Before_After_Slider_Widget());
 }
 add_action('elementor/widgets/register', 'kamvaweb_register_elementor_ai_widgets');
 
