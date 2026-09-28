@@ -20,6 +20,7 @@ import { SpeedSecurityAuditor } from './components/SpeedSecurityAuditor';
 import { AiLearningAnalytics } from './components/AiLearningAnalytics';
 import { SmartWidgetLayoutEngine } from './components/SmartWidgetLayoutEngine';
 import { SmartThemeMigrator } from './components/SmartThemeMigrator';
+import { AiAutoTuningModal } from './components/AiAutoTuningModal';
 import { 
   Store, 
   LifeBuoy, 
@@ -35,6 +36,71 @@ export default function App() {
   const [themeConfig, setThemeConfig] = useState<ThemeOptionsConfig>(defaultThemeConfig);
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeItem[]>(sampleKnowledgeBase);
   const [isLivePreviewMode, setIsLivePreviewMode] = useState<boolean>(false);
+  const [isAutoTuningOpen, setIsAutoTuningOpen] = useState<boolean>(false);
+
+  // Apply best-practice cross-module configurations
+  const handleApplyAutoTuning = async () => {
+    const tunedConfig: ThemeOptionsConfig = {
+      ...themeConfig,
+      kamvaSpeedCache: {
+        ...themeConfig.kamvaSpeedCache,
+        enabled: true,
+        pageCache: true,
+        objectCacheRedis: true,
+        minifyHtml: true,
+        minifyCss: true,
+        minifyJs: true,
+        combineCssJs: true,
+        criticalCssGenerator: true,
+        lazyLoadImages: true,
+        lazyLoadIframes: true,
+      },
+      imageOptimizer: {
+        ...themeConfig.imageOptimizer,
+        enabled: true,
+        autoConvertWebp: true,
+        autoConvertAvif: true,
+        losslessQualityPercent: 88,
+        stripExifMetadata: true,
+      },
+      neuralNetwork: {
+        ...themeConfig.neuralNetwork,
+        enabled: true,
+        learningRate: 0.001,
+        adaptiveCachePrewarming: true,
+        anomalyDetectionActive: true,
+        userIntentInference: true,
+        realtimeOptimizationScore: 99,
+      },
+      aiosSecurity: {
+        ...themeConfig.aiosSecurity,
+        enabled: true,
+        smartWafFirewall: true,
+        xmlRpcDisabled: true,
+        restApiHardened: true,
+        honeypotSpamProtection: true,
+        blockMaliciousUserAgents: true,
+        antiSqlInjection: true,
+      },
+      developerStudio: {
+        ...themeConfig.developerStudio,
+        enabled: true,
+        sandboxMode: true,
+      }
+    };
+
+    setThemeConfig(tunedConfig);
+
+    try {
+      await fetch('/api/theme-options', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(tunedConfig),
+      });
+    } catch (err) {
+      console.warn('Auto-tuning saved locally', err);
+    }
+  };
 
   // Load real persistent knowledge base and theme options from server on mount
   useEffect(() => {
@@ -99,6 +165,14 @@ export default function App() {
         setActiveTab={setActiveTab}
         onToggleLivePreview={() => setIsLivePreviewMode(true)}
         isLivePreview={isLivePreviewMode}
+        onRunAutoTune={() => setIsAutoTuningOpen(true)}
+      />
+
+      {/* AI Auto-Tuning Modal */}
+      <AiAutoTuningModal
+        isOpen={isAutoTuningOpen}
+        onClose={() => setIsAutoTuningOpen(false)}
+        onApplyTuning={handleApplyAutoTuning}
       />
 
       {/* Main Content Viewport */}

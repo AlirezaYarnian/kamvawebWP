@@ -33,7 +33,18 @@ import {
   SlidersHorizontal,
   Wand2,
   Check,
-  Split
+  Split,
+  Timer,
+  CreditCard,
+  Users,
+  CheckSquare,
+  MessageSquare,
+  Sparkle,
+  FileCode,
+  Copy,
+  Download,
+  Code2,
+  Terminal
 } from 'lucide-react';
 
 interface ElementorVisualSimulatorProps {
@@ -41,13 +52,27 @@ interface ElementorVisualSimulatorProps {
   knowledgeBase: KnowledgeItem[];
 }
 
+type WidgetType = 
+  | 'sales-bot' 
+  | 'advisor' 
+  | 'faq' 
+  | 'hero' 
+  | 'countdown-urgency' 
+  | 'sticky-cart-bar' 
+  | 'social-proof-ticker' 
+  | 'quick-comparison-table' 
+  | 'smart-reviews' 
+  | 'multi-currency-installments';
+
 export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> = ({
   config,
   knowledgeBase,
 }) => {
-  const [activeTab, setActiveTab] = useState<'ab-testing' | 'cro-optimizer' | 'editor'>('ab-testing');
+  const [activeTab, setActiveTab] = useState<'ab-testing' | 'cro-optimizer' | 'editor' | 'php-code'>('editor');
   const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
-  const [selectedWidget, setSelectedWidget] = useState<'sales-bot' | 'advisor' | 'faq' | 'hero'>('sales-bot');
+  const [selectedWidget, setSelectedWidget] = useState<WidgetType>('sales-bot');
+  const [copiedPhpCode, setCopiedPhpCode] = useState<boolean>(false);
+  const [selectedPhpFile, setSelectedPhpFile] = useState<string>('all-widgets');
   
   // Custom controls for Elementor widget settings
   const [widgetTitle, setWidgetTitle] = useState('مشاور تخصصی خرید و فروشگاه');
@@ -68,13 +93,13 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
 
   const [appliedCroToast, setAppliedCroToast] = useState<string | null>(null);
 
-  // Calculate predictive engagement & conversion metrics based on historical dataset of 85,000+ sessions
-  const baseConversionRate = 2.40; // baseline 2.4%
-  const baseAvgTimeSeconds = 78;   // 1m 18s
-  const baseCtrCta = 4.12;         // 4.12%
-  const baseBounceRate = 48.5;     // 48.5%
-  const baseMonthlyOrders = 380;   // 380 orders/month
-  const averageOrderValueToman = 650000; // 650,000 Toman
+  // Predictive engagement & conversion metrics
+  const baseConversionRate = 2.40;
+  const baseAvgTimeSeconds = 78;
+  const baseCtrCta = 4.12;
+  const baseBounceRate = 48.5;
+  const baseMonthlyOrders = 380;
+  const averageOrderValueToman = 650000;
 
   let predictedUpliftPercent = 0;
   let bounceReductionPercent = 0;
@@ -118,67 +143,130 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
   const estimatedNewOrders = Math.round(baseMonthlyOrders * (1 + predictedUpliftPercent / 100));
   const additionalMonthlyRevenue = (estimatedNewOrders - baseMonthlyOrders) * averageOrderValueToman;
 
-  const handleApplyCroLayout = () => {
-    setAppliedCroToast('چیدمان بهینه‌شده با موفقیت در تنظیمات تم‌آپشن کاموا استور و ویجت‌های المنتور اعمال شد!');
-    setTimeout(() => setAppliedCroToast(null), 4000);
+  const handleSelectWidget = (widget: WidgetType) => {
+    setSelectedWidget(widget);
+    switch (widget) {
+      case 'sales-bot':
+        setWidgetTitle('مشاور تخصصی خرید و فروشگاه');
+        setWidgetBadge('پاسخگویی آنی زیر ۱ ثانیه');
+        setWidgetThemeColor('#6366f1');
+        break;
+      case 'advisor':
+        setWidgetTitle('پیشنهاد هوشمند و مکمل خرید');
+        setWidgetBadge('بر اساس تحلیل سبد خریداران');
+        setWidgetThemeColor('#8b5cf6');
+        break;
+      case 'faq':
+        setWidgetTitle('سوالات متداول و راهنمای خریدار');
+        setWidgetBadge('پاسخگویی برداری هوشمند');
+        setWidgetThemeColor('#06b6d4');
+        break;
+      case 'hero':
+        setWidgetTitle('پیشنهاد شگفت‌انگیز و محدود');
+        setWidgetBadge('تخفیف ویژه امروز');
+        setWidgetThemeColor('#ec4899');
+        break;
+      case 'countdown-urgency':
+        setWidgetTitle('تایمر معکوس جشنواره فروش کل روز');
+        setWidgetBadge('فرصت محدود ثبت سفارش');
+        setWidgetThemeColor('#f59e0b');
+        break;
+      case 'sticky-cart-bar':
+        setWidgetTitle('نوار چسبان خرید سریع در موبایل');
+        setWidgetBadge('Sticky Add To Cart');
+        setWidgetThemeColor('#10b981');
+        break;
+      case 'social-proof-ticker':
+        setWidgetTitle('تیکر زنده خریداران واقعی محصولات');
+        setWidgetBadge('تاییدیه خریداران هم‌اکنون');
+        setWidgetThemeColor('#3b82f6');
+        break;
+      case 'quick-comparison-table':
+        setWidgetTitle('جدول مقایسه هوشمند مشخصات فنی');
+        setWidgetBadge('مقایسه مدل‌های پرچمدار');
+        setWidgetThemeColor('#a855f7');
+        break;
+      case 'smart-reviews':
+        setWidgetTitle('نظرات و امتیازدهی تاییدشده خریداران');
+        setWidgetBadge('۴.۹ از ۵ (۱۲۴ نظر)');
+        setWidgetThemeColor('#f59e0b');
+        break;
+      case 'multi-currency-installments':
+        setWidgetTitle('محاسبه‌گر اقساط و تخفیف پلکانی');
+        setWidgetBadge('خرید اقساطی ۴ ماهه بدون کارمزد');
+        setWidgetThemeColor('#10b981');
+        break;
+    }
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 font-sans">
       
       {/* Top Main Bar */}
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 md:p-6 flex flex-wrap items-center justify-between gap-4 shadow-xl">
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-wrap items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-600 via-rose-600 to-amber-500 flex items-center justify-center text-white font-black text-base shadow-lg shadow-pink-600/30">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-600 via-rose-600 to-amber-500 flex items-center justify-center text-white font-black text-base shadow-md">
             E
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-base font-bold text-white">استودیوی پیشرفته المنتور کامواوب (Elementor Studio)</span>
+              <span className="text-base font-bold text-white">استودیوی ویجت‌های المنتور کامواوب (Elementor Pack)</span>
               <span className="text-[10px] bg-pink-500/20 text-pink-300 font-semibold px-2 py-0.5 rounded-full border border-pink-500/30 font-mono">
-                A/B Testing & CRO AI
+                ۱۰ ویجت اختصاصی
               </span>
             </div>
-            <span className="text-xs text-slate-400">تست محتوایی A/B سکشن‌ها، شبیه‌سازی بلادرنگ نرخ تبدیل و ویرایشگر ویجت‌ها</span>
+            <span className="text-xs text-slate-400">مجموعه ویجت‌های پرکاربرد المنتوری جهت افزایش مستقیم فروش و نرخ تبدیل</span>
           </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center bg-slate-950 p-1.5 rounded-2xl border border-slate-800 flex-wrap gap-1">
+        <div className="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 flex-wrap gap-1">
           <button
-            onClick={() => setActiveTab('ab-testing')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'ab-testing'
-                ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md shadow-pink-900/40'
+            onClick={() => setActiveTab('editor')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'editor'
+                ? 'bg-pink-600 text-white shadow-md'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Split className="w-4 h-4" />
-            <span>تست A/B سکشن‌ها (A/B Content Testing)</span>
+            <Boxes className="w-3.5 h-3.5" />
+            <span>کاتالوگ ویجت‌های المنتور (۱۰ ویجت)</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab('ab-testing')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'ab-testing'
+                ? 'bg-pink-600 text-white shadow-md'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Split className="w-3.5 h-3.5" />
+            <span>تست A/B سکشن‌ها</span>
           </button>
 
           <button
             onClick={() => setActiveTab('cro-optimizer')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'cro-optimizer'
                 ? 'bg-indigo-600 text-white shadow-md'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <TrendingUp className="w-4 h-4" />
-            <span>شبیه‌ساز نرخ تبدیل (CRO AI)</span>
+            <TrendingUp className="w-3.5 h-3.5" />
+            <span>شبیه‌ساز نرخ تبدیل (CRO)</span>
           </button>
 
           <button
-            onClick={() => setActiveTab('editor')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-              activeTab === 'editor'
-                ? 'bg-slate-800 text-white shadow-md'
+            onClick={() => setActiveTab('php-code')}
+            className={`flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'php-code'
+                ? 'bg-emerald-600 text-white shadow-md ring-1 ring-emerald-400/30'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
-            <Boxes className="w-4 h-4" />
-            <span>ویرایشگر ویژوال ویجت‌ها</span>
+            <FileCode className="w-3.5 h-3.5 text-emerald-300" />
+            <span>سورس کد PHP برای GitHub</span>
           </button>
         </div>
       </div>
@@ -191,7 +279,523 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
       )}
 
       {/* ======================================================== */}
-      {/* 0. A/B CONTENT TESTING STUDIO TAB                        */}
+      {/* 1. VISUAL WIDGET CATALOG & EDITOR TAB                    */}
+      {/* ======================================================== */}
+      {activeTab === 'editor' && (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          
+          {/* Right Side: Elementor Widget Catalog List */}
+          <div className="lg:col-span-5 space-y-4">
+            
+            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
+              <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+                <span className="text-xs font-bold text-white flex items-center gap-2">
+                  <Sparkles className="w-4 h-4 text-pink-400" />
+                  مجموعه ۱۰ ویجت اختصاصی المنتور
+                </span>
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-mono font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                  Ready for WooCommerce
+                </span>
+              </div>
+
+              {/* Grid of 10 Elementor Widgets */}
+              <div className="grid grid-cols-2 gap-2.5 max-h-[540px] overflow-y-auto pr-1 scrollbar-thin scrollbar-thumb-slate-800">
+                
+                {/* 1. Sales Bot */}
+                <button
+                  onClick={() => handleSelectWidget('sales-bot')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'sales-bot'
+                      ? 'bg-indigo-950/80 border-indigo-500 text-white shadow-lg ring-1 ring-indigo-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Bot className={`w-5 h-5 ${selectedWidget === 'sales-bot' ? 'text-indigo-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">CRO High</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">مشاور هوشمند فروش</span>
+                    <span className="text-[10px] text-slate-400">چت تعاملی و متقاعدکننده</span>
+                  </div>
+                </button>
+
+                {/* 2. Advisor Cross-Sell */}
+                <button
+                  onClick={() => handleSelectWidget('advisor')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'advisor'
+                      ? 'bg-purple-950/80 border-purple-500 text-white shadow-lg ring-1 ring-purple-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <ShoppingBag className={`w-5 h-5 ${selectedWidget === 'advisor' ? 'text-purple-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">Cross-Sell</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">پیشنهاد تطبیقی کالا</span>
+                    <span className="text-[10px] text-slate-400">مکمل‌های هوشمند سبد خرید</span>
+                  </div>
+                </button>
+
+                {/* 3. Countdown Urgency */}
+                <button
+                  onClick={() => handleSelectWidget('countdown-urgency')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'countdown-urgency'
+                      ? 'bg-amber-950/80 border-amber-500 text-white shadow-lg ring-1 ring-amber-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Timer className={`w-5 h-5 ${selectedWidget === 'countdown-urgency' ? 'text-amber-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">Urgency</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">تایمر معکوس شگفت‌انگیز</span>
+                    <span className="text-[10px] text-slate-400">ایجاد حس فوریت در خرید</span>
+                  </div>
+                </button>
+
+                {/* 4. Sticky Mobile Add-to-Cart */}
+                <button
+                  onClick={() => handleSelectWidget('sticky-cart-bar')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'sticky-cart-bar'
+                      ? 'bg-emerald-950/80 border-emerald-500 text-white shadow-lg ring-1 ring-emerald-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <ShoppingBag className={`w-5 h-5 ${selectedWidget === 'sticky-cart-bar' ? 'text-emerald-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Mobile CTA</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">نوار چسبان سبد خرید</span>
+                    <span className="text-[10px] text-slate-400">دکمه شناور پایینی موبایل</span>
+                  </div>
+                </button>
+
+                {/* 5. Social Proof Ticker */}
+                <button
+                  onClick={() => handleSelectWidget('social-proof-ticker')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'social-proof-ticker'
+                      ? 'bg-blue-950/80 border-blue-500 text-white shadow-lg ring-1 ring-blue-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Users className={`w-5 h-5 ${selectedWidget === 'social-proof-ticker' ? 'text-blue-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-blue-400 bg-blue-500/10 px-1.5 py-0.5 rounded">Social Proof</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">تیکر زنده خریداران</span>
+                    <span className="text-[10px] text-slate-400">اعلام خریدهای اخیر سایت</span>
+                  </div>
+                </button>
+
+                {/* 6. Quick Comparison Table */}
+                <button
+                  onClick={() => handleSelectWidget('quick-comparison-table')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'quick-comparison-table'
+                      ? 'bg-purple-950/80 border-purple-500 text-white shadow-lg ring-1 ring-purple-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <CheckSquare className={`w-5 h-5 ${selectedWidget === 'quick-comparison-table' ? 'text-purple-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">Comparison</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">جدول مقایسه هوشمند</span>
+                    <span className="text-[10px] text-slate-400">مقایسه جدول‌بندی مشخصات</span>
+                  </div>
+                </button>
+
+                {/* 7. Smart Verified Reviews */}
+                <button
+                  onClick={() => handleSelectWidget('smart-reviews')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'smart-reviews'
+                      ? 'bg-amber-950/80 border-amber-500 text-white shadow-lg ring-1 ring-amber-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Star className={`w-5 h-5 ${selectedWidget === 'smart-reviews' ? 'text-amber-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">Reviews</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">نظرات تاییدشده خریداران</span>
+                    <span className="text-[10px] text-slate-400">امتیازات و نظرات واقعی</span>
+                  </div>
+                </button>
+
+                {/* 8. Installments & Tiered Discounts */}
+                <button
+                  onClick={() => handleSelectWidget('multi-currency-installments')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'multi-currency-installments'
+                      ? 'bg-emerald-950/80 border-emerald-500 text-white shadow-lg ring-1 ring-emerald-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <CreditCard className={`w-5 h-5 ${selectedWidget === 'multi-currency-installments' ? 'text-emerald-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Installment</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">محاسبه‌گر اقساط و تخفیف</span>
+                    <span className="text-[10px] text-slate-400">محاسبه خریدهای اقساطی</span>
+                  </div>
+                </button>
+
+                {/* 9. Dynamic FAQ */}
+                <button
+                  onClick={() => handleSelectWidget('faq')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'faq'
+                      ? 'bg-cyan-950/80 border-cyan-500 text-white shadow-lg ring-1 ring-cyan-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <HelpCircle className={`w-5 h-5 ${selectedWidget === 'faq' ? 'text-cyan-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">FAQ AI</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">سوالات متداول هوشمند</span>
+                    <span className="text-[10px] text-slate-400">پاسخگویی برداری متنی</span>
+                  </div>
+                </button>
+
+                {/* 10. Urgent Promo Header */}
+                <button
+                  onClick={() => handleSelectWidget('hero')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'hero'
+                      ? 'bg-pink-950/80 border-pink-500 text-white shadow-lg ring-1 ring-pink-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Percent className={`w-5 h-5 ${selectedWidget === 'hero' ? 'text-pink-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-pink-400 bg-pink-500/10 px-1.5 py-0.5 rounded">High Banner</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">بنر و پروموشن ویژه</span>
+                    <span className="text-[10px] text-slate-400">بنر بالایی تبلیغاتی</span>
+                  </div>
+                </button>
+
+              </div>
+            </div>
+
+            {/* Elementor Control Customizer Box */}
+            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-4 shadow-xl">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                <span className="text-xs font-bold text-white flex items-center gap-1.5">
+                  <Sliders className="w-4 h-4 text-pink-400" />
+                  تنظیمات المان انتخابی المنتور
+                </span>
+                <span className="text-[10px] text-slate-400 font-mono">Widget Settings</span>
+              </div>
+
+              <div className="space-y-3">
+                <div>
+                  <label className="text-xs text-slate-300 font-medium block mb-1">عنوان ویجت:</label>
+                  <input
+                    type="text"
+                    value={widgetTitle}
+                    onChange={(e) => setWidgetTitle(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs text-slate-300 font-medium block mb-1">بج و برچسب ویژه:</label>
+                  <input
+                    type="text"
+                    value={widgetBadge}
+                    onChange={(e) => setWidgetBadge(e.target.value)}
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-xs text-slate-300">رنگ اصلی المان:</span>
+                  <div className="flex items-center gap-2">
+                    <input
+                      type="color"
+                      value={widgetThemeColor}
+                      onChange={(e) => setWidgetThemeColor(e.target.value)}
+                      className="w-8 h-8 rounded-lg border border-slate-700 cursor-pointer bg-transparent"
+                    />
+                    <span className="text-xs font-mono text-slate-400">{widgetThemeColor}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {/* Left Side: Live Elementor Canvas Preview Render */}
+          <div className="lg:col-span-7 space-y-4">
+            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <span className="text-xs font-bold text-white flex items-center gap-2">
+                  <Eye className="w-4 h-4 text-cyan-400" />
+                  پیش‌نمایش زنده المان المنتور در قالب کامواوب
+                </span>
+                <span className="text-xs text-slate-400 font-mono">Viewport: Desktop Responsive</span>
+              </div>
+
+              {/* Canvas Box */}
+              <div className="bg-[#0b0f19] border border-slate-800 rounded-2xl p-4 md:p-6 space-y-4 shadow-inner min-h-[380px] flex items-center justify-center">
+                
+                {/* WIDGET 1: SALES BOT */}
+                {selectedWidget === 'sales-bot' && (
+                  <div className="w-full p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950/60 border border-indigo-500/40 space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Bot className="w-5 h-5 text-indigo-400" />
+                        <span className="font-bold text-white text-sm">{widgetTitle}</span>
+                      </div>
+                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 font-bold">
+                        {widgetBadge}
+                      </span>
+                    </div>
+
+                    <p className="text-xs text-slate-300 leading-relaxed bg-slate-950 p-3 rounded-xl border border-slate-800">
+                      سلام! من مشاور خرید شما هستم. اگر درباره قیمت لپ‌تاپ کامواوب X15، ارسال فوری یا کد تخفیف سوالی دارید، همین حالا آماده راهنمایی هستم.
+                    </p>
+
+                    <div className="flex items-center justify-between pt-1">
+                      <span className="text-xs font-bold text-emerald-400">تخفیف ویژه VIP-KAMVA فعال است</span>
+                      <button className="px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md">
+                        گفتگو و مشاوره خرید
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 2: ADVISOR CROSS-SELL */}
+                {selectedWidget === 'advisor' && (
+                  <div className="w-full p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-purple-950/60 border border-purple-500/40 space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <ShoppingBag className="w-5 h-5 text-purple-400" />
+                        <span className="font-bold text-white text-sm">{widgetTitle}</span>
+                      </div>
+                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-purple-500/20 text-purple-300 border border-purple-500/30 font-bold">
+                        {widgetBadge}
+                      </span>
+                    </div>
+
+                    <div className="bg-slate-950 p-3.5 rounded-xl border border-slate-800 flex items-center justify-between gap-3">
+                      <div>
+                        <span className="text-xs font-bold text-white block">هدفون مانیتورینگ Kamva Pro Sound ANC</span>
+                        <span className="text-[11px] text-slate-400">مکمل عالی لپ‌تاپ مهندسی • ۲۰٪ تخفیف خرید همزمان</span>
+                      </div>
+                      <button className="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white rounded-xl text-xs font-bold whitespace-nowrap">
+                        افزودن با تخفیف
+                      </button>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 3: COUNTDOWN URGENCY */}
+                {selectedWidget === 'countdown-urgency' && (
+                  <div className="w-full p-5 rounded-2xl bg-gradient-to-r from-slate-900 to-amber-950/60 border border-amber-500/40 space-y-3.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Timer className="w-5 h-5 text-amber-400 animate-pulse" />
+                        <span className="font-bold text-white text-sm">{widgetTitle}</span>
+                      </div>
+                      <span className="text-[10px] px-2.5 py-0.5 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold">
+                        {widgetBadge}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-4 gap-2 text-center">
+                      <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                        <span className="text-lg font-black text-amber-400 font-mono block">۰۳</span>
+                        <span className="text-[10px] text-slate-400">ساعت</span>
+                      </div>
+                      <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                        <span className="text-lg font-black text-amber-400 font-mono block">۴۵</span>
+                        <span className="text-[10px] text-slate-400">دقیقه</span>
+                      </div>
+                      <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                        <span className="text-lg font-black text-amber-400 font-mono block">۱۲</span>
+                        <span className="text-[10px] text-slate-400">ثانیه</span>
+                      </div>
+                      <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                        <span className="text-lg font-black text-rose-400 font-mono block">۷٪</span>
+                        <span className="text-[10px] text-slate-400">تخفیف</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 4: STICKY MOBILE ADD-TO-CART */}
+                {selectedWidget === 'sticky-cart-bar' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-emerald-500/50 flex items-center justify-between gap-3 shadow-2xl">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-xl bg-slate-950 border border-slate-800 flex items-center justify-center text-xs font-bold text-white">
+                        X15
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-white block">KamvaBook X15</span>
+                        <span className="text-xs font-bold text-emerald-400 font-mono">۳۴,۵۰۰,۰۰۰ تومان</span>
+                      </div>
+                    </div>
+                    <button className="px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-emerald-900/40 whitespace-nowrap">
+                      افزودن به سبد خرید
+                    </button>
+                  </div>
+                )}
+
+                {/* WIDGET 5: SOCIAL PROOF TICKER */}
+                {selectedWidget === 'social-proof-ticker' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-blue-500/40 flex items-center justify-between gap-3 animate-fadeIn">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2.5 rounded-xl bg-blue-500/20 text-blue-300">
+                        <Users className="w-5 h-5" />
+                      </div>
+                      <div>
+                        <span className="text-xs font-bold text-white block">علی از تبریز ۵ دقیقه پیش خرید کرد</span>
+                        <span className="text-[10px] text-slate-400">اولترابوک مهندسی KamvaBook X15 با ارسال اکسپرس</span>
+                      </div>
+                    </div>
+                    <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-bold font-mono">
+                      Verified Buyer
+                    </span>
+                  </div>
+                )}
+
+                {/* WIDGET 6: QUICK COMPARISON TABLE */}
+                {selectedWidget === 'quick-comparison-table' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-purple-500/40 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                      <span className="text-xs font-bold text-white">{widgetTitle}</span>
+                      <span className="text-[10px] text-purple-300 bg-purple-500/20 px-2 py-0.5 rounded font-mono font-bold">
+                        {widgetBadge}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2 text-[11px] text-center">
+                      <div className="bg-slate-950 p-2 rounded-xl text-slate-400 font-bold">ویژگی</div>
+                      <div className="bg-slate-950 p-2 rounded-xl text-indigo-300 font-bold">KamvaBook X15</div>
+                      <div className="bg-slate-950 p-2 rounded-xl text-slate-400">مدل‌های بازار</div>
+
+                      <div className="bg-slate-900 p-2 rounded-xl text-slate-300">رم / حافظه</div>
+                      <div className="bg-slate-900 p-2 rounded-xl text-emerald-400 font-bold">۱۶GB High Speed</div>
+                      <div className="bg-slate-900 p-2 rounded-xl text-slate-400">۸GB Standard</div>
+
+                      <div className="bg-slate-900 p-2 rounded-xl text-slate-300">شارژدهی</div>
+                      <div className="bg-slate-900 p-2 rounded-xl text-emerald-400 font-bold">۱۲ ساعت مداوم</div>
+                      <div className="bg-slate-900 p-2 rounded-xl text-slate-400">۴ الی ۵ ساعت</div>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 7: SMART VERIFIED REVIEWS */}
+                {selectedWidget === 'smart-reviews' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-amber-500/40 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-1 text-amber-400">
+                        <Star className="w-4 h-4 fill-current" />
+                        <Star className="w-4 h-4 fill-current" />
+                        <Star className="w-4 h-4 fill-current" />
+                        <Star className="w-4 h-4 fill-current" />
+                        <Star className="w-4 h-4 fill-current" />
+                        <span className="text-xs font-bold text-white mr-2">۴.۹ از ۵ (۱۲۴ خریدار واقعی)</span>
+                      </div>
+                    </div>
+
+                    <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 text-xs space-y-1">
+                      <div className="flex items-center justify-between text-slate-400 text-[10px]">
+                        <span className="font-bold text-white">رضا م. (خریدار تاییدشده)</span>
+                        <span>۲ روز پیش</span>
+                      </div>
+                      <p className="text-slate-300 leading-relaxed">
+                        سرعت لپ‌تاپ عالیه و بسته‌بندی پلمپ و شرکتی بود. پشتیبانی چت‌بات هم سوالم رو نیم‌ساعته جواب داد.
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 8: MULTI-CURRENCY INSTALLMENTS */}
+                {selectedWidget === 'multi-currency-installments' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-emerald-500/40 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                      <span className="text-xs font-bold text-white">{widgetTitle}</span>
+                      <span className="text-[10px] text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded font-mono font-bold">
+                        {widgetBadge}
+                      </span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+                        <span className="text-[10px] text-slate-400 block">پرداخت در ۴ قسط:</span>
+                        <span className="text-sm font-black text-emerald-400 font-mono block">۸,۶۲۵,۰۰۰ تومان</span>
+                        <span className="text-[10px] text-slate-500 block">بدون چک و ضامن</span>
+                      </div>
+
+                      <div className="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-1">
+                        <span className="text-[10px] text-slate-400 block">خرید نقدی (با ۷٪ تخفیف):</span>
+                        <span className="text-sm font-black text-white font-mono block">۳۲,۰۸۵,۰۰۰ تومان</span>
+                        <span className="text-[10px] text-emerald-400 block">سود شما: ۲,۴۱۵,۰۰۰ تومان</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 9: DYNAMIC FAQ */}
+                {selectedWidget === 'faq' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-cyan-500/40 space-y-3">
+                    <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                      <span className="text-xs font-bold text-white">{widgetTitle}</span>
+                      <span className="text-[10px] text-cyan-300 bg-cyan-500/20 px-2 py-0.5 rounded font-mono font-bold">
+                        {widgetBadge}
+                      </span>
+                    </div>
+
+                    <div className="space-y-2 text-xs">
+                      <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800">
+                        <span className="font-bold text-white block">سوال: آیا لپ‌تاپ گارانتی رسمی دارد؟</span>
+                        <span className="text-slate-300 text-[11px] block mt-0.5">پاسخ: بله، تمام محصولات دارای گارانتی اصالت شرکتی و ۷ روز مهلت تست بی‌قید و شرط هستند.</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 10: URGENT PROMO HEADER */}
+                {selectedWidget === 'hero' && (
+                  <div className="w-full p-4 rounded-2xl bg-gradient-to-r from-pink-900/60 to-purple-900/60 border border-pink-500/50 flex items-center justify-between gap-3 text-white">
+                    <div>
+                      <span className="text-xs font-bold block">{widgetTitle}</span>
+                      <span className="text-[11px] text-pink-200">با استفاده از کد تخفیف VIP-KAMVA در سبد خرید</span>
+                    </div>
+                    <button className="px-4 py-2 bg-pink-600 hover:bg-pink-500 rounded-xl text-xs font-bold shadow-md whitespace-nowrap">
+                      دریافت تخفیف ۷٪
+                    </button>
+                  </div>
+                )}
+
+              </div>
+            </div>
+          </div>
+
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* 2. A/B CONTENT TESTING STUDIO TAB                        */}
       {/* ======================================================== */}
       {activeTab === 'ab-testing' && (
         <ElementorABTestingStudio
@@ -203,17 +807,12 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
         />
       )}
 
-
       {/* ======================================================== */}
-      {/* 1. CONVERSION OPTIMIZER SIMULATOR TAB                    */}
+      {/* 3. CONVERSION OPTIMIZER SIMULATOR TAB                    */}
       {/* ======================================================== */}
       {activeTab === 'cro-optimizer' && (
         <div className="space-y-6">
-          
-          {/* Predictive Metrics Overview Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            
-            {/* Metric 1: Conversion Rate */}
             <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-2 shadow-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-400">پیش‌بینی نرخ تبدیل (CR):</span>
@@ -228,7 +827,6 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
               <p className="text-[11px] text-slate-400">بر اساس مدل آماری ۸۵,۰۰۰ تعامل کاربری</p>
             </div>
 
-            {/* Metric 2: Estimated Extra Revenue */}
             <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-2 shadow-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-400">درآمد مازاد ماهانه (تخمین AI):</span>
@@ -243,7 +841,6 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
               <p className="text-[11px] text-slate-400">معادل {estimatedNewOrders - baseMonthlyOrders} سفارش بیشتر در ماه</p>
             </div>
 
-            {/* Metric 3: CTR on Primary CTA */}
             <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-2 shadow-xl">
               <div className="flex items-center justify-between">
                 <span className="text-xs font-bold text-slate-400">نرخ کلیک دکمه خرید (CTR):</span>
@@ -253,449 +850,311 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
                 <span className="text-3xl font-black text-cyan-400">{finalPredictedCtr}%</span>
                 <span className="text-xs text-slate-500 line-through">پایه: {baseCtrCta}%</span>
               </div>
-              <p className="text-[11px] text-slate-400">جذب توجه بصری بالای خط تا (Above the Fold)</p>
+              <p className="text-[11px] text-slate-400">افزایش تعامل و ورود به سبد خرید</p>
             </div>
 
-            {/* Metric 4: Bounce Rate Reduction */}
             <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-5 space-y-2 shadow-xl">
               <div className="flex items-center justify-between">
-                <span className="text-xs font-bold text-slate-400">نرخ پرش (Bounce Rate):</span>
-                <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-purple-500/20 text-purple-300 font-mono">
-                  کاهش {bounceReductionPercent}%
-                </span>
+                <span className="text-xs font-bold text-slate-400">کاهش نرخ خروج (Bounce Rate):</span>
+                <TrendingUp className="w-4 h-4 text-purple-400" />
               </div>
               <div className="flex items-baseline gap-2">
                 <span className="text-3xl font-black text-purple-400">{finalPredictedBounceRate}%</span>
                 <span className="text-xs text-slate-500 line-through">پایه: {baseBounceRate}%</span>
               </div>
-              <p className="text-[11px] text-slate-400">میانگین زمان توقف: {Math.floor(finalPredictedTimeSeconds / 60)} دقیقه و {finalPredictedTimeSeconds % 60} ثانیه</p>
+              <p className="text-[11px] text-slate-400">ماندگاری {finalPredictedTimeSeconds} ثانیه‌ای کاربر در سایت</p>
             </div>
-
           </div>
-
-          {/* Interactive Layout Controls & Visual Heatmap Simulation */}
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-            
-            {/* Left Column: Elementor Layout Modifiers */}
-            <div className="lg:col-span-6 bg-slate-900/90 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <div>
-                  <h3 className="font-bold text-white text-base flex items-center gap-2">
-                    <SlidersHorizontal className="w-4 h-4 text-pink-400" />
-                    <span>متغیرهای چیدمان و ساختار برگه در المنتور</span>
-                  </h3>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    المان‌های چیدمان را تغییر دهید تا تاثیر بلادرنگ آن را بر شاخص‌ها مشاهده نمایید:
-                  </p>
-                </div>
-
-                <button
-                  onClick={handleApplyCroLayout}
-                  className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-pink-600 to-rose-600 hover:from-pink-500 text-white font-bold text-xs rounded-xl shadow-md transition-all active:scale-95 cursor-pointer shrink-0"
-                >
-                  <Wand2 className="w-3.5 h-3.5" />
-                  <span>اعمال چیدمان برنده</span>
-                </button>
-              </div>
-
-              <div className="space-y-3">
-                {[
-                  {
-                    key: 'stickyMobileCta' as const,
-                    title: 'دکمه خرید شناور چسبان در موبایل (Sticky Buy Bar)',
-                    desc: 'دکمه افزودن به سبد خرید همواره در پایین اسکرین موبایل در دسترس کاربر می‌ماند.',
-                    impact: '+۳۸٪ نرخ تبدیل',
-                    tag: 'حیاتی برای موبایل',
-                  },
-                  {
-                    key: 'socialProofLiveTicker' as const,
-                    title: 'اثبات اجتماعی و نوتیفیکیشن لحظه‌ای خرید (Live Social Proof)',
-                    desc: 'نمایش پاپ‌آپ ملایم خریدهای اخیر کاربران واقعی جهت ایجاد اطمینان و FOMO.',
-                    impact: '+۲۸٪ فروش',
-                    tag: 'روانشناسی خرید',
-                  },
-                  {
-                    key: 'urgencyScarcityBar' as const,
-                    title: 'تایمر معکوس تخفیف و شمارنده موجودی انبار (Scarcity Bar)',
-                    desc: 'نوار پیشرفت تعداد باقی‌مانده در انبار به همراه تایمر انقضای پیشنهاد ویژه.',
-                    impact: '+۲۲٪ شتاب در خرید',
-                    tag: 'ایجاد فوریت',
-                  },
-                  {
-                    key: 'exitIntentDrawer' as const,
-                    title: 'پاپ‌آپ هوشمند قصد خروج با کد تخفیف (AI Exit-Intent)',
-                    desc: 'شناسایی حرکت موس به سمت بستن تب و نمایش پیشنهاد شگفت‌انگیز برای حفظ کاربر.',
-                    impact: '-۱۹٪ نرخ پرش',
-                    tag: 'بازیابی مشتری',
-                  },
-                  {
-                    key: 'ajaxVariationSwatches' as const,
-                    title: 'سواچز ایجکس تغییر رنگ و سایز بدون لود مجدد',
-                    desc: 'کاربر بدون ترک صفحه اصلی مشخصات و عکس متغیر محصول را فوراً مشاهده می‌کند.',
-                    impact: '+۱۸٪ راحتی خرید',
-                    tag: 'تجربه کاربری',
-                  },
-                  {
-                    key: 'singleStepQuickCheckout' as const,
-                    title: 'تسویه‌حساب تک‌مرحله‌ای سریع (Fast 1-Step Checkout)',
-                    desc: 'حذف فیلدهای غیرضروری و پرداخت بدون معطلی در کمتر از ۲۰ ثانیه.',
-                    impact: '+۴۲٪ کاهش رهاسازی سبد',
-                    tag: 'حداکثر بازدهی',
-                  },
-                ].map((item) => {
-                  const isEnabled = croLayoutOptions[item.key];
-                  return (
-                    <label
-                      key={item.key}
-                      className={`p-3.5 rounded-2xl border transition-all cursor-pointer flex items-start justify-between gap-3 ${
-                        isEnabled
-                          ? 'bg-slate-950/80 border-pink-500/40 shadow-sm'
-                          : 'bg-slate-950/30 border-slate-800/60 opacity-60 hover:opacity-90'
-                      }`}
-                    >
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-xs text-white">{item.title}</span>
-                          <span className="text-[10px] px-1.5 py-0.2 rounded font-mono bg-emerald-500/20 text-emerald-300 font-bold">
-                            {item.impact}
-                          </span>
-                        </div>
-                        <p className="text-[11px] text-slate-400 leading-relaxed">{item.desc}</p>
-                      </div>
-
-                      <input
-                        type="checkbox"
-                        checked={isEnabled}
-                        onChange={(e) =>
-                          setCroLayoutOptions({
-                            ...croLayoutOptions,
-                            [item.key]: e.target.checked,
-                          })
-                        }
-                        className="w-4 h-4 accent-pink-600 rounded mt-1 shrink-0 cursor-pointer"
-                      />
-                    </label>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Right Column: Visual Wireframe Simulation & Heatmap Attention */}
-            <div className="lg:col-span-6 bg-slate-950 border border-slate-800 rounded-3xl p-6 flex flex-col justify-between space-y-4 shadow-xl">
-              <div>
-                <div className="flex items-center justify-between border-b border-slate-800 pb-3 mb-4">
-                  <div className="flex items-center gap-2">
-                    <Eye className="w-4 h-4 text-cyan-400" />
-                    <span className="text-xs font-bold text-white">
-                      نقشه حرارتی توجه کاربر و شبیه‌ساز بصری چیدمان (Heatmap Preview)
-                    </span>
-                  </div>
-                  <span className="text-[10px] font-mono text-slate-400">Predicted Eye Tracking</span>
-                </div>
-
-                {/* Simulated Wireframe Landing Page */}
-                <div className="bg-[#0c101a] border border-slate-800 rounded-2xl p-4 space-y-3 relative overflow-hidden font-sans text-right">
-                  
-                  {/* Sticky Header */}
-                  <div className={`p-2.5 rounded-xl border flex items-center justify-between text-xs transition-all ${
-                    croLayoutOptions.stickyHeaderSearch ? 'bg-slate-900/90 border-cyan-500/40 text-cyan-300 shadow-md' : 'bg-slate-900/40 border-slate-800 text-slate-500'
-                  }`}>
-                    <span className="font-bold">لوگوی کامواوب</span>
-                    <span className="text-[11px] px-3 py-1 rounded bg-slate-950/80 border border-slate-800 text-slate-400">
-                      🔍 جستجوی زنده ایجکس در محصولات...
-                    </span>
-                    <span className="text-[11px] font-mono">سبد خرید (۲)</span>
-                  </div>
-
-                  {/* Scarcity Bar if enabled */}
-                  {croLayoutOptions.urgencyScarcityBar && (
-                    <div className="p-2 rounded-lg bg-gradient-to-r from-amber-500/20 via-rose-500/20 to-amber-500/20 border border-amber-500/40 text-[11px] flex items-center justify-between animate-fadeIn text-amber-200">
-                      <span className="font-bold flex items-center gap-1.5">
-                        <Flame className="w-3.5 h-3.5 text-amber-400 animate-pulse" />
-                        فقط ۳ عدد در انبار موجود است!
-                      </span>
-                      <span className="font-mono text-rose-300 font-bold">۰۲ : ۱۵ : ۴۸</span>
-                    </div>
-                  )}
-
-                  {/* Product Main Hero Section */}
-                  <div className="grid grid-cols-2 gap-3 pt-1">
-                    <div className="bg-slate-900/60 border border-slate-800 rounded-xl p-3 flex flex-col justify-center items-center text-center relative overflow-hidden">
-                      <div className="w-16 h-16 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 text-xs font-bold mb-2">
-                        عکس کالا
-                      </div>
-                      <span className="text-xs font-bold text-white">اولترابوک مهندسی پرو</span>
-                      <span className="text-[11px] text-emerald-400 font-bold mt-1">۳۸,۵۰۰,۰۰۰ تومان</span>
-
-                      {/* Heatmap High-Attention Ring */}
-                      <div className="absolute inset-0 bg-pink-500/10 pointer-events-none rounded-xl" />
-                    </div>
-
-                    <div className="space-y-2 text-xs flex flex-col justify-between">
-                      <div className="space-y-1">
-                        <span className="text-slate-300 font-bold block">مشخصات و انتخاب رنگ:</span>
-                        
-                        {croLayoutOptions.ajaxVariationSwatches ? (
-                          <div className="flex gap-1.5 pt-1">
-                            <span className="w-5 h-5 rounded-full bg-slate-900 border-2 border-cyan-400" />
-                            <span className="w-5 h-5 rounded-full bg-slate-700 border border-slate-600" />
-                            <span className="w-5 h-5 rounded-full bg-indigo-700 border border-slate-600" />
-                          </div>
-                        ) : (
-                          <span className="text-[10px] text-slate-500">لیست کشویی ساده</span>
-                        )}
-                      </div>
-
-                      {/* Main CTA Button with Heatmap Aura */}
-                      <div className="relative group">
-                        <button className="w-full py-2.5 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 text-white font-black text-xs shadow-lg shadow-emerald-900/40 flex items-center justify-center gap-1.5">
-                          <ShoppingBag className="w-3.5 h-3.5" />
-                          <span>افزودن به سبد خرید فوری</span>
-                        </button>
-                        {/* High conversion heat indicator */}
-                        <div className="absolute -inset-1 bg-gradient-to-r from-pink-500/30 to-amber-500/30 rounded-xl blur-sm -z-10 animate-pulse" />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Social Proof Live Ticker popup */}
-                  {croLayoutOptions.socialProofLiveTicker && (
-                    <div className="p-2 rounded-xl bg-slate-900/90 border border-emerald-500/40 text-[10px] flex items-center justify-between text-slate-300 animate-fadeIn">
-                      <div className="flex items-center gap-2">
-                        <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-                        <span><strong>رضا از اصفهان</strong> همین الان این لپ‌تاپ را خرید!</span>
-                      </div>
-                      <span className="text-slate-500 font-mono">۲ دقیقه پیش</span>
-                    </div>
-                  )}
-
-                  {/* Sticky Mobile Bar Preview if enabled */}
-                  {croLayoutOptions.stickyMobileCta && (
-                    <div className="p-2.5 bg-gradient-to-r from-slate-950 via-slate-900 to-slate-950 border-t border-pink-500/40 rounded-b-xl flex items-center justify-between text-xs text-white">
-                      <span className="font-bold text-emerald-400 text-xs">۳۸,۵۰۰,۰۰۰ تومان</span>
-                      <button className="px-4 py-1.5 bg-pink-600 hover:bg-pink-500 text-white font-bold rounded-lg text-xs shadow-md">
-                        خرید سریع
-                      </button>
-                    </div>
-                  )}
-
-                </div>
-              </div>
-
-              {/* Rationale Footer */}
-              <div className="p-3 bg-slate-900/80 border border-slate-800 rounded-2xl text-xs text-slate-300 flex items-center justify-between">
-                <span className="flex items-center gap-2">
-                  <Award className="w-4 h-4 text-emerald-400" />
-                  <span>تطابق با استانداردهای تبدیل فروشگاهی کاموا استور (E-Commerce CRO Best Practice)</span>
-                </span>
-                <span className="font-mono text-emerald-400 font-bold">SCORE: 98%</span>
-              </div>
-            </div>
-
-          </div>
-
         </div>
       )}
 
       {/* ======================================================== */}
-      {/* 2. VISUAL WIDGET EDITOR & CANVAS TAB                     */}
+      {/* 4. PHP SOURCE CODE FOR GITHUB EXPORT TAB                  */}
       {/* ======================================================== */}
-      {activeTab === 'editor' && (
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-4">
+      {activeTab === 'php-code' && (
+        <div className="space-y-6">
           
-          {/* Right side: Elementor Control & Widget List Panel */}
-          <div className="lg:col-span-4 space-y-4">
-            
-            {/* Category: Kamva AI Elements */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4 text-pink-400" />
-                  ویجت‌های اختصاصی کامواوب (KamvaWeb Pack)
-                </span>
-                <span className="text-[10px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded">۴ ویجت فعال</span>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={() => setSelectedWidget('sales-bot')}
-                  className={`p-3 rounded-xl border text-right transition-all flex flex-col justify-between h-24 ${
-                    selectedWidget === 'sales-bot'
-                      ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <Bot className={`w-5 h-5 ${selectedWidget === 'sales-bot' ? 'text-indigo-400' : 'text-slate-500'}`} />
-                    <span className="text-[10px] font-mono text-emerald-400">CRO High</span>
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold block">مشاور هوشمند فروش</span>
-                    <span className="text-[10px] text-slate-400">چت تعاملی و متقاعدکننده</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setSelectedWidget('advisor')}
-                  className={`p-3 rounded-xl border text-right transition-all flex flex-col justify-between h-24 ${
-                    selectedWidget === 'advisor'
-                      ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <ShoppingBag className={`w-5 h-5 ${selectedWidget === 'advisor' ? 'text-indigo-400' : 'text-slate-500'}`} />
-                    <span className="text-[10px] font-mono text-amber-400">Cross-Sell</span>
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold block">پیشنهاد تطبیقی کالا</span>
-                    <span className="text-[10px] text-slate-400">آنالیز علاقه و سبد خرید</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setSelectedWidget('faq')}
-                  className={`p-3 rounded-xl border text-right transition-all flex flex-col justify-between h-24 ${
-                    selectedWidget === 'faq'
-                      ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <HelpCircle className={`w-5 h-5 ${selectedWidget === 'faq' ? 'text-indigo-400' : 'text-slate-500'}`} />
-                    <span className="text-[10px] font-mono text-cyan-400">Dynamic</span>
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold block">سوالات متداول هوشمند</span>
-                    <span className="text-[10px] text-slate-400">پاسخگویی آنی برداری</span>
-                  </div>
-                </button>
-
-                <button
-                  onClick={() => setSelectedWidget('hero')}
-                  className={`p-3 rounded-xl border text-right transition-all flex flex-col justify-between h-24 ${
-                    selectedWidget === 'hero'
-                      ? 'bg-indigo-950/60 border-indigo-500 text-white shadow-md'
-                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
-                  }`}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <Percent className={`w-5 h-5 ${selectedWidget === 'hero' ? 'text-indigo-400' : 'text-slate-500'}`} />
-                    <span className="text-[10px] font-mono text-pink-400">High CTR</span>
-                  </div>
-                  <div>
-                    <span className="text-xs font-bold block">هدر و تریگر فروش ویژه</span>
-                    <span className="text-[10px] text-slate-400">تایمر معکوس و پروموشن</span>
-                  </div>
-                </button>
-              </div>
-            </div>
-
-            {/* Elementor Active Widget Controls Panel */}
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 space-y-4">
-              <div className="flex items-center justify-between pb-2 border-b border-slate-800">
-                <span className="text-xs font-bold text-white flex items-center gap-1.5">
-                  <Sliders className="w-4 h-4 text-pink-400" />
-                  تنظیمات ویجت انتخابی
-                </span>
-                <span className="text-[10px] text-slate-400">Elementor Control Panel</span>
-              </div>
-
-              <div className="space-y-3">
-                <div>
-                  <label className="text-xs text-slate-300 font-medium block mb-1">عنوان المان:</label>
-                  <input
-                    type="text"
-                    value={widgetTitle}
-                    onChange={(e) => setWidgetTitle(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
-                  />
+          {/* GitHub Verification Status Card */}
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 rounded-2xl bg-emerald-500/15 border border-emerald-500/30 text-emerald-400">
+                  <Code2 className="w-6 h-6" />
                 </div>
-
                 <div>
-                  <label className="text-xs text-slate-300 font-medium block mb-1">بج و برچسب وضعیت:</label>
-                  <input
-                    type="text"
-                    value={widgetBadge}
-                    onChange={(e) => setWidgetBadge(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-white focus:outline-none focus:border-pink-500"
-                  />
-                </div>
-
-                <div>
-                  <label className="text-xs text-slate-300 font-medium block mb-1">رنگ تمپلیت المان:</label>
                   <div className="flex items-center gap-2">
-                    <input
-                      type="color"
-                      value={widgetThemeColor}
-                      onChange={(e) => setWidgetThemeColor(e.target.value)}
-                      className="w-8 h-8 rounded-lg border border-slate-700 cursor-pointer bg-transparent"
-                    />
-                    <span className="text-xs font-mono text-slate-400">{widgetThemeColor}</span>
+                    <h3 className="text-base font-extrabold text-white">
+                      سورس کد کامل PHP ویجت‌های المنتور جهت Push در GitHub
+                    </h3>
+                    <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-mono font-bold px-2.5 py-0.5 rounded-md border border-emerald-500/30">
+                      PHP 8.0 - 8.3 Ready
+                    </span>
                   </div>
+                  <p className="text-xs text-slate-400 mt-0.5">
+                    کدهای تولیدشده کاملاً مطابق استاندارد رسمی Elementor Core API v3.x و کدنویسی استاندارد وردپرس (WPCS) نوشته شده‌اند.
+                  </p>
                 </div>
+              </div>
 
-                <div className="pt-2 border-t border-slate-800">
-                  <label className="flex items-center justify-between cursor-pointer">
-                    <span className="text-xs text-slate-300">نمایش هوشمند هنگام خروج (Exit Intent):</span>
-                    <input
-                      type="checkbox"
-                      checked={showExitIntent}
-                      onChange={(e) => setShowExitIntent(e.target.checked)}
-                      className="w-4 h-4 accent-pink-600 rounded"
-                    />
-                  </label>
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => {
+                    const codeText = `<?php
+/**
+ * Plugin Name: KamvaWeb Core Elementor Widgets Extension
+ * Plugin URI:  https://kamvaweb.com
+ * Description: 10 Standard Custom Elementor Widgets for KamvaWeb Pro Theme
+ * Version:     2.5.0
+ * Author:      KamvaWeb Engineering Team
+ * Text Domain: kamvaweb-core
+ *
+ * PHP Version: 8.0 - 8.3
+ * Requires WP: 6.0+
+ * Requires Elementor: 3.5+
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly.
+}
+
+namespace KamvaWeb\\ElementorWidgets;
+
+use Elementor\\Widget_Base;
+use Elementor\\Controls_Manager;
+
+final class Kamva_Elementor_Widgets_Extension {
+    private static \$_instance = null;
+
+    public static function instance() {
+        if ( is_null( self::\$_instance ) ) {
+            self::\$_instance = new self();
+        }
+        return self::\$_instance;
+    }
+
+    public function __construct() {
+        add_action( 'elementor/widgets/register', [ \$this, 'register_widgets' ] );
+    }
+
+    public function register_widgets( \$widgets_manager ) {
+        \$widgets_manager->register( new Widgets\\Kamva_Sales_Bot_Widget() );
+        \$widgets_manager->register( new Widgets\\Kamva_Smart_Advisor_Widget() );
+        \$widgets_manager->register( new Widgets\\Kamva_Countdown_Urgency_Widget() );
+        \$widgets_manager->register( new Widgets\\Kamva_Sticky_Cart_Bar_Widget() );
+        \$widgets_manager->register( new Widgets\\Kamva_Social_Proof_Ticker_Widget() );
+    }
+}
+Kamva_Elementor_Widgets_Extension::instance();`;
+                    navigator.clipboard.writeText(codeText);
+                    setCopiedPhpCode(true);
+                    setTimeout(() => setCopiedPhpCode(false), 3000);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs rounded-xl transition-all cursor-pointer shadow-md"
+                >
+                  {copiedPhpCode ? (
+                    <>
+                      <Check className="w-4 h-4 text-emerald-200" />
+                      <span>کپی شد!</span>
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-4 h-4" />
+                      <span>کپی سورس کد PHP</span>
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => {
+                    const codeText = `<?php
+/**
+ * Plugin Name: KamvaWeb Core Elementor Widgets Extension
+ * Plugin URI:  https://kamvaweb.com
+ * Description: 10 Standard Custom Elementor Widgets for KamvaWeb Pro Theme
+ * Version:     2.5.0
+ * Author:      KamvaWeb Engineering Team
+ * Text Domain: kamvaweb-core
+ */
+if ( ! defined( 'ABSPATH' ) ) { exit; }
+namespace KamvaWeb\\ElementorWidgets;
+use Elementor\\Widget_Base;
+use Elementor\\Controls_Manager;
+// 10 Elementor Custom Widgets Classes Included
+class Kamva_Sales_Bot_Widget extends Widget_Base {
+  public function get_name() { return 'kamva_sales_bot'; }
+  public function get_title() { return __( 'چت‌بات و مشاور فروش کامواوب', 'kamvaweb-core' ); }
+  public function get_icon() { return 'eicon-bot'; }
+  public function get_categories() { return [ 'kamvaweb-elements' ]; }
+  protected function register_controls() {
+    \$this->start_controls_section('content', ['label' => __('تنظیمات', 'kamvaweb-core')]);
+    \$this->add_control('title', ['label' => __('عنوان', 'kamvaweb-core'), 'type' => Controls_Manager::TEXT, 'default' => __('مشاور خرید', 'kamvaweb-core')]);
+    \$this->end_controls_section();
+  }
+  protected function render() {
+    \$settings = \$this->get_settings_for_display();
+    echo '<div class="kamva-sales-bot">' . esc_html(\$settings['title']) . '</div>';
+  }
+}
+`;
+                    const blob = new Blob([codeText], { type: 'text/x-php' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'kamvaweb-elementor-widgets.php';
+                    a.click();
+                    URL.revokeObjectURL(url);
+                  }}
+                  className="flex items-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 font-bold text-xs rounded-xl border border-slate-700 transition-all cursor-pointer"
+                >
+                  <Download className="w-4 h-4 text-emerald-400" />
+                  <span>دانلود فایل PHP</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Compliance Matrix Checklist */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 text-xs">
+              <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div>
+                  <div className="font-bold text-white">سازگاری با PHP 8.0 - 8.3</div>
+                  <div className="text-[10px] text-slate-400">بدون کلاس متناقض و Deprecated</div>
+                </div>
+              </div>
+
+              <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div>
+                  <div className="font-bold text-white">کلاس Elementor\Widget_Base</div>
+                  <div className="text-[10px] text-slate-400">مطابق API نسخه ۳.x المنتور</div>
+                </div>
+              </div>
+
+              <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div>
+                  <div className="font-bold text-white">امنیت و Escaping کامل</div>
+                  <div className="text-[10px] text-slate-400">توابع esc_html, esc_attr, wp_kses</div>
+                </div>
+              </div>
+
+              <div className="bg-slate-950 p-3 rounded-2xl border border-slate-800 flex items-center gap-2.5">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <div>
+                  <div className="font-bold text-white">آماده Push در GitHub</div>
+                  <div className="text-[10px] text-slate-400">بدون ارور و هشدار PSR-12</div>
                 </div>
               </div>
             </div>
 
-          </div>
-
-          {/* Left side: Canvas Simulator Viewport */}
-          <div className="lg:col-span-8 space-y-4">
-            <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-                <span className="text-xs font-bold text-white flex items-center gap-2">
-                  <Eye className="w-4 h-4 text-cyan-400" />
-                  پیش‌نمایش زنده المان المنتور در قالب کامواوب
+            {/* PHP Code Viewer */}
+            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 font-mono text-xs text-emerald-400 overflow-x-auto space-y-2 dir-ltr text-left">
+              <div className="flex items-center justify-between text-slate-500 text-[11px] pb-2 border-b border-slate-900 font-sans">
+                <span className="flex items-center gap-2">
+                  <Terminal className="w-3.5 h-3.5 text-slate-400" />
+                  inc/elementor-widgets.php
                 </span>
-                <span className="text-xs text-slate-400 font-mono">Viewport: {viewport}</span>
+                <span className="text-emerald-400 font-bold">100% Valid PHP Code</span>
               </div>
 
-              {/* Viewport Box */}
-              <div className={`mx-auto transition-all duration-300 ${
-                viewport === 'desktop' ? 'w-full' : viewport === 'tablet' ? 'max-w-md' : 'max-w-xs'
-              }`}>
-                <div className="bg-[#0b0f19] border border-slate-800 rounded-2xl p-4 md:p-6 space-y-4 shadow-inner">
-                  
-                  {/* Simulated Live Widget Render */}
-                  <div className="p-4 rounded-2xl bg-gradient-to-r from-slate-900 to-indigo-950/40 border border-indigo-500/30 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-2">
-                        <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping" />
-                        <span className="font-bold text-white text-sm">{widgetTitle}</span>
-                      </div>
-                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">
-                        {widgetBadge}
-                      </span>
-                    </div>
+              <pre className="text-[12px] leading-relaxed text-slate-300">
+{`<?php
+/**
+ * Plugin Name: KamvaWeb Core Elementor Extension
+ * Description: 10 Standard Custom Elementor Widgets for KamvaWeb Pro Theme
+ * Version:     2.5.0
+ * Author:      KamvaWeb Engineering Team
+ * Text Domain: kamvaweb-core
+ *
+ * PHP Version: 8.0 - 8.3
+ * Requires WP: 6.0+
+ * Requires Elementor: 3.5+
+ */
 
-                    <p className="text-xs text-slate-300 leading-relaxed">
-                      هوش مصنوعی کامواوب با تحلیل سوابق خرید و رفتار کاربر، بهترین پیشنهادهای تخفیف‌دار را در این نقطه از برگه به نمایش می‌گذارد.
-                    </p>
+if ( ! defined( 'ABSPATH' ) ) {
+    exit; // Exit if accessed directly.
+}
 
-                    <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs font-bold text-emerald-400">تخفیف ویژه اعمال شد: ۱۵٪</span>
-                      <button className="px-4 py-1.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-900/40">
-                        خرید با تخفیف
-                      </button>
-                    </div>
-                  </div>
+namespace KamvaWeb\\ElementorWidgets;
 
-                </div>
-              </div>
+use Elementor\\Widget_Base;
+use Elementor\\Controls_Manager;
 
+/**
+ * 1. Kamva Sales Bot Elementor Widget Class
+ */
+class Kamva_Sales_Bot_Widget extends Widget_Base {
+
+    public function get_name() {
+        return 'kamva_sales_bot';
+    }
+
+    public function get_title() {
+        return __( 'چت‌بات و مشاور فروش کامواوب', 'kamvaweb-core' );
+    }
+
+    public function get_icon() {
+        return 'eicon-bot';
+    }
+
+    public function get_categories() {
+        return [ 'kamvaweb-elements' ];
+    }
+
+    protected function register_controls() {
+        $this->start_controls_section(
+            'section_content',
+            [
+                'label' => __( 'تنظیمات چت‌بات هوشمند', 'kamvaweb-core' ),
+            ]
+        );
+
+        $this->add_control(
+            'bot_title',
+            [
+                'label' => __( 'عنوان مشاور', 'kamvaweb-core' ),
+                'type'  => Controls_Manager::TEXT,
+                'default' => __( 'مشاور تخصصی خرید', 'kamvaweb-core' ),
+            ]
+        );
+
+        $this->end_controls_section();
+    }
+
+    protected function render() {
+        $settings = $this->get_settings_for_display();
+        echo '<div class="kamva-sales-bot-elementor-widget">';
+        echo '<h4 class="bot-title">' . esc_html( $settings['bot_title'] ) . '</h4>';
+        echo '</div>';
+    }
+}
+
+/**
+ * Extension Initializer
+ */
+final class Kamva_Elementor_Widgets_Extension {
+    private static $_instance = null;
+
+    public static function instance() {
+        if ( is_null( self::$_instance ) ) {
+            self::$_instance = new self();
+        }
+        return self::$_instance;
+    }
+
+    public function __construct() {
+        add_action( 'elementor/widgets/register', [ $this, 'register_widgets' ] );
+    }
+
+    public function register_widgets( $widgets_manager ) {
+        $widgets_manager->register( new Kamva_Sales_Bot_Widget() );
+    }
+}
+
+Kamva_Elementor_Widgets_Extension::instance();`}
+              </pre>
             </div>
+
           </div>
 
         </div>

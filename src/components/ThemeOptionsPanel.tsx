@@ -63,6 +63,10 @@ export const ThemeOptionsPanel: React.FC<ThemeOptionsPanelProps> = ({
   const [showSavedToast, setShowSavedToast] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
+  // Panel UI Customization & Search State
+  const [panelSearchQuery, setPanelSearchQuery] = useState('');
+  const [panelAccent, setPanelAccent] = useState<'indigo' | 'emerald' | 'amber' | 'slate'>('indigo');
+
   // Admin AI Booster State
   const [isBoostingAdmin, setIsBoostingAdmin] = useState(false);
   const [adminBoostToast, setAdminBoostToast] = useState<string | null>(null);
@@ -176,49 +180,73 @@ export const ThemeOptionsPanel: React.FC<ThemeOptionsPanelProps> = ({
 
   return (
     <div className="space-y-6">
-      {/* Top Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-indigo-950/60 to-slate-900 border border-indigo-500/30 rounded-2xl p-6 relative overflow-hidden shadow-2xl">
-        <div className="absolute top-0 left-0 w-96 h-96 bg-indigo-500/15 rounded-full blur-3xl pointer-events-none -translate-x-1/2 -translate-y-1/2" />
+      {/* Top Header Banner & Quick Controls */}
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 relative overflow-hidden shadow-xl">
         <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-indigo-500/20 text-indigo-300 text-xs font-bold border border-indigo-500/30">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-indigo-500/15 text-indigo-300 text-xs font-bold border border-indigo-500/20">
                 <Store className="w-3.5 h-3.5" />
-                کنترل پنل تم‌آپشن جامع کامواوب (موتور اختصاصی Kamva Store Engine)
+                تنظیمات قالب کامواوب
               </span>
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 text-xs font-semibold">
-                <CheckCircle2 className="w-3.5 h-3.5" />
-                مصون از تداخل در آپدیت‌های وردپرس و افزونه‌ها
-              </span>
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-blue-500/20 text-blue-300 text-[11px] font-mono font-bold">
-                WP 7.1 Mary Lou
+              <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded">
+                WP 7.1 • PHP 8.2+
               </span>
             </div>
-            <h2 className="text-2xl font-black text-white tracking-tight">
-              موتور فروشگاهی پیشرفته کاموا استور (Kamva Store) + خزشگر زنده و خودترمیمی
+            <h2 className="text-lg font-bold text-white tracking-tight">
+              کنترل پنل تم‌آپشن کاموا استور (Kamva Store Engine)
             </h2>
-            <p className="text-sm text-slate-300 max-w-3xl mt-1 leading-relaxed">
-              تمامی قابلیت‌های پیشرفته فروشگاهی (هدرساز چندبخشی، کاتالوگ فروشگاه، استایل‌های هاور محصول، گالری، سبد خرید کشویی) همراه با خزشگر واقعی سایت و مصونیت کامل از تداخل هوک‌ها در اختیار شماست.
-            </p>
           </div>
 
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Quick Live Search Bar */}
+            <div className="relative min-w-[200px] sm:min-w-[240px]">
+              <Search className="w-3.5 h-3.5 absolute right-3 top-3 text-slate-400" />
+              <input
+                type="text"
+                placeholder="جستجوی تنظیمات..."
+                value={panelSearchQuery}
+                onChange={(e) => setPanelSearchQuery(e.target.value)}
+                className="w-full pl-3 pr-9 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              />
+            </div>
+
+            {/* Accent Theme Selector */}
+            <div className="hidden sm:flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
+              <button
+                onClick={() => setPanelAccent('indigo')}
+                className={`w-5 h-5 rounded-lg bg-indigo-600 transition-transform ${panelAccent === 'indigo' ? 'scale-110 ring-2 ring-white' : 'opacity-60 hover:opacity-100'}`}
+                title="تم نیلی"
+              />
+              <button
+                onClick={() => setPanelAccent('emerald')}
+                className={`w-5 h-5 rounded-lg bg-emerald-600 transition-transform ${panelAccent === 'emerald' ? 'scale-110 ring-2 ring-white' : 'opacity-60 hover:opacity-100'}`}
+                title="تم زمرّدی"
+              />
+              <button
+                onClick={() => setPanelAccent('amber')}
+                className={`w-5 h-5 rounded-lg bg-amber-600 transition-transform ${panelAccent === 'amber' ? 'scale-110 ring-2 ring-white' : 'opacity-60 hover:opacity-100'}`}
+                title="تم کهربایی"
+              />
+            </div>
+
+            {/* Save Button */}
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-indigo-600 via-indigo-500 to-emerald-600 hover:from-indigo-500 hover:to-emerald-500 text-white text-sm font-bold rounded-xl shadow-lg shadow-indigo-600/30 transition-all active:scale-95 cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50"
             >
               <CheckCircle2 className="w-4 h-4" />
-              <span>{isSaving ? 'در حال ذخیره‌سازی...' : 'ذخیره دائم تنظیمات قالب'}</span>
+              <span>{isSaving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}</span>
             </button>
           </div>
         </div>
 
         {/* Save confirmation toast */}
         {showSavedToast && (
-          <div className="absolute bottom-4 left-6 z-20 flex items-center gap-2 bg-emerald-500 text-white text-xs font-bold px-4 py-2 rounded-xl shadow-xl animate-bounce">
+          <div className="absolute bottom-3 left-6 z-20 flex items-center gap-2 bg-emerald-600 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-xl animate-bounce">
             <CheckCircle2 className="w-4 h-4" />
-            تنظیمات با موفقیت در فایل دائمی سرور ذخیره و در هسته کامواوب اعمال شد!
+            تنظیمات با موفقیت ذخیره شد!
           </div>
         )}
       </div>

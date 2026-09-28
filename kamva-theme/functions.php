@@ -28,6 +28,7 @@ require_once KAMVAWEB_THEME_DIR . '/inc/file-media-security-scanner.php';
 
 // ۵. بهینه‌ساز فوق‌سریع منابع و افزایش سرعت لایت‌هاوس ۹۹/۱۰۰
 require_once KAMVAWEB_THEME_DIR . '/inc/speed-optimizer.php';
+require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-cache-manager.php';
 
 // ۶. موتور سئو، تولید خودکار اسکیما JSON-LD و رصد رقبا
 require_once KAMVAWEB_THEME_DIR . '/inc/seo-engine.php';

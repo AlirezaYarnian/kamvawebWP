@@ -285,35 +285,34 @@ export const NeuralNetworkDashboard: React.FC<NeuralNetworkDashboardProps> = ({
   return (
     <div className="space-y-6 font-sans">
       {/* Top Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-purple-950/40 to-slate-900 border border-purple-500/20 rounded-3xl p-6 md:p-8 relative overflow-hidden shadow-2xl">
-        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="px-3 py-1 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold border border-purple-500/30 flex items-center gap-1.5">
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 shadow-xl">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <div className="flex items-center gap-2 mb-1.5">
+              <span className="px-3 py-0.5 rounded-full bg-purple-500/20 text-purple-300 text-xs font-bold border border-purple-500/30 flex items-center gap-1.5">
                 <BrainCircuit className="w-3.5 h-3.5 text-purple-400" />
-                هسته یادگیری ماشین و شبکه‌های عصبی محلی کامواوب
+                هسته یادگیری ماشین کامواوب
               </span>
-              <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold flex items-center gap-1">
-                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
-                مدل خودآموز فعال (Active ML Core)
+              <span className="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-400 text-[10px] font-bold">
+                Active ML
               </span>
             </div>
-            <h2 className="text-xl md:text-2xl font-black text-white">
-              داشبورد شبکه عصبی، شبیه‌ساز ترافیک سنگین و پایش زنده CPU/RAM
+            <h2 className="text-xl font-bold text-white tracking-tight">
+              شبکه عصبی، شبیه‌ساز ترافیک همزمان و پایش منابع CPU/RAM
             </h2>
-            <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              ارسال هزاران پیام همزمان به چت‌بات، اندازه‌گیری زنده زمان پاسخگویی (Latency) و سنجش بار پردازشی سرور روی نمودارهای پویا.
+            <p className="text-xs text-slate-300 max-w-2xl mt-1 leading-relaxed">
+              ارسال پیام‌های همزمان به چت‌بات، اندازه‌گیری زمان پاسخگویی (Latency) و سنجش بار پردازشی سرور.
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3 shrink-0">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={handleTrainEpochs}
               disabled={isTraining}
-              className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-500 hover:to-indigo-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-purple-900/30 transition-all cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 bg-purple-600 hover:bg-purple-500 text-white font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50"
             >
               <RefreshCw className={`w-4 h-4 ${isTraining ? 'animate-spin' : ''}`} />
-              <span>{isTraining ? `در حال آموزش لایه‌ها (Epoch ${trainingEpoch})...` : 'آموزش مجدد شبکه عصبی (Train Epochs)'}</span>
+              <span>{isTraining ? `در حال آموزش (Epoch ${trainingEpoch})...` : 'آموزش مجدد (Train)'}</span>
             </button>
           </div>
         </div>
