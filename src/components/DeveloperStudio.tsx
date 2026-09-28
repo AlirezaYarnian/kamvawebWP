@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { 
   Code2, 
   Terminal, 
@@ -21,7 +21,12 @@ import {
   Wand2,
   RefreshCw,
   ArrowRight,
-  ShieldAlert
+  ShieldAlert,
+  FileText,
+  Filter,
+  ExternalLink,
+  Zap,
+  Tag
 } from 'lucide-react';
 import { DeveloperStudioConfig } from '../types/theme';
 
@@ -34,7 +39,7 @@ export const DeveloperStudio: React.FC<DeveloperStudioProps> = ({
   devConfig,
   onUpdateConfig,
 }) => {
-  const [activeEditorTab, setActiveEditorTab] = useState<'php' | 'css' | 'js' | 'hooks' | 'diagnostics'>('php');
+  const [activeEditorTab, setActiveEditorTab] = useState<'php' | 'css' | 'js' | 'hooks' | 'diagnostics' | 'auto-docs'>('php');
   const [selectedSnippetId, setSelectedSnippetId] = useState<string>(devConfig.customPhpSnippets[0]?.id || '');
   const [newSnippetTitle, setNewSnippetTitle] = useState('');
   const [newSnippetHook, setNewSnippetHook] = useState('init');
@@ -56,6 +61,36 @@ export const DeveloperStudio: React.FC<DeveloperStudioProps> = ({
     quickFixTitle: string;
   } | null>(null);
   const [copiedFix, setCopiedFix] = useState(false);
+
+  // Auto-Doc Generator State
+  const [docSearchQuery, setDocSearchQuery] = useState('');
+  const [docCategoryFilter, setDocCategoryFilter] = useState<'all' | 'core' | 'store' | 'neural' | 'security'>('all');
+  const [docsData, setDocsData] = useState<any[]>([]);
+  const [isScanningDocs, setIsScanningDocs] = useState(false);
+  const [copiedDocId, setCopiedDocId] = useState<string | null>(null);
+
+  const fetchDocs = async () => {
+    setIsScanningDocs(true);
+    try {
+      const res = await fetch('/api/developer/auto-docs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ filterCategory: docCategoryFilter }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setDocsData(data.documentation || []);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsScanningDocs(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDocs();
+  }, []);
 
   const sampleErrorLogs = [
     {
@@ -208,6 +243,21 @@ try {
     { hook: 'woocommerce_single_product_summary', type: 'action', desc: 'افزودن المان سفارشی در صفحه تکی محصول' },
   ];
 
+  const filteredDocs = docsData.filter((doc) => {
+    if (docCategoryFilter !== 'all' && doc.category !== docCategoryFilter) {
+      return false;
+    }
+    if (docSearchQuery.trim()) {
+      const q = docSearchQuery.toLowerCase();
+      return (
+        doc.name.toLowerCase().includes(q) ||
+        doc.description.toLowerCase().includes(q) ||
+        (doc.tags && doc.tags.some((t: string) => t.toLowerCase().includes(q)))
+      );
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-6">
       
@@ -218,17 +268,17 @@ try {
             <div className="flex items-center gap-2">
               <span className="px-3 py-1 rounded-full bg-cyan-500/20 text-cyan-300 text-xs font-bold border border-cyan-500/30 flex items-center gap-1.5">
                 <Code2 className="w-3.5 h-3.5 text-cyan-400" />
-                استودیو برنامه‌نویسی و عیب‌یابی هوشمند کامواوب (Developer Portal)
+                استودیو برنامه‌نویسی و مستندساز هوشمند کامواوب (Developer Portal)
               </span>
               <span className="px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-bold">
                 PHP 8.2+ Sandboxed
               </span>
             </div>
             <h2 className="text-2xl font-black text-white">
-              فضای برنامه‌نویسی اختصاصی، اجرای امن اسنیپت‌ها و عیب‌یابی خودکار خطاهای سرور
+              فضای برنامه‌نویسی اختصاصی، مستندات خودکار توابع و عیب‌یابی هوشمند خطاهای سرور
             </h2>
             <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
-              کدنویسی توابع سفارشی PHP، تزریق CSS/JS بدون دستکاری هسته و عیب‌یابی بلادرنگ لاگ‌های خطای وردپرس با هوش مصنوعی جهت ارائه راهکارهای اصلاحی فوری.
+              کدنویسی توابع سفارشی PHP، تزریق CSS/JS، مستندسازی لحظه‌ای کلیه هوک‌ها و توابع قالب و عیب‌یابی بلادرنگ لاگ‌های خطای وردپرس با هوش مصنوعی.
             </p>
           </div>
 
@@ -245,6 +295,19 @@ try {
             </button>
 
             <button
+              onClick={() => setActiveEditorTab('auto-docs')}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+                activeEditorTab === 'auto-docs' 
+                  ? 'bg-gradient-to-r from-indigo-600 to-cyan-600 text-white shadow-lg shadow-indigo-900/40 ring-1 ring-cyan-400' 
+                  : 'text-indigo-300 bg-indigo-950/40 border border-indigo-500/30 hover:bg-indigo-900/50'
+              }`}
+            >
+              <BookOpen className="w-3.5 h-3.5 text-cyan-300" />
+              <span>مستندساز خودکار (Auto-Docs)</span>
+              <span className="text-[9px] px-1 py-0.2 rounded bg-cyan-500 text-slate-950 font-mono font-bold">AI</span>
+            </button>
+
+            <button
               onClick={() => setActiveEditorTab('diagnostics')}
               className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
                 activeEditorTab === 'diagnostics' 
@@ -253,8 +316,7 @@ try {
               }`}
             >
               <Bug className="w-3.5 h-3.5 text-rose-300" />
-              <span>عیب‌یاب خطاهای سرور (AI)</span>
-              <span className="text-[9px] px-1 py-0.2 rounded bg-rose-500 text-white font-mono">NEW</span>
+              <span>عیب‌یاب خطاهای سرور</span>
             </button>
 
             <button
@@ -294,6 +356,176 @@ try {
         <div className="p-4 bg-emerald-500/15 border border-emerald-500/30 rounded-2xl text-emerald-300 text-xs font-semibold flex items-center gap-2 animate-in fade-in duration-200">
           <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
           <span>{toastMessage}</span>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* TAB: AUTO-DOC GENERATOR (AI CODE DOCUMENTATION)          */}
+      {/* ======================================================== */}
+      {activeEditorTab === 'auto-docs' && (
+        <div className="space-y-6">
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <BookOpen className="w-5 h-5 text-cyan-400" />
+                  <h3 className="text-xl font-bold text-white">
+                    مستندساز خودکار توابع، متدها و هوک‌های قالب (Auto-Doc Generator)
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">
+                  اسکن خودکار کدهای PHP و ساخت مستندات استاندارد PHPDoc / JSDoc همراه با امضای توابع، پارامترها و نمونه کدهای آماده کپی.
+                </p>
+              </div>
+
+              <button
+                onClick={fetchDocs}
+                disabled={isScanningDocs}
+                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-cyan-300 text-xs font-bold rounded-xl border border-cyan-500/30 flex items-center gap-2 transition-all cursor-pointer disabled:opacity-50"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${isScanningDocs ? 'animate-spin' : ''}`} />
+                <span>{isScanningDocs ? 'در حال اسکن فایل‌های PHP...' : 'اسکن مجدد فایل‌های قالب با AI'}</span>
+              </button>
+            </div>
+
+            {/* Search & Category Filter Controls */}
+            <div className="flex flex-col sm:flex-row items-center gap-3">
+              <div className="relative flex-1 w-full">
+                <input
+                  type="text"
+                  value={docSearchQuery}
+                  onChange={(e) => setDocSearchQuery(e.target.value)}
+                  placeholder="جستجو در نام تابع، هوک، متد یا توضیحات (مثلاً kamva_get_option یا swatches)..."
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-cyan-500"
+                />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              </div>
+
+              <div className="flex items-center gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800 shrink-0 text-xs">
+                {[
+                  { id: 'all' as const, label: 'همه' },
+                  { id: 'core' as const, label: 'توابع هسته' },
+                  { id: 'store' as const, label: 'موتور فروشگاه و سواچز' },
+                  { id: 'neural' as const, label: 'هوش مصنوعی و ML' },
+                  { id: 'security' as const, label: 'امنیت و WAF' },
+                ].map((c) => (
+                  <button
+                    key={c.id}
+                    onClick={() => setDocCategoryFilter(c.id)}
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                      docCategoryFilter === c.id
+                        ? 'bg-cyan-600 text-white shadow'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {c.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          {/* Documentation Cards Grid */}
+          <div className="space-y-4">
+            {filteredDocs.map((item: any) => (
+              <div
+                key={item.id}
+                className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 space-y-4 shadow-xl hover:border-slate-700 transition-all"
+              >
+                {/* Doc Header */}
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full uppercase ${
+                        item.type === 'action_hook'
+                          ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                          : item.type === 'filter_hook'
+                          ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30'
+                          : item.type === 'ajax_endpoint'
+                          ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                          : 'bg-cyan-500/20 text-cyan-300 border border-cyan-500/30'
+                      }`}>
+                        {item.type}
+                      </span>
+                      <span className="text-xs text-slate-400 font-mono">
+                        File: <strong className="text-slate-300">{item.file}</strong> • Since: v{item.since}
+                      </span>
+                    </div>
+
+                    <h4 className="text-base font-bold text-white font-mono text-left" dir="ltr">
+                      {item.name}
+                    </h4>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    {item.tags && item.tags.map((tag: string, i: number) => (
+                      <span key={i} className="text-[10px] font-medium px-2 py-0.5 rounded bg-slate-800 text-slate-300">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Doc Description */}
+                <p className="text-xs md:text-sm text-slate-200 leading-relaxed">
+                  {item.description}
+                </p>
+
+                {/* Parameters Breakdown */}
+                {item.params && item.params.length > 0 && (
+                  <div className="space-y-1.5 pt-1">
+                    <span className="text-xs font-bold text-slate-400 uppercase tracking-wide block">پارامترهای ورودی (Parameters):</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
+                      {item.params.map((p: any, idx: number) => (
+                        <div key={idx} className="p-2.5 rounded-xl bg-slate-950/70 border border-slate-800/80 flex items-start gap-2">
+                          <code className="text-cyan-400 font-bold font-mono text-[11px] shrink-0" dir="ltr">{p.name} ({p.type})</code>
+                          <span className="text-slate-300 text-xs">{p.desc}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Example Code Box */}
+                {item.exampleCode && (
+                  <div className="bg-[#080c14] border border-slate-800 rounded-2xl overflow-hidden font-mono text-xs">
+                    <div className="flex items-center justify-between px-4 py-2 bg-slate-950/80 border-b border-slate-800 text-slate-400">
+                      <span className="text-[11px] font-bold text-cyan-400 flex items-center gap-1.5">
+                        <Terminal className="w-3.5 h-3.5" />
+                        <span>نمونه کد استفاده در توابع / چایلدتم:</span>
+                      </span>
+
+                      <button
+                        onClick={() => {
+                          navigator.clipboard.writeText(item.exampleCode);
+                          setCopiedDocId(item.id);
+                          setTimeout(() => setCopiedDocId(null), 2000);
+                        }}
+                        className="px-2.5 py-1 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 text-[10px] flex items-center gap-1 cursor-pointer transition-colors"
+                      >
+                        {copiedDocId === item.id ? (
+                          <>
+                            <Check className="w-3 h-3 text-emerald-400" />
+                            <span className="text-emerald-400">کپی شد!</span>
+                          </>
+                        ) : (
+                          <>
+                            <Copy className="w-3 h-3" />
+                            <span>کپی قطعه‌کد</span>
+                          </>
+                        )}
+                      </button>
+                    </div>
+
+                    <div className="p-4 text-slate-200 leading-relaxed overflow-x-auto" dir="ltr">
+                      <pre><code>{item.exampleCode}</code></pre>
+                    </div>
+                  </div>
+                )}
+
+              </div>
+            ))}
+          </div>
         </div>
       )}
 

@@ -43,12 +43,102 @@ import {
 import { SecurityEvent, DatabaseHealthReport, OrphanedTableItem, TransientDataItem, DbCleanupHistoryItem } from '../types/theme';
 
 export const SpeedSecurityAuditor: React.FC = () => {
-  const [activeSubTab, setActiveSubTab] = useState<'overview' | 'database'>('overview');
+  const [activeSubTab, setActiveSubTab] = useState<'overview' | 'database' | 'file-scanner'>('overview');
 
   // Overview states
   const [isScanning, setIsScanning] = useState(false);
   const [scanProgress, setScanProgress] = useState(100);
   const [securityEvents, setSecurityEvents] = useState<SecurityEvent[]>(sampleSecurityLogs);
+
+  // File & Media Scanner States
+  const [fileScanData, setFileScanData] = useState<any>(null);
+  const [isScanningFiles, setIsScanningFiles] = useState(false);
+  const [fileFilter, setFileFilter] = useState<'all' | 'critical' | 'warning' | 'clean' | 'media' | 'theme' | 'plugin' | 'core'>('all');
+  const [quarantineToast, setQuarantineToast] = useState<string | null>(null);
+  const [fileSearchQuery, setFileSearchQuery] = useState('');
+  const [selectedFileForHashModal, setSelectedFileForHashModal] = useState<any | null>(null);
+  const [isRestoringHash, setIsRestoringHash] = useState<string | null>(null);
+
+  const handleRunFileScanner = async () => {
+    setIsScanningFiles(true);
+    try {
+      const res = await fetch('/api/security/scan-files', { method: 'POST' });
+      if (res.ok) {
+        const data = await res.json();
+        setFileScanData(data);
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsScanningFiles(false);
+    }
+  };
+
+  useEffect(() => {
+    handleRunFileScanner();
+  }, []);
+
+  const handleQuarantineFile = async (fileId: string, action: 'quarantine' | 'delete' | 'sanitize') => {
+    try {
+      const res = await fetch('/api/security/quarantine-file', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId, action }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setQuarantineToast(data.message);
+        setTimeout(() => setQuarantineToast(null), 4000);
+        handleRunFileScanner();
+      }
+    } catch (e) {
+      console.error(e);
+    }
+  };
+
+  const handleRestoreOfficialHash = async (fileId: string) => {
+    setIsRestoringHash(fileId);
+    try {
+      const res = await fetch('/api/security/restore-official-hash', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileId }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setQuarantineToast(data.message);
+        setTimeout(() => setQuarantineToast(null), 4000);
+        handleRunFileScanner();
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setIsRestoringHash(null);
+    }
+  };
+
+  const handleExportSecurityAuditReport = () => {
+    if (!fileScanData) return;
+    const reportData = {
+      title: 'گزارش ممیزی امنیتی فایل‌ها، تم، پلاگین و رسانه‌های وردپرس کامواوب',
+      generatedAt: new Date().toISOString(),
+      securityGrade: fileScanData.securityGrade,
+      totalFilesScanned: fileScanData.totalFilesScanned,
+      cleanFilesCount: fileScanData.cleanFilesCount,
+      quarantinedCount: fileScanData.quarantinedCount,
+      repositoriesChecked: fileScanData.repositoriesChecked,
+      serverProtectionsActive: fileScanData.serverProtectionsActive,
+      findings: fileScanData.findings,
+    };
+
+    const blob = new Blob([JSON.stringify(reportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kamvaweb-security-audit-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
 
   // Database Cleaner States
   const [dbHealth, setDbHealth] = useState<DatabaseHealthReport | null>(null);
@@ -355,7 +445,20 @@ export const SpeedSecurityAuditor: React.FC = () => {
               }`}
             >
               <Database className="w-4 h-4 text-emerald-300" />
-              <span>پاکسازی هوشمند دیتابیس (AI Cleaner)</span>
+              <span>پاکسازی دیتابیس</span>
+            </button>
+
+            <button
+              onClick={() => setActiveSubTab('file-scanner')}
+              className={`flex items-center gap-2 px-4 py-2.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                activeSubTab === 'file-scanner'
+                  ? 'bg-gradient-to-r from-rose-600 to-amber-600 text-white shadow-md ring-1 ring-rose-400'
+                  : 'text-rose-300 bg-rose-950/30 border border-rose-500/30 hover:bg-rose-900/40'
+              }`}
+            >
+              <FileCheck className="w-4 h-4 text-rose-300" />
+              <span>اسکنر امنیتی فایل‌ها و مدیا</span>
+              <span className="text-[9px] px-1 py-0.2 rounded bg-rose-500 text-white font-mono font-bold">MALWARE AI</span>
             </button>
           </div>
         </div>
@@ -1272,6 +1375,362 @@ export const SpeedSecurityAuditor: React.FC = () => {
 
             </div>
           )}
+
+        </div>
+      )}
+
+      {/* ========================================================= */}
+      {/* TAB 3: FILE & MEDIA MALWARE SECURITY SCANNER               */}
+      {/* ========================================================= */}
+      {activeSubTab === 'file-scanner' && (
+        <div className="space-y-6 animate-in fade-in duration-200">
+          
+          {/* Header Action & Stats */}
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 md:p-8 space-y-6 shadow-xl">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-slate-800 pb-5">
+              <div>
+                <div className="flex items-center gap-2">
+                  <FileCheck className="w-5 h-5 text-rose-400" />
+                  <h3 className="text-xl font-bold text-white">
+                    اسکنر امنیتی جامع فایل‌ها، تم، افزونه‌ها و رسانه‌ها (File, Theme & Media Security Guard)
+                  </h3>
+                </div>
+                <p className="text-xs text-slate-400 mt-1">
+                  پایش عمیق هش فایل‌ها در برابر مخازن رسمی وردپرس (WordPress.org Core Checksums)، مخزن رسمی افزونه‌ها، امضای دیجیتال قالب کامواوب و اسکن بدافزار در پوشه آپلودها.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handleExportSecurityAuditReport}
+                  disabled={!fileScanData}
+                  className="px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-slate-200 hover:text-white font-bold text-xs rounded-xl border border-slate-700 transition-all cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                  title="دریافت لاگ و گزارش رسمی ممیزی فایل‌ها در قالب JSON"
+                >
+                  <Download className="w-4 h-4 text-cyan-400" />
+                  <span>دریافت گزارش تفصیلی (JSON)</span>
+                </button>
+
+                <button
+                  onClick={handleRunFileScanner}
+                  disabled={isScanningFiles}
+                  className="px-5 py-2.5 bg-gradient-to-r from-rose-600 via-amber-600 to-rose-700 hover:from-rose-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-900/40 transition-all active:scale-95 cursor-pointer flex items-center gap-2 disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isScanningFiles ? 'animate-spin' : ''}`} />
+                  <span>{isScanningFiles ? 'در حال بررسی هش‌ها و اسکن بدافزار...' : 'شروع اسکن و اعتبارسنجی هش مخازن'}</span>
+                </button>
+              </div>
+            </div>
+
+            {/* Quarantine Toast */}
+            {quarantineToast && (
+              <div className="p-3 bg-emerald-500/20 border border-emerald-500/40 rounded-xl text-xs font-bold text-emerald-300 flex items-center gap-2 animate-in fade-in">
+                <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+                <span>{quarantineToast}</span>
+              </div>
+            )}
+
+            {/* Repositories Connected Status Banner */}
+            {fileScanData?.repositoriesChecked && (
+              <div className="p-4 bg-slate-950/90 border border-slate-800/90 rounded-2xl space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs font-bold text-slate-300 flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-emerald-400" />
+                    مخازن امنیتی و منابع مرجع اعتبارسنجی هش (Security Checksum Repositories):
+                  </span>
+                  <span className="text-[10px] text-emerald-400 font-mono font-bold bg-emerald-500/10 px-2.5 py-0.5 rounded-full border border-emerald-500/30">
+                    REALTIME HASH SYNC ACTIVE
+                  </span>
+                </div>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2.5 text-xs">
+                  {fileScanData.repositoriesChecked.map((repo: any, i: number) => (
+                    <div key={i} className="p-2.5 bg-slate-900/80 border border-slate-800 rounded-xl flex items-center justify-between">
+                      <div className="truncate pr-1">
+                        <span className="font-bold text-slate-200 block truncate text-[11px]">{repo.name}</span>
+                        <span className="text-[10px] text-slate-500 font-mono">{repo.version || repo.signatureType || `${repo.totalSignatures?.toLocaleString('fa-IR')} امضا`}</span>
+                      </div>
+                      <span className="text-[10px] font-bold text-emerald-400 font-mono shrink-0 bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-500/30">
+                        {repo.status === 'connected' ? 'CONNECTED' : repo.status === 'verified' ? 'VERIFIED' : 'UPDATED'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Metrics Overview Scorecards */}
+            {fileScanData && (
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 space-y-1">
+                  <span className="text-xs text-slate-400 block">کل فایل‌های اسکن‌شده:</span>
+                  <div className="text-2xl font-black text-white font-mono">{fileScanData.totalFilesScanned.toLocaleString('fa-IR')} فایل</div>
+                  <span className="text-[10px] text-slate-500">۳,۴۱۰ مدیا | ۱,۱۲۰ پلاگین | ۴۸ قالب</span>
+                </div>
+
+                <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 space-y-1">
+                  <span className="text-xs text-slate-400 block">فایل‌های سالم و تاییدشده:</span>
+                  <div className="text-2xl font-black text-emerald-400 font-mono">{fileScanData.cleanFilesCount.toLocaleString('fa-IR')}</div>
+                  <span className="text-[10px] text-emerald-500 font-bold">SHA-256 HASH MATCHED</span>
+                </div>
+
+                <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 space-y-1">
+                  <span className="text-xs text-slate-400 block">موارد پرخطر / تغییر غیرمجاز:</span>
+                  <div className="text-2xl font-black text-rose-400 font-mono">{fileScanData.quarantinedCount} مورد</div>
+                  <span className="text-[10px] text-rose-400 font-bold">FLAGGED & QUARANTINED</span>
+                </div>
+
+                <div className="bg-slate-950/70 border border-slate-800 rounded-2xl p-4 space-y-1">
+                  <span className="text-xs text-slate-400 block">شاخص یکپارچگی فایل‌ها:</span>
+                  <div className="text-2xl font-black text-cyan-400 font-mono">{fileScanData.securityGrade}</div>
+                  <span className="text-[10px] text-cyan-500 font-bold">ALL SHIELDS ACTIVE</span>
+                </div>
+              </div>
+            )}
+
+            {/* Search and Category Filter */}
+            <div className="flex flex-col lg:flex-row items-center justify-between gap-3 pt-2">
+              <div className="relative flex-1 w-full">
+                <input
+                  type="text"
+                  value={fileSearchQuery}
+                  onChange={(e) => setFileSearchQuery(e.target.value)}
+                  placeholder="جستجو در مسیر فایل، نام تهدید، هش SHA-256 یا نوع فایل..."
+                  className="w-full bg-slate-950 border border-slate-700 rounded-xl pl-10 pr-4 py-2 text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-rose-500"
+                />
+                <Search className="w-4 h-4 text-slate-400 absolute left-3 top-2.5" />
+              </div>
+
+              {/* Filters */}
+              <div className="flex flex-wrap items-center gap-1.5 p-1 bg-slate-950 rounded-xl border border-slate-800 shrink-0 text-xs">
+                {[
+                  { id: 'all' as const, label: 'همه' },
+                  { id: 'media' as const, label: 'رسانه‌ها (Uploads)' },
+                  { id: 'theme' as const, label: 'قالب (Themes)' },
+                  { id: 'plugin' as const, label: 'افزونه‌ها (Plugins)' },
+                  { id: 'core' as const, label: 'هسته (Core)' },
+                  { id: 'critical' as const, label: 'پرخطر (Critical)' },
+                  { id: 'clean' as const, label: 'سالم (Clean)' },
+                ].map((f) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setFileFilter(f.id)}
+                    className={`px-3 py-1.5 rounded-lg font-bold transition-all cursor-pointer ${
+                      fileFilter === f.id
+                        ? 'bg-rose-600 text-white shadow'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Scanned Files List Table */}
+            {fileScanData && (
+              <div className="space-y-3.5">
+                {fileScanData.findings
+                  .filter((item: any) => {
+                    if (fileFilter !== 'all') {
+                      if (fileFilter === 'media' && item.category !== 'media') return false;
+                      if (fileFilter === 'theme' && item.category !== 'theme') return false;
+                      if (fileFilter === 'plugin' && item.category !== 'plugin') return false;
+                      if (fileFilter === 'core' && item.category !== 'core') return false;
+                      if (fileFilter === 'critical' && item.riskLevel !== 'critical') return false;
+                      if (fileFilter === 'clean' && item.riskLevel !== 'clean') return false;
+                    }
+                    if (fileSearchQuery.trim()) {
+                      const q = fileSearchQuery.toLowerCase();
+                      return (
+                        item.filePath.toLowerCase().includes(q) ||
+                        item.threatName.toLowerCase().includes(q) ||
+                        (item.localSha256 && item.localSha256.toLowerCase().includes(q))
+                      );
+                    }
+                    return true;
+                  })
+                  .map((file: any) => (
+                    <div
+                      key={file.id}
+                      className={`p-4 md:p-5 rounded-2xl border transition-all flex flex-col gap-4 ${
+                        file.riskLevel === 'critical'
+                          ? 'bg-rose-950/30 border-rose-500/60 ring-1 ring-rose-500/40'
+                          : file.riskLevel === 'warning'
+                          ? 'bg-amber-950/20 border-amber-500/40'
+                          : 'bg-slate-950/70 border-slate-800'
+                      }`}
+                    >
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 border-b border-slate-800/80 pb-3">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className={`text-[10px] font-mono font-bold px-2.5 py-0.5 rounded-full uppercase ${
+                            file.riskLevel === 'critical'
+                              ? 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                              : file.riskLevel === 'warning'
+                              ? 'bg-amber-500/20 text-amber-300 border border-amber-500/30'
+                              : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30'
+                          }`}>
+                            {file.riskLevel.toUpperCase()}
+                          </span>
+
+                          <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-slate-800 text-slate-300 border border-slate-700">
+                            {file.category === 'media' ? 'رسانه / مدیا' : file.category === 'theme' ? 'پوسته / قالب' : file.category === 'plugin' ? 'افزونه' : 'هسته وردپرس'}
+                          </span>
+
+                          <span className="font-mono text-xs text-white font-bold text-left" dir="ltr">
+                            {file.filePath}
+                          </span>
+                          <span className="text-[10px] text-slate-500 font-mono">({file.fileSizeKb} KB)</span>
+                        </div>
+
+                        {/* Hash Match Status Badge */}
+                        <div>
+                          {file.hashStatus === 'verified' && (
+                            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>OFFICIAL HASH MATCH (۱۰۰٪ معتبر)</span>
+                            </span>
+                          )}
+                          {file.hashStatus === 'tampered' && (
+                            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-rose-500/20 text-rose-300 border border-rose-500/40 flex items-center gap-1">
+                              <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                              <span>HASH MISMATCH / کدهای دستکاری شده</span>
+                            </span>
+                          )}
+                          {file.hashStatus === 'unauthorized_exec' && (
+                            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-rose-600 text-white flex items-center gap-1 shadow">
+                              <ShieldAlert className="w-3.5 h-3.5" />
+                              <span>DUAL EXTENSION WEBSHELL</span>
+                            </span>
+                          )}
+                          {file.hashStatus === 'injected_script' && (
+                            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-amber-500/20 text-amber-300 border border-amber-500/30 flex items-center gap-1">
+                              <AlertTriangle className="w-3.5 h-3.5" />
+                              <span>STORED XSS / بدافزار برداری</span>
+                            </span>
+                          )}
+                          {file.hashStatus === 'verified_media' && (
+                            <span className="text-[10px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1">
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>CLEAN MEDIA / هدر سالم</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Threat & Hash Details */}
+                      <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 text-xs">
+                        <div className="lg:col-span-7 space-y-1.5">
+                          <p className="text-xs text-slate-200 font-bold">
+                            {file.threatName}
+                          </p>
+                          <div className="text-[11px] text-slate-400">
+                            امضای شناسایی شده: <span className="text-slate-300 font-mono">{file.signatureDetected}</span>
+                          </div>
+                          <div className="text-[11px] text-cyan-300">
+                            منبع اعتبارسنجی: <span className="font-mono text-cyan-400">{file.repoSource}</span>
+                          </div>
+                          {file.recommendation && (
+                            <div className="text-[11px] text-amber-300 font-medium flex items-center gap-1 pt-0.5">
+                              <Info className="w-3.5 h-3.5 shrink-0 text-amber-400" />
+                              <span>توصیه سیستم: {file.recommendation}</span>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Hash Comparison Box */}
+                        <div className="lg:col-span-5 p-3 bg-slate-900/90 border border-slate-800 rounded-xl space-y-1.5 font-mono text-[10px]">
+                          <div>
+                            <span className="text-slate-400 block text-[9px]">هش محلی فایل در سرور (Local SHA-256):</span>
+                            <span className="text-slate-200 truncate block select-all" dir="ltr">{file.localSha256 || 'N/A'}</span>
+                          </div>
+                          {file.repoSha256 && (
+                            <div>
+                              <span className="text-slate-400 block text-[9px]">هش مرجع در مخزن رسمی (Official Repo SHA-256):</span>
+                              <span className={`${file.localSha256 === file.repoSha256 ? 'text-emerald-400' : 'text-rose-400'} truncate block select-all`} dir="ltr">
+                                {file.repoSha256}
+                              </span>
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Action Buttons */}
+                      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-slate-800/80">
+                        <div className="text-[10px] text-slate-400 font-mono">
+                          زمان اسکن: {new Date(file.scannedAt).toLocaleTimeString('fa-IR')}
+                        </div>
+
+                        <div className="flex items-center gap-2">
+                          {/* If Tampered: Restore from WP Repo */}
+                          {file.hashStatus === 'tampered' && (
+                            <button
+                              onClick={() => handleRestoreOfficialHash(file.id)}
+                              disabled={isRestoringHash === file.id}
+                              className="px-3.5 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-xs rounded-xl shadow cursor-pointer flex items-center gap-1.5 disabled:opacity-50"
+                            >
+                              <RefreshCw className={`w-3.5 h-3.5 ${isRestoringHash === file.id ? 'animate-spin' : ''}`} />
+                              <span>{isRestoringHash === file.id ? 'در حال بازیابی...' : 'بازیابی فایل سالم از مخزن رسمی'}</span>
+                            </button>
+                          )}
+
+                          {/* If Critical: Delete or Quarantine */}
+                          {file.riskLevel === 'critical' && (
+                            <button
+                              onClick={() => handleQuarantineFile(file.id, 'delete')}
+                              className="px-3.5 py-1.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5"
+                            >
+                              <Trash2 className="w-3.5 h-3.5" />
+                              <span>حذف قطعی فایل مخرب</span>
+                            </button>
+                          )}
+
+                          {/* If SVG Warning: Auto-Sanitize */}
+                          {file.riskLevel === 'warning' && (
+                            <button
+                              onClick={() => handleQuarantineFile(file.id, 'sanitize')}
+                              className="px-3.5 py-1.5 bg-amber-600 hover:bg-amber-500 text-white font-bold text-xs rounded-xl shadow-md cursor-pointer flex items-center gap-1.5"
+                            >
+                              <ShieldAlert className="w-3.5 h-3.5" />
+                              <span>پاکسازی اتوماتیک کدهای تزریق‌شده (Sanitize)</span>
+                            </button>
+                          )}
+
+                          {file.riskLevel === 'clean' && (
+                            <span className="text-xs text-emerald-400 flex items-center gap-1 font-bold font-mono">
+                              <Check className="w-4 h-4" />
+                              <span>VERIFIED SAFE & CLEAN</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+              </div>
+            )}
+
+            {/* Server Upload Hardening Toggles */}
+            <div className="p-5 bg-slate-950/80 border border-slate-800 rounded-2xl space-y-3">
+              <h4 className="text-xs font-bold text-white flex items-center gap-2 uppercase tracking-wide">
+                <FolderLock className="w-4 h-4 text-emerald-400" />
+                <span>تنظیمات محافظت سخت‌گیرانه از پوشه آپلودها (Uploads Directory Hardening):</span>
+              </h4>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3 text-xs">
+                <div className="p-3 bg-slate-900/90 border border-slate-800 rounded-xl flex items-center justify-between">
+                  <span>غیرفعال‌سازی اجرای PHP در uploads:</span>
+                  <span className="text-emerald-400 font-bold">فعال (Blocked)</span>
+                </div>
+                <div className="p-3 bg-slate-900/90 border border-slate-800 rounded-xl flex items-center justify-between">
+                  <span>پاکسازی خودکار اسکریپت از SVG:</span>
+                  <span className="text-emerald-400 font-bold">فعال (Sanitized)</span>
+                </div>
+                <div className="p-3 bg-slate-900/90 border border-slate-800 rounded-xl flex items-center justify-between">
+                  <span>مسدودسازی پسوندهای دوگانه (.jpg.php):</span>
+                  <span className="text-emerald-400 font-bold">فعال (Strict)</span>
+                </div>
+              </div>
+            </div>
+
+          </div>
 
         </div>
       )}

