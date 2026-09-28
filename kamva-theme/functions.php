@@ -38,6 +38,9 @@ require_once KAMVAWEB_THEME_DIR . '/inc/database-ai-cleaner.php';
 // ۸. موتور چیدمان هوشمند ویجت‌ها، پایش هیت‌مپ و بازچینی دینامیک جایگاه‌ها با یادگیری ماشین
 require_once KAMVAWEB_THEME_DIR . '/inc/class-smart-widget-engine.php';
 
+// ۹. بریج و موتور مهاجرت هوشمند از قالب‌های قدیمی به NexusAI / کامواوب
+require_once KAMVAWEB_THEME_DIR . '/inc/theme-migrator-bridge.php';
+
 // راه‌اندازی کنترل‌پنل تم‌آپشن در پیشخوان وردپرس
 if (is_admin()) {
     require_once KAMVAWEB_THEME_DIR . '/admin/theme-options.php';

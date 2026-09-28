@@ -18,7 +18,8 @@ import {
   Eye,
   CheckCircle2,
   Sparkles,
-  Flame
+  Flame,
+  ArrowRightLeft
 } from 'lucide-react';
 import { KamvaLogo } from './KamvaLogo';
 
@@ -37,6 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const navItems = [
     { id: 'options', label: 'موتور کاموا استور و تم‌آپشن', icon: Store, badge: 'Store' },
+    { id: 'theme-migrator', label: 'مهاجرت هوشمند قالب به NexusAI', icon: ArrowRightLeft, badge: 'Migrator AI', highlight: true },
     { id: 'smart-widgets', label: 'چیدمان هوشمند ویجت‌ها و هیت‌مپ ML', icon: Flame, badge: 'ML Layout', highlight: true },
     { id: 'smart-config', label: 'تولید پیکربندی هوشمند با AI', icon: Wand2, badge: 'Smart AI', highlight: true },
     { id: 'deploy-helper', label: 'دستیار استقرار پروداکشن', icon: Rocket, badge: 'Deploy', highlight: true },
@@ -50,7 +52,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'developer-studio', label: 'استودیوی برنامه‌نویس', icon: Code2, badge: 'PHP Dev' },
     { id: 'seo-market', label: 'گوگل و سئو مارکتینگ', icon: Search, badge: 'Google' },
     { id: 'sales-ai', label: 'ویجت فروش زنده', icon: MessageSquareHeart, badge: 'Live AI' },
-    { id: 'elementor', label: 'استودیو المنتور', icon: Boxes, badge: 'Elementor' },
+    { id: 'elementor', label: 'استودیو المنتور و تست A/B سکشن‌ها', icon: Boxes, badge: 'A/B Test AI', highlight: true },
     { id: 'analytics', label: 'نرخ تبدیل و یادگیری', icon: TrendingUp, badge: 'Analytics' },
   ];
 

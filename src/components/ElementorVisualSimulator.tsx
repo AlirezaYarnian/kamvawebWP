@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { ThemeOptionsConfig, KnowledgeItem } from '../types/theme';
+import { ElementorABTestingStudio } from './ElementorABTestingStudio';
 import { 
   Boxes, 
   Monitor, 
@@ -31,7 +32,8 @@ import {
   PieChart,
   SlidersHorizontal,
   Wand2,
-  Check
+  Check,
+  Split
 } from 'lucide-react';
 
 interface ElementorVisualSimulatorProps {
@@ -43,7 +45,7 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
   config,
   knowledgeBase,
 }) => {
-  const [activeTab, setActiveTab] = useState<'editor' | 'cro-optimizer'>('cro-optimizer');
+  const [activeTab, setActiveTab] = useState<'ab-testing' | 'cro-optimizer' | 'editor'>('ab-testing');
   const [viewport, setViewport] = useState<'desktop' | 'tablet' | 'mobile'>('desktop');
   const [selectedWidget, setSelectedWidget] = useState<'sales-bot' | 'advisor' | 'faq' | 'hero'>('sales-bot');
   
@@ -127,27 +129,39 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
       {/* Top Main Bar */}
       <div className="bg-slate-900 border border-slate-800 rounded-3xl p-4 md:p-6 flex flex-wrap items-center justify-between gap-4 shadow-xl">
         <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-600 to-rose-500 flex items-center justify-center text-white font-black text-base shadow-lg shadow-pink-600/30">
+          <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-pink-600 via-rose-600 to-amber-500 flex items-center justify-center text-white font-black text-base shadow-lg shadow-pink-600/30">
             E
           </div>
           <div>
             <div className="flex items-center gap-2">
               <span className="text-base font-bold text-white">استودیوی پیشرفته المنتور کامواوب (Elementor Studio)</span>
               <span className="text-[10px] bg-pink-500/20 text-pink-300 font-semibold px-2 py-0.5 rounded-full border border-pink-500/30 font-mono">
-                CRO AI Optimizer
+                A/B Testing & CRO AI
               </span>
             </div>
-            <span className="text-xs text-slate-400">شبیه‌سازی تاثیر چیدمان‌های مختلف بر نرخ تبدیل، زمان ماندگاری و فروش</span>
+            <span className="text-xs text-slate-400">تست محتوایی A/B سکشن‌ها، شبیه‌سازی بلادرنگ نرخ تبدیل و ویرایشگر ویجت‌ها</span>
           </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="flex items-center bg-slate-950 p-1.5 rounded-2xl border border-slate-800">
+        <div className="flex items-center bg-slate-950 p-1.5 rounded-2xl border border-slate-800 flex-wrap gap-1">
+          <button
+            onClick={() => setActiveTab('ab-testing')}
+            className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
+              activeTab === 'ab-testing'
+                ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md shadow-pink-900/40'
+                : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            <Split className="w-4 h-4" />
+            <span>تست A/B سکشن‌ها (A/B Content Testing)</span>
+          </button>
+
           <button
             onClick={() => setActiveTab('cro-optimizer')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'cro-optimizer'
-                ? 'bg-gradient-to-r from-pink-600 to-rose-600 text-white shadow-md shadow-pink-900/40'
+                ? 'bg-indigo-600 text-white shadow-md'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -159,7 +173,7 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
             onClick={() => setActiveTab('editor')}
             className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer ${
               activeTab === 'editor'
-                ? 'bg-indigo-600 text-white shadow-md'
+                ? 'bg-slate-800 text-white shadow-md'
                 : 'text-slate-400 hover:text-white'
             }`}
           >
@@ -175,6 +189,20 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
           <span>{appliedCroToast}</span>
         </div>
       )}
+
+      {/* ======================================================== */}
+      {/* 0. A/B CONTENT TESTING STUDIO TAB                        */}
+      {/* ======================================================== */}
+      {activeTab === 'ab-testing' && (
+        <ElementorABTestingStudio
+          config={config}
+          onApplyWinningVariant={(variant) => {
+            setAppliedCroToast(`نسخه برنده (${variant.headline}) با موفقیت به عنوان سکشن پیش‌فرض ذخیره و فعال شد.`);
+            setTimeout(() => setAppliedCroToast(null), 4000);
+          }}
+        />
+      )}
+
 
       {/* ======================================================== */}
       {/* 1. CONVERSION OPTIMIZER SIMULATOR TAB                    */}

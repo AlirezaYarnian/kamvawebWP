@@ -19,6 +19,7 @@ import { SeoMarketLab } from './components/SeoMarketLab';
 import { SpeedSecurityAuditor } from './components/SpeedSecurityAuditor';
 import { AiLearningAnalytics } from './components/AiLearningAnalytics';
 import { SmartWidgetLayoutEngine } from './components/SmartWidgetLayoutEngine';
+import { SmartThemeMigrator } from './components/SmartThemeMigrator';
 import { 
   Store, 
   LifeBuoy, 
@@ -109,6 +110,15 @@ export default function App() {
             config={themeConfig}
             onChangeConfig={setThemeConfig}
             onRefreshKnowledgeBase={refreshKnowledgeBaseFromServer}
+          />
+        )}
+
+        {/* Tab: Smart Theme Migrator to NexusAI */}
+        {activeTab === 'theme-migrator' && (
+          <SmartThemeMigrator
+            currentConfig={themeConfig}
+            onApplyConfig={setThemeConfig}
+            onViewLivePreview={() => setIsLivePreviewMode(true)}
           />
         )}
 

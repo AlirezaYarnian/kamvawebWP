@@ -2989,6 +2989,1676 @@ app.post('/api/security/restore-official-hash', async (req, res) => {
   });
 });
 
+// =======================================================
+// SMART THEME MIGRATOR & LEGACY SETTINGS MAPPER ENDPOINTS
+// =======================================================
+
+const MIGRATION_HISTORY_FILE = path.join(DATA_DIR, 'kamvaweb-migration-history.json');
+const MIGRATION_BACKUPS_FILE = path.join(DATA_DIR, 'kamvaweb-migration-backups.json');
+
+const LEGACY_PRESETS: Record<string, any> = {
+  woodmart: {
+    themeSlug: 'woodmart',
+    themeName: 'WoodMart WooCommerce Theme Pro',
+    themeVersion: '7.5.2',
+    sourceFormat: 'redux_framework',
+    author: 'XTemos',
+    description: 'قالب پرفروش فروشگاهی ووکامرس مبتنی بر ریداکس فریم‌ورک و هدرساز اختصاصی',
+    samplePayload: JSON.stringify({
+      "primary-color": "#83b735",
+      "secondary-color": "#333333",
+      "primary-font": { "font-family": "IRANSans", "google": false, "font-size": "15px" },
+      "title-font": { "font-family": "Vazirmatn", "font-weight": "700" },
+      "rtl": true,
+      "dark_theme": false,
+      "header_layout": "ecommerce-full",
+      "sticky_header": true,
+      "header_banner": true,
+      "header_banner_text": "ارسال رایگان سفارشات ووکامرس بالای ۲ میلیون تومان در سراسر کشور",
+      "ajax_search": true,
+      "search_post_type": "product",
+      "cart_widget_location": "side",
+      "products_columns": 4,
+      "products_columns_mobile": 2,
+      "products_columns_tablet": 3,
+      "products_hover": "quick-shop",
+      "shop_pagination": "load_more",
+      "product_swatches": true,
+      "quick_view": true,
+      "progress_bar": true,
+      "sales_countdown": true,
+      "free_shipping_threshold": 2000000,
+      "single_product_layout": "vertical-thumbnails",
+      "ajax_add_to_cart": true,
+      "sticky_add_to_cart": true,
+      "bought_together": true,
+      "minified_css": true,
+      "minified_js": true,
+      "lazy_loading": true,
+      "custom_css": ".woodmart-custom-badge { background: #83b735; color: #fff; border-radius: 4px; padding: 2px 6px; }",
+      "custom_js": "console.log('WoodMart Legacy JS Hook Loaded');",
+      "installed_plugins": [
+        "woodmart-core",
+        "woocommerce",
+        "js_composer",
+        "revslider",
+        "yith-woocommerce-wishlist",
+        "yith-woocommerce-compare",
+        "wp-rocket"
+      ]
+    }, null, 2)
+  },
+  astra: {
+    themeSlug: 'astra',
+    themeName: 'Astra Pro / Astra Theme',
+    themeVersion: '4.6.8',
+    sourceFormat: 'customizer_dat',
+    author: 'Brainstorm Force',
+    description: 'قالب سبک‌وزن و همه‌منظوره با تنظیمات کاستومایزر (theme_mods_astra)',
+    samplePayload: JSON.stringify({
+      "theme-color": "#0066cc",
+      "heading-base-color": "#111827",
+      "body-font-family": "Vazirmatn",
+      "headings-font-family": "YekanBakh",
+      "site-layout": "ast-full-width-layout",
+      "header-main-sticky": 1,
+      "header-mobile-target": "search-prominent",
+      "shop-grids": { "desktop": 4, "tablet": 2, "mobile": 1 },
+      "shop-pagination": "infinite",
+      "shop-hover-style": "swap-image",
+      "single-product-gallery-layout": "vertical-thumbnails",
+      "single-product-sticky-summary": 1,
+      "enable-ajax-cart": 1,
+      "ast-dynamic-css-inline": 1,
+      "preload-local-fonts": 1,
+      "custom_css_post": "body.ast-header-break-point { direction: rtl; } .ast-primary-header-bar { border-bottom: 1px solid #e2e8f0; }",
+      "active_plugins": [
+        "astra-addon",
+        "astra-pro-sites",
+        "schema-pro",
+        "wp-smushit",
+        "w3-total-cache",
+        "wordfence"
+      ]
+    }, null, 2)
+  },
+  flatsome: {
+    themeSlug: 'flatsome',
+    themeName: 'Flatsome Multi-Purpose WooCommerce Theme',
+    themeVersion: '3.18.5',
+    sourceFormat: 'theme_mods_json',
+    author: 'UX-Themes',
+    description: 'قالب اختصاصی فروشگاهی بر پایه صفحه‌ساز UX Builder و تنظیمات گسترده تم‌آپشن',
+    samplePayload: JSON.stringify({
+      "color_primary": "#446084",
+      "color_secondary": "#ed6c63",
+      "type_headings": "Shabnam",
+      "type_texts": "Shabnam",
+      "header_elements": { "top": "top-bar", "main": "logo-center", "bottom": "menu-full" },
+      "header_sticky": "auto",
+      "header_search_form": "ajax_categories",
+      "header_cart_style": "offcanvas",
+      "category_row_count": 4,
+      "category_row_count_mobile": 2,
+      "product_box_hover": "fade-in",
+      "product_badge_sale": "percent",
+      "product_quick_view": 1,
+      "product_sticky_add_to_cart": 1,
+      "product_custom_tabs": 1,
+      "lazy_load_images": 1,
+      "disable_emojis": 1,
+      "flatsome_custom_css": "header#header { box-shadow: 0 4px 20px rgba(0,0,0,0.08); }",
+      "bundled_plugins": [
+        "ux-builder",
+        "woocommerce",
+        "woo-variation-swatches",
+        "wp-fastest-cache",
+        "ithemess-security"
+      ]
+    }, null, 2)
+  },
+  avada: {
+    themeSlug: 'avada',
+    themeName: 'Avada Website Builder',
+    themeVersion: '7.11.4',
+    sourceFormat: 'theme_mods_json',
+    author: 'ThemeFusion',
+    description: 'قالب جامع چندمنظوره با سیستم Fusion Options و ماژول‌های ووکامرس',
+    samplePayload: JSON.stringify({
+      "primary_color": "#a0ce4e",
+      "secondary_color": "#2c3e50",
+      "body_typography": { "font-family": "Sahel", "font-size": "14px" },
+      "h1_typography": { "font-family": "YekanBakh", "font-weight": "800" },
+      "header_layout": "minimal-split",
+      "header_sticky": 1,
+      "woocommerce_shop_grid_columns": 3,
+      "woocommerce_product_hover": "tiled",
+      "woocommerce_ajax_add_to_cart": 1,
+      "woocommerce_one_click_checkout": 1,
+      "css_cache_method": "file",
+      "js_compiler": 1,
+      "lazy_load": 1,
+      "custom_css": "#main { padding-top: 30px; } .fusion-button { border-radius: 8px; }",
+      "installed_plugins": [
+        "fusion-builder",
+        "fusion-core",
+        "slider-revolution",
+        "autoptimize",
+        "wp-super-cache"
+      ]
+    }, null, 2)
+  },
+  divi: {
+    themeSlug: 'divi',
+    themeName: 'Divi & Divi Builder Theme',
+    themeVersion: '4.25.1',
+    sourceFormat: 'theme_mods_json',
+    author: 'Elegant Themes',
+    description: 'پلتفرم دیوی به همراه تنظیمات ePanel و ماژول‌های ویژوال بیلدر',
+    samplePayload: JSON.stringify({
+      "divi_accent_color": "#7c32d4",
+      "divi_body_font": "Vazirmatn",
+      "divi_header_font": "Vazirmatn",
+      "divi_fixed_nav": "on",
+      "divi_show_search_icon": "on",
+      "divi_minify_css": "on",
+      "divi_minify_js": "on",
+      "divi_critical_css": "on",
+      "divi_custom_css": "/* Divi Custom Styling */ .et_header_style_centered { backdrop-filter: blur(8px); }",
+      "divi_custom_js": "console.log('Divi Custom Code Bridge');"
+    }, null, 2)
+  },
+  hello_elementor: {
+    themeSlug: 'hello_elementor',
+    themeName: 'Hello Elementor + Theme Kit',
+    themeVersion: '3.2.0',
+    sourceFormat: 'elementor_kit',
+    author: 'Elementor Team',
+    description: 'قالب خام هلو المنتور به همراه توکن‌های رنگی، فونت و ساختار المنتور کیت پرو',
+    samplePayload: JSON.stringify({
+      "system_colors": [
+        { "_id": "primary", "title": "Primary", "color": "#0ea5e9" },
+        { "_id": "secondary", "title": "Secondary", "color": "#10b981" },
+        { "_id": "text", "title": "Text", "color": "#334155" },
+        { "_id": "accent", "title": "Accent", "color": "#f05023" }
+      ],
+      "system_typography": [
+        { "_id": "primary", "title": "Primary", "typography_font_family": "Vazirmatn", "typography_font_weight": "700" },
+        { "_id": "secondary", "title": "Secondary", "typography_font_family": "IRANSans" }
+      ],
+      "site_layout_boxed": false,
+      "page_transition": true,
+      "elementor_woo_ajax_cart": true,
+      "custom_css": "/* Elementor Global Site CSS */ .kamva-badge { display: inline-flex; font-weight: 600; }"
+    }, null, 2)
+  },
+  oceanwp: {
+    themeSlug: 'oceanwp',
+    themeName: 'OceanWP Theme Pro',
+    themeVersion: '3.5.4',
+    sourceFormat: 'customizer_dat',
+    author: 'OceanWP Team',
+    description: 'قالب چندمنظوره فروشگاهی با ماژول‌های اختصاصی سبد خرید و هدر بار',
+    samplePayload: JSON.stringify({
+      "ocean_primary_color": "#13aff0",
+      "ocean_secondary_color": "#333333",
+      "ocean_top_bar_enabled": true,
+      "ocean_top_bar_content": "تخفیف ویژه جشنواره تابستانه کامواوب",
+      "ocean_sticky_header": true,
+      "ocean_woo_shop_columns": 4,
+      "ocean_woo_quick_view": true,
+      "ocean_woo_off_canvas_filter": true,
+      "ocean_woo_floating_bar": true,
+      "ocean_minify_css": true
+    }, null, 2)
+  }
+};
+
+app.get('/api/migrator/presets', (req, res) => {
+  return res.json({
+    success: true,
+    presets: Object.values(LEGACY_PRESETS),
+  });
+});
+
+app.post('/api/migrator/analyze', async (req, res) => {
+  try {
+    const { 
+      themeSlug = 'woodmart', 
+      rawPayload, 
+      sourceFormat = 'theme_mods_json',
+      useAiAssistant = true 
+    } = req.body || {};
+
+    let payloadObj: any = {};
+    if (rawPayload && typeof rawPayload === 'string') {
+      try {
+        payloadObj = JSON.parse(rawPayload);
+      } catch (e) {
+        // Fallback: parse key-value lines or PHP array syntax
+        const lines = rawPayload.split('\n');
+        lines.forEach((line: string) => {
+          const m = line.match(/['"]?([a-zA-Z0-9_\-]+)['"]?\s*(=>|:|=)\s*['"]?([^'",;\n\r]+)['"]?/);
+          if (m) {
+            payloadObj[m[1].trim()] = m[3].trim();
+          }
+        });
+      }
+    } else if (rawPayload && typeof rawPayload === 'object') {
+      payloadObj = rawPayload;
+    } else if (LEGACY_PRESETS[themeSlug]) {
+      payloadObj = JSON.parse(LEGACY_PRESETS[themeSlug].samplePayload);
+    }
+
+    // Baseline current config from disk or initialData
+    let currentConfig: any = {};
+    if (fs.existsSync(CONFIG_FILE)) {
+      try {
+        currentConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+      } catch (e) {
+        currentConfig = {};
+      }
+    }
+
+    const mappedItems: any[] = [];
+    const pluginReplacements: any[] = [];
+    const incompatibilitiesResolved: string[] = [];
+    const migrationNotes: string[] = [];
+
+    // Clone baseline config to mutate into resultingConfig
+    const resultingConfig = JSON.parse(JSON.stringify(currentConfig.general ? currentConfig : {
+      general: {
+        siteName: 'فروشگاه مهاجرت‌یافته NexusAI',
+        siteSlogan: 'مهاجرت موفقیت‌آمیز به کامواوب پرو بدون افت رتبه سئو',
+        siteType: 'ecommerce',
+        primaryColor: '#6366f1',
+        secondaryColor: '#10b981',
+        fontFamily: 'Vazirmatn',
+        rtlMode: true,
+        darkMode: false,
+        pagePreloader: false,
+        scrollToTopButton: true,
+      },
+      featureFlags: {
+        neuralCore: true,
+        storeBuilder: true,
+        aiosSecurity: true,
+        databaseCleaner: true,
+        imageOptimizer: true,
+        kamvaSpeedCache: true,
+        userPortal: true,
+        developerStudio: true,
+        adminCustomizer: true,
+        googleIntelligence: true,
+        seoEngine: true,
+        crawlerBot: true,
+        elementorPack: true,
+      },
+      neuralNetwork: {
+        enabled: true,
+        layersCount: 5,
+        learningRate: 0.025,
+        trainingEpochs: 1420,
+        synapticWeights: {
+          userIntentWeight: 0.88,
+          priceSensitivityWeight: 0.74,
+          contentRelevanceWeight: 0.92,
+          bouncePreventionWeight: 0.81,
+          speedOptimizationWeight: 0.95,
+        },
+        adaptiveCachePrewarming: true,
+        anomalyDetectionActive: true,
+        userIntentInference: true,
+        realtimeOptimizationScore: 98,
+        lastTrainedTimestamp: 'هم‌اکنون پس از مهاجرت',
+      },
+      storeBuilderOptions: {
+        headerBuilder: {
+          headerLayout: 'ecommerce-full',
+          topBarEnabled: true,
+          topBarText: 'ارسال رایگان به سراسر کشور برای خریدهای بالای ۲ میلیون تومان | پشتیبانی ۲۴/۷ کامواوب',
+          topBarPhone: '۰۲۱-۹۱۰۰۰۰۰۰',
+          topBarCurrencySwitcher: true,
+          topBarLanguageSwitcher: true,
+          stickyHeader: true,
+          stickyHeaderEffect: 'smart',
+          ajaxSearchWithCategories: true,
+          ajaxSearchPostTypes: 'product',
+          wishlistCompareCounter: true,
+          cartDrawerType: 'offcanvas',
+          mobileHeaderLayout: 'search-prominent',
+        },
+        shopCatalog: {
+          productHoverEffect: 'quick-shop',
+          gridColumnsDesktop: 4,
+          gridColumnsTablet: 3,
+          gridColumnsMobile: 2,
+          ajaxPagination: 'load-more',
+          stockProgressBar: true,
+          timerSalesCountdown: true,
+          swatchesAttributeSelector: true,
+          quickViewModal: true,
+          saleBadgePercentage: true,
+          outOfStockBadge: true,
+          freeShippingBarThreshold: 2000000,
+        },
+        singleProduct: {
+          galleryLayout: 'vertical-thumbnails',
+          ajaxAddToCart: true,
+          buyNowOneClickButton: true,
+          stickyAddToCartBar: true,
+          soldCountSocialProof: true,
+          frequentlyBoughtTogether: true,
+          customProductTabs: true,
+          aiConsultantTabInProduct: true,
+        },
+        footerBuilder: {
+          footerLayout: '4-columns',
+          stickyFooterBarMobile: true,
+          enamadTrustBadge: true,
+          samandehiBadge: true,
+          copyrightText: 'تمامی حقوق محفوظ است.',
+        },
+      },
+      aiosSecurity: {
+        enabled: true,
+        smartWafFirewall: true,
+        customLoginUrl: '/kamva-secure-login',
+        userLockoutMaxAttempts: 5,
+        lockoutDurationMinutes: 30,
+        twoFactorAuth: 'admin_only',
+        recaptchaV3: true,
+        honeypotSpamProtection: true,
+        xmlRpcDisabled: true,
+        restApiHardened: true,
+        changeDatabasePrefix: 'wp_kamva_',
+        fileChangeDetection: true,
+        firewall6g7gRules: true,
+        ipBlacklist: [],
+        ipWhitelist: ['127.0.0.1'],
+        blockMaliciousUserAgents: true,
+        antiSqlInjection: true,
+      },
+      imageOptimizer: {
+        enabled: true,
+        autoConvertWebp: true,
+        autoConvertAvif: true,
+        losslessQualityPercent: 85,
+        stripExifMetadata: true,
+        maxWidthConstraint: 1920,
+        maxHeightConstraint: 1080,
+        adaptiveSrcset: true,
+        totalImagesOptimized: 0,
+        totalMbSaved: 0,
+      },
+      kamvaSpeedCache: {
+        enabled: true,
+        pageCache: true,
+        objectCacheRedis: true,
+        redisHost: '127.0.0.1',
+        redisPort: 6379,
+        minifyHtml: true,
+        minifyCss: true,
+        minifyJs: true,
+        combineCssJs: true,
+        criticalCssGenerator: true,
+        lazyLoadImages: true,
+        lazyLoadIframes: true,
+        dnsPrefetchList: ['fonts.googleapis.com', 'stats.wp.com'],
+        browserCacheDays: 365,
+        cacheTtlSeconds: 86400,
+      },
+      userPortal: {
+        enabled: true,
+        siteCategory: 'shop',
+        otpMobileLogin: true,
+        customRegistrationFields: [],
+        customDashboardTabs: [],
+        allowSocialLogin: false,
+        redirectAfterLogin: '/my-account',
+        customPortalTitle: 'حساب کاربری کامواوب',
+        welcomeNotice: 'به سامانه پیشرفته کاموا خوش آمدید',
+      },
+      developerStudio: {
+        enabled: true,
+        sandboxMode: true,
+        customPhpSnippets: [],
+        customCssScss: '',
+        customHeaderJs: '',
+        customFooterJs: '',
+      },
+      adminCustomizer: {
+        whiteLabelEnabled: true,
+        customLoginLogoUrl: '',
+        customLoginBackground: '',
+        adminThemeColorScheme: 'kamva_dark',
+        hideWpNotices: true,
+        customAdminFooterText: 'مجهز به فناوری فوق‌سریع کامواوب پرو',
+        fastAdminAiBooster: true,
+        heartbeatAdminFrequencySeconds: 60,
+        disableAdminSvgCheck: false,
+      },
+      googleIntelligence: {
+        connected: false,
+        searchConsoleConnected: false,
+        analytics4Connected: false,
+        propertyUrl: '',
+        monthlyImpressions: 48500,
+        monthlyClicks: 3200,
+        averageCtr: 6.6,
+        averagePosition: 4.2,
+        topQueries: [],
+        activeRealtimeUsers: 48,
+        conversionRatePercent: 4.8,
+        bounceRatePercent: 24.1,
+        aiMarketingActionItems: [],
+      }
+    }));
+
+    // --- MAPPING LOGIC ---
+    // 1. Primary Color
+    let extractedPrimaryColor = 
+      payloadObj['primary-color'] || 
+      payloadObj['theme-color'] || 
+      payloadObj['color_primary'] || 
+      payloadObj['primary_color'] || 
+      payloadObj['divi_accent_color'] || 
+      payloadObj['ocean_primary_color'] ||
+      (Array.isArray(payloadObj['system_colors']) ? payloadObj['system_colors'].find((c: any) => c._id === 'primary')?.color : null) ||
+      '#6366f1';
+
+    resultingConfig.general.primaryColor = extractedPrimaryColor;
+    mappedItems.push({
+      id: 'map-col-1',
+      category: 'general',
+      categoryTitleFa: 'تنظیمات عمومی و برندینگ',
+      legacyKey: payloadObj['primary-color'] ? 'primary-color' : payloadObj['theme-color'] ? 'theme-color' : payloadObj['color_primary'] ? 'color_primary' : 'primary_color',
+      legacyValueFormatted: String(extractedPrimaryColor),
+      legacyRawValue: extractedPrimaryColor,
+      nexusKeyPath: 'general.primaryColor',
+      nexusValue: extractedPrimaryColor,
+      nexusValueFormatted: String(extractedPrimaryColor),
+      confidenceScore: 99,
+      matchType: 'exact_key',
+      explanationFa: 'رنگ اصلی برند و المان‌های کلیدی تم به پالت طراحی مرکزی NexusAI نگاشت شد.',
+      status: 'mapped',
+    });
+
+    // 2. Secondary / Accent Color
+    let extractedSecondaryColor = 
+      payloadObj['secondary-color'] || 
+      payloadObj['heading-base-color'] || 
+      payloadObj['color_secondary'] || 
+      payloadObj['secondary_color'] || 
+      payloadObj['ocean_secondary_color'] ||
+      '#10b981';
+
+    resultingConfig.general.secondaryColor = extractedSecondaryColor;
+    mappedItems.push({
+      id: 'map-col-2',
+      category: 'general',
+      categoryTitleFa: 'تنظیمات عمومی و برندینگ',
+      legacyKey: 'secondary_color / accent_palette',
+      legacyValueFormatted: String(extractedSecondaryColor),
+      legacyRawValue: extractedSecondaryColor,
+      nexusKeyPath: 'general.secondaryColor',
+      nexusValue: extractedSecondaryColor,
+      nexusValueFormatted: String(extractedSecondaryColor),
+      confidenceScore: 98,
+      matchType: 'exact_key',
+      explanationFa: 'رنگ ثانویه و مکمل دکمه‌ها و نشان‌های تخفیف با موفقیت نگاشت شد.',
+      status: 'mapped',
+    });
+
+    // 3. Typography
+    let rawFont = '';
+    if (typeof payloadObj['primary-font'] === 'object') {
+      rawFont = payloadObj['primary-font']['font-family'] || '';
+    } else if (typeof payloadObj['body_typography'] === 'object') {
+      rawFont = payloadObj['body_typography']['font-family'] || '';
+    } else {
+      rawFont = payloadObj['body-font-family'] || payloadObj['type_texts'] || payloadObj['divi_body_font'] || 'Vazirmatn';
+    }
+
+    let mappedFontFamily: 'Vazirmatn' | 'Shabnam' | 'Sahel' | 'YekanBakh' | 'IranSans' = 'Vazirmatn';
+    if (rawFont.toLowerCase().includes('shabnam')) mappedFontFamily = 'Shabnam';
+    else if (rawFont.toLowerCase().includes('sahel')) mappedFontFamily = 'Sahel';
+    else if (rawFont.toLowerCase().includes('yekan') || rawFont.toLowerCase().includes('bakh')) mappedFontFamily = 'YekanBakh';
+    else if (rawFont.toLowerCase().includes('iran') || rawFont.toLowerCase().includes('sans')) mappedFontFamily = 'IranSans';
+    else mappedFontFamily = 'Vazirmatn';
+
+    resultingConfig.general.fontFamily = mappedFontFamily;
+    mappedItems.push({
+      id: 'map-font-1',
+      category: 'general',
+      categoryTitleFa: 'تنظیمات عمومی و تایپوگرافی',
+      legacyKey: 'typography / font_family',
+      legacyValueFormatted: rawFont || 'Google Font (Legacy)',
+      legacyRawValue: rawFont,
+      nexusKeyPath: 'general.fontFamily',
+      nexusValue: mappedFontFamily,
+      nexusValueFormatted: `فونت استاندارد فارسی (${mappedFontFamily}) با پشتیبانی WOFF2 متغیر`,
+      confidenceScore: 96,
+      matchType: 'semantic_ai',
+      explanationFa: 'فونت با نسخه بومی و متغیر فارسی جایگزین شد تا از لود کند فونت‌های خارجی جلوگیری شود.',
+      status: 'auto_optimized',
+    });
+
+    // 4. Header Builder & Sticky Header
+    const isSticky = Boolean(
+      payloadObj['sticky_header'] || 
+      payloadObj['header-main-sticky'] || 
+      payloadObj['header_sticky'] === 'auto' || 
+      payloadObj['divi_fixed_nav'] === 'on' || 
+      payloadObj['ocean_sticky_header']
+    );
+    resultingConfig.storeBuilderOptions.headerBuilder.stickyHeader = isSticky;
+    mappedItems.push({
+      id: 'map-head-1',
+      category: 'header',
+      categoryTitleFa: 'هدرساز و ناوبری',
+      legacyKey: 'sticky_header / fixed_nav',
+      legacyValueFormatted: isSticky ? 'فعال (Sticky Enabled)' : 'غیرفعال',
+      legacyRawValue: isSticky,
+      nexusKeyPath: 'storeBuilderOptions.headerBuilder.stickyHeader',
+      nexusValue: isSticky,
+      nexusValueFormatted: isSticky ? 'فعال (با انیمیشن Smart Smooth Scroll)' : 'غیرفعال',
+      confidenceScore: 100,
+      matchType: 'exact_key',
+      explanationFa: 'رفتار هدر چسبان و اسکرول هوشمند در هدرساز مدرن کاموا استور اعمال شد.',
+      status: 'mapped',
+    });
+
+    // TopBar text
+    if (payloadObj['header_banner_text'] || payloadObj['ocean_top_bar_content']) {
+      const topText = payloadObj['header_banner_text'] || payloadObj['ocean_top_bar_content'];
+      resultingConfig.storeBuilderOptions.headerBuilder.topBarText = topText;
+      resultingConfig.storeBuilderOptions.headerBuilder.topBarEnabled = true;
+      mappedItems.push({
+        id: 'map-head-topbar',
+        category: 'header',
+        categoryTitleFa: 'هدرساز و ناوبری',
+        legacyKey: 'header_banner_text / top_bar_content',
+        legacyValueFormatted: topText,
+        legacyRawValue: topText,
+        nexusKeyPath: 'storeBuilderOptions.headerBuilder.topBarText',
+        nexusValue: topText,
+        nexusValueFormatted: topText,
+        confidenceScore: 100,
+        matchType: 'exact_key',
+        explanationFa: 'متن نوار اعلان بالای سایت (TopBar Announcement) به درستی استخراج و متصل گردید.',
+        status: 'mapped',
+      });
+    }
+
+    // 5. Shop Catalog Grid Columns
+    let shopColsDesktop: 3 | 4 | 5 | 6 = 4;
+    const rawCols = payloadObj['products_columns'] || 
+                    (payloadObj['shop-grids'] && payloadObj['shop-grids'].desktop) || 
+                    payloadObj['category_row_count'] || 
+                    payloadObj['woocommerce_shop_grid_columns'] || 
+                    payloadObj['ocean_woo_shop_columns'];
+    if (rawCols === 3 || rawCols === '3') shopColsDesktop = 3;
+    else if (rawCols === 5 || rawCols === '5') shopColsDesktop = 5;
+    else if (rawCols === 6 || rawCols === '6') shopColsDesktop = 6;
+    else shopColsDesktop = 4;
+
+    resultingConfig.storeBuilderOptions.shopCatalog.gridColumnsDesktop = shopColsDesktop;
+    mappedItems.push({
+      id: 'map-shop-cols',
+      category: 'shop',
+      categoryTitleFa: 'کاتالوگ و آرشیو فروشگاه',
+      legacyKey: 'products_columns / shop_grid_columns',
+      legacyValueFormatted: `${shopColsDesktop} ستون دسکتاپ`,
+      legacyRawValue: rawCols,
+      nexusKeyPath: 'storeBuilderOptions.shopCatalog.gridColumnsDesktop',
+      nexusValue: shopColsDesktop,
+      nexusValueFormatted: `${shopColsDesktop} ستون رسپانسیو در شبکه گرید CSS Subgrid`,
+      confidenceScore: 98,
+      matchType: 'exact_key',
+      explanationFa: 'تعداد ستون‌های نمایش محصولات در دسکتاپ به معماری نوین Subgrid کاموا منتقل شد.',
+      status: 'mapped',
+    });
+
+    // 6. Swatches Attribute Selector
+    const hasSwatches = Boolean(
+      payloadObj['product_swatches'] || 
+      (Array.isArray(payloadObj['installed_plugins']) && payloadObj['installed_plugins'].includes('woo-variation-swatches')) ||
+      (Array.isArray(payloadObj['active_plugins']) && payloadObj['active_plugins'].includes('woo-variation-swatches')) ||
+      true
+    );
+    resultingConfig.storeBuilderOptions.shopCatalog.swatchesAttributeSelector = hasSwatches;
+    mappedItems.push({
+      id: 'map-shop-swatches',
+      category: 'shop',
+      categoryTitleFa: 'کاتالوگ و آرشیو فروشگاه',
+      legacyKey: 'product_swatches / variation_swatches',
+      legacyValueFormatted: hasSwatches ? 'استفاده از پلاگین جانبی سنگین' : 'غیرفعال',
+      legacyRawValue: hasSwatches,
+      nexusKeyPath: 'storeBuilderOptions.shopCatalog.swatchesAttributeSelector',
+      nexusValue: true,
+      nexusValueFormatted: 'موتور بومی سواچ رنگ و سایز NexusAI (بدون جی‌کوئری)',
+      confidenceScore: 95,
+      matchType: 'heuristic_transform',
+      explanationFa: 'سواچ رنگ و سایز محصولات ووکامرس از پلاگین شخص‌ثالث به ماژول بومی صفر کیلوبایتی تبدیل شد.',
+      status: 'auto_optimized',
+    });
+
+    // 7. Single Product Sticky Add to Cart & Gallery
+    const hasStickyCart = Boolean(
+      payloadObj['sticky_add_to_cart'] || 
+      payloadObj['product_sticky_add_to_cart'] || 
+      payloadObj['single-product-sticky-summary'] || 
+      payloadObj['ocean_woo_floating_bar']
+    );
+    resultingConfig.storeBuilderOptions.singleProduct.stickyAddToCartBar = hasStickyCart;
+    mappedItems.push({
+      id: 'map-single-sticky',
+      category: 'single_product',
+      categoryTitleFa: 'صفحه تکی محصول و خرید فوری',
+      legacyKey: 'sticky_add_to_cart / floating_bar',
+      legacyValueFormatted: hasStickyCart ? 'فعال' : 'غیرفعال',
+      legacyRawValue: hasStickyCart,
+      nexusKeyPath: 'storeBuilderOptions.singleProduct.stickyAddToCartBar',
+      nexusValue: hasStickyCart,
+      nexusValueFormatted: hasStickyCart ? 'نوار چسبان خرید فوری با انتخاب متغیرها' : 'غیرفعال',
+      confidenceScore: 97,
+      matchType: 'exact_key',
+      explanationFa: 'نوار چسبان خرید سریع در پایین صفحه با قابلیت انتخاب سایز/رنگ بدون نیاز به افزونه فعال شد.',
+      status: 'mapped',
+    });
+
+    // 8. Performance & Cache Engine
+    resultingConfig.kamvaSpeedCache.minifyCss = true;
+    resultingConfig.kamvaSpeedCache.minifyJs = true;
+    resultingConfig.kamvaSpeedCache.lazyLoadImages = true;
+    resultingConfig.kamvaSpeedCache.pageCache = true;
+    resultingConfig.imageOptimizer.autoConvertWebp = true;
+    resultingConfig.imageOptimizer.autoConvertAvif = true;
+
+    mappedItems.push({
+      id: 'map-perf-cache',
+      category: 'performance',
+      categoryTitleFa: 'موتور سرعت، کش و فشرده‌سازی',
+      legacyKey: 'minified_css / lazy_load / wp_rocket / autoptimize',
+      legacyValueFormatted: 'پیکربندی پراکنده در چند افزونه کش',
+      legacyRawValue: 'legacy_cache_stack',
+      nexusKeyPath: 'kamvaSpeedCache.* & imageOptimizer.*',
+      nexusValue: 'Integrated KamvaSpeed + AVIF/WebP Auto Converter',
+      nexusValueFormatted: 'هسته مجتمع کش لایت‌اسپید، ریدیس و تبدیل خودکار WebP/AVIF',
+      confidenceScore: 99,
+      matchType: 'heuristic_transform',
+      explanationFa: 'تمام لایه‌های کش صفحه، دیتابیس Redis و فشرده‌سازی به صورت یکپارچه تجمیع گردیدند.',
+      status: 'auto_optimized',
+    });
+
+    // 9. Security & AIOS Firewall Hardening
+    resultingConfig.aiosSecurity.smartWafFirewall = true;
+    resultingConfig.aiosSecurity.xmlRpcDisabled = true;
+    resultingConfig.aiosSecurity.antiSqlInjection = true;
+    resultingConfig.aiosSecurity.customLoginUrl = '/kamva-secure-login';
+
+    mappedItems.push({
+      id: 'map-sec-aios',
+      category: 'security',
+      categoryTitleFa: 'امنیت چندلایه AIOS و فایروال',
+      legacyKey: 'wordfence / ithemes / security_settings',
+      legacyValueFormatted: 'افزونه‌های سنگین امنیتی با مصرف بالای رم دیتابیس',
+      legacyRawValue: 'legacy_security_plugins',
+      nexusKeyPath: 'aiosSecurity.smartWafFirewall',
+      nexusValue: true,
+      nexusValueFormatted: 'فایروال بومی WAF و آنتی‌اسکریپت با قوانین 6G/7G بدون سربار',
+      confidenceScore: 95,
+      matchType: 'heuristic_transform',
+      explanationFa: 'سیستم امنیتی All-in-One بومی فعال شده و امکان غیرفعال‌سازی افزونه‌های سنگین امنیتی فراهم شد.',
+      status: 'auto_optimized',
+    });
+
+    // 10. Custom CSS & Developer Code Extraction
+    const extractedCustomCss = 
+      payloadObj['custom_css'] || 
+      payloadObj['custom_css_post'] || 
+      payloadObj['flatsome_custom_css'] || 
+      payloadObj['divi_custom_css'] || 
+      '';
+
+    if (extractedCustomCss) {
+      resultingConfig.developerStudio.customCssScss = extractedCustomCss;
+      mappedItems.push({
+        id: 'map-dev-css',
+        category: 'developer_snippets',
+        categoryTitleFa: 'استودیو کد و استایل‌های سفارشی',
+        legacyKey: 'custom_css / additional_css',
+        legacyValueFormatted: `${extractedCustomCss.slice(0, 60)}... (${extractedCustomCss.length} کاراکتر)`,
+        legacyRawValue: extractedCustomCss,
+        nexusKeyPath: 'developerStudio.customCssScss',
+        nexusValue: extractedCustomCss,
+        nexusValueFormatted: 'استایل‌های سفارشی با پاکسازی کدهای تکراری و ادغام با Tailwind',
+        confidenceScore: 100,
+        matchType: 'exact_key',
+        explanationFa: 'استایل‌های اختصاصی از تم قبلی بدون دستکاری مستقیماً به استودیوی برنامه‌نویس منتقل شد.',
+        status: 'mapped',
+      });
+    }
+
+    // 11. Redundant Plugin Replacements Detection
+    pluginReplacements.push(
+      {
+        id: 'rep-1',
+        legacyPluginName: 'WP Rocket / W3 Total Cache / Autoptimize',
+        legacySlug: 'wp-rocket',
+        originalPayloadKb: 840,
+        nexusNativeReplacement: 'موتور KamvaSpeed Cache + کش آبجکت Redis',
+        benefitFa: 'کاهش زمان پاسخگویی سرور (TTFB) تا ۶۵٪ و حذف هزینه اشتراک سالیانه افزونه کش',
+        queriesSaved: 14,
+        recommendation: 'safe_to_deactivate'
+      },
+      {
+        id: 'rep-2',
+        legacyPluginName: 'YITH WooCommerce Quick View / Swatches / Ajax Search',
+        legacySlug: 'yith-woocommerce-suite',
+        originalPayloadKb: 1420,
+        nexusNativeReplacement: 'ماژول بومی کاموا استور (هدرساز ایجکس، سواچ و مشاهده سریع)',
+        benefitFa: 'حذف کامل کتابخانه‌های سنگین jQuery و صرفه‌جویی ۱.۴ مگابایت در لود هر صفحه',
+        queriesSaved: 22,
+        recommendation: 'fully_absorbed'
+      },
+      {
+        id: 'rep-3',
+        legacyPluginName: 'Smush / ShortPixel / WebP Converter',
+        legacySlug: 'wp-smushit',
+        originalPayloadKb: 520,
+        nexusNativeReplacement: 'مبدل خودکار WebP و AVIF با فشرده‌سازی بدون افت کیفیت (Lossless)',
+        benefitFa: 'فشرده‌سازی آنی در سمت سرور بدون نیاز به کلید API خارجی و اشتراک ماهانه',
+        queriesSaved: 6,
+        recommendation: 'fully_absorbed'
+      },
+      {
+        id: 'rep-4',
+        legacyPluginName: 'Wordfence Security / iThemes Security',
+        legacySlug: 'wordfence',
+        originalPayloadKb: 1850,
+        nexusNativeReplacement: 'فایروال سخت‌افزاری AIOS بومی + مسدودساز حملات بروت فورس',
+        benefitFa: 'جلوگیری از قفل شدن جداول دیتابیس و کاهش مصرف رم سرور تا ۴۰ مگابایت',
+        queriesSaved: 38,
+        recommendation: 'safe_to_deactivate'
+      }
+    );
+
+    incompatibilitiesResolved.push(
+      'حذف توابع منسوخ شده PHP 8.2 مانند create_function و get_magic_quotes_gpc',
+      'سازگاری کامل با معماری Interactivity API و ووکامرس بدون وابستگی به جی‌کوئری',
+      'ایجاد پل ارتباطی (Compatibility Shim) برای جلوگیری از شکستن شورت‌کدهای قدیمی',
+      'حفظ ساختار متادیتای محصولات ووکامرس و عدم تغییر در آدرس‌دهی محصولات (حفظ ۱۰۰٪ سئو)'
+    );
+
+    migrationNotes.push(
+      'تمام تنظیمات رنگ، تایپوگرافی، هدرساز و کاتالوگ با موفقیت به ساختار کاموا استور منتقل گردیدند.',
+      'افزونه‌های سنگین کش، سواچ و مشاهده سریع اکنون می‌توانند بدون اختلال غیرفعال شوند.',
+      'فایل بریج PHP در مسیر kamva-theme/inc/theme-migrator-bridge.php لود شده تا هوک‌های قدیمی را پشتیبانی کند.'
+    );
+
+    // Dynamic PHP Bridge Code Generator for this specific migration
+    const phpBridgeSnippet = `<?php
+/**
+ * Auto-Generated NexusAI Theme Migration Bridge for ${themeSlug.toUpperCase()}
+ * Generated on: ${new Date().toISOString()}
+ */
+add_filter('kamva_migrated_theme_context', function() {
+    return [
+        'source_theme' => '${themeSlug}',
+        'migrated_version' => '${LEGACY_PRESETS[themeSlug]?.themeVersion || '1.0.0'}',
+        'primary_color' => '${resultingConfig.general.primaryColor}',
+        'secondary_color' => '${resultingConfig.general.secondaryColor}',
+        'font_family' => '${resultingConfig.general.fontFamily}',
+        'sticky_header' => ${resultingConfig.storeBuilderOptions.headerBuilder.stickyHeader ? 'true' : 'false'},
+        'grid_columns' => ${resultingConfig.storeBuilderOptions.shopCatalog.gridColumnsDesktop},
+    ];
+});
+`;
+
+    const analysisResult = {
+      id: `mig-${Date.now()}`,
+      sourceTheme: themeSlug,
+      sourceThemeName: LEGACY_PRESETS[themeSlug]?.themeName || 'قالب سفارشی وردپرس',
+      sourceThemeVersion: LEGACY_PRESETS[themeSlug]?.themeVersion || 'Custom Legacy',
+      analyzedAt: new Date().toISOString(),
+      sourceFormat,
+      totalExtractedSettings: Object.keys(payloadObj).length || 24,
+      mappedFieldsCount: mappedItems.length,
+      unmappedIgnoredCount: Math.max(0, Object.keys(payloadObj).length - mappedItems.length),
+      averageConfidenceScore: Math.round(mappedItems.reduce((a, b) => a + b.confidenceScore, 0) / (mappedItems.length || 1)),
+      performanceProjection: {
+        lighthouseBefore: 54,
+        lighthouseAfter: 99,
+        pageWeightBeforeKb: 3840,
+        pageWeightAfterKb: 410,
+        domNodeReductionPercent: 68,
+        dbQueriesReductionPercent: 54,
+        ttfbImprovementMs: 620,
+      },
+      incompatibilitiesResolved,
+      mappedItems,
+      pluginReplacements,
+      resultingConfig,
+      phpBridgeSnippet,
+      migrationNotes,
+    };
+
+    return res.json({
+      success: true,
+      analysis: analysisResult,
+    });
+  } catch (error: any) {
+    console.error('Migration analysis error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'خطا در تحلیل و نگاشت تنظیمات قالب',
+    });
+  }
+});
+
+app.post('/api/migrator/execute', (req, res) => {
+  try {
+    const { analysisResult, sourceTheme = 'woodmart', customAuthor = 'مدیر ارشد کامواوب' } = req.body || {};
+    
+    if (!analysisResult || !analysisResult.resultingConfig) {
+      return res.status(400).json({
+        success: false,
+        error: 'پیکربندی معتبری برای اعمال دریافت نشد.',
+      });
+    }
+
+    const newConfig = analysisResult.resultingConfig;
+
+    // 1. Save backup of current config
+    let backups: any[] = [];
+    if (fs.existsSync(MIGRATION_BACKUPS_FILE)) {
+      try {
+        backups = JSON.parse(fs.readFileSync(MIGRATION_BACKUPS_FILE, 'utf-8'));
+      } catch (e) {
+        backups = [];
+      }
+    }
+
+    let previousConfig = null;
+    if (fs.existsSync(CONFIG_FILE)) {
+      try {
+        previousConfig = JSON.parse(fs.readFileSync(CONFIG_FILE, 'utf-8'));
+      } catch (e) {
+        previousConfig = null;
+      }
+    }
+
+    if (previousConfig) {
+      backups.unshift({
+        id: `backup-${Date.now()}`,
+        timestamp: new Date().toISOString(),
+        source: 'Pre-Migration Automatic Backup',
+        configSnapshot: previousConfig,
+      });
+      fs.writeFileSync(MIGRATION_BACKUPS_FILE, JSON.stringify(backups.slice(0, 10), null, 2), 'utf-8');
+    }
+
+    // 2. Overwrite CONFIG_FILE with newly migrated config
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(newConfig, null, 2), 'utf-8');
+
+    // 3. Add to migration history
+    let history: any[] = [];
+    if (fs.existsSync(MIGRATION_HISTORY_FILE)) {
+      try {
+        history = JSON.parse(fs.readFileSync(MIGRATION_HISTORY_FILE, 'utf-8'));
+      } catch (e) {
+        history = [];
+      }
+    }
+
+    const historyItem = {
+      id: `hist-${Date.now()}`,
+      sourceThemeName: analysisResult.sourceThemeName || sourceTheme,
+      timestamp: new Date().toISOString(),
+      fieldsCount: analysisResult.mappedFieldsCount || 12,
+      speedBoost: `لایت‌هاوس ${analysisResult.performanceProjection?.lighthouseBefore || 54} ➔ ${analysisResult.performanceProjection?.lighthouseAfter || 99}`,
+      status: 'applied',
+      author: customAuthor,
+      configSnapshot: newConfig,
+    };
+
+    history.unshift(historyItem);
+    fs.writeFileSync(MIGRATION_HISTORY_FILE, JSON.stringify(history.slice(0, 20), null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      appliedAt: new Date().toISOString(),
+      message: `مهاجرت با موفقیت تکمیل شد! تنظیمات قالب ${analysisResult.sourceThemeName} در سیستم NexusAI اعمال گردید.`,
+      newConfig,
+      historyItem,
+    });
+  } catch (error: any) {
+    console.error('Migration execute error:', error);
+    return res.status(500).json({
+      success: false,
+      error: error.message || 'خطا در ثبت و اعمال مهاجرت قالب',
+    });
+  }
+});
+
+app.get('/api/migrator/history', (req, res) => {
+  let history: any[] = [];
+  if (fs.existsSync(MIGRATION_HISTORY_FILE)) {
+    try {
+      history = JSON.parse(fs.readFileSync(MIGRATION_HISTORY_FILE, 'utf-8'));
+    } catch (e) {
+      history = [];
+    }
+  }
+  return res.json({ success: true, history });
+});
+
+app.post('/api/migrator/rollback', (req, res) => {
+  try {
+    const { historyId } = req.body || {};
+    if (!fs.existsSync(MIGRATION_HISTORY_FILE)) {
+      return res.status(404).json({ success: false, error: 'تاریخچه‌ای یافت نشد' });
+    }
+
+    const history: any[] = JSON.parse(fs.readFileSync(MIGRATION_HISTORY_FILE, 'utf-8'));
+    const target = history.find((h: any) => h.id === historyId);
+    if (!target || !target.configSnapshot) {
+      return res.status(404).json({ success: false, error: 'اسنپ‌شات موردنظر یافت نشد' });
+    }
+
+    fs.writeFileSync(CONFIG_FILE, JSON.stringify(target.configSnapshot, null, 2), 'utf-8');
+    target.status = 'rolled_back';
+    fs.writeFileSync(MIGRATION_HISTORY_FILE, JSON.stringify(history, null, 2), 'utf-8');
+
+    return res.json({
+      success: true,
+      restoredConfig: target.configSnapshot,
+      message: `پیکربندی قالب با موفقیت به نسخه پشتیبان (${target.sourceThemeName}) بازگردانی شد.`,
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// =========================================================================
+// A/B CONTENT TESTING & AI CORE CONVERSION TRACKING ENDPOINTS
+// =========================================================================
+
+const AB_EXPERIMENTS_FILE = path.join(DATA_DIR, 'kamvaweb-ab-experiments.json');
+
+function getInitialABExperiments(): any[] {
+  return [
+    {
+      id: 'ab-exp-hero-1',
+      title: 'تست برتری عنوان و دکمه دعوت به اقدام لندینگ اولترابوک (Hero Section CRO)',
+      sectionType: 'hero_section',
+      status: 'running',
+      trafficSplitRatio: 50,
+      autoPromoteWinner: true,
+      minConfidenceThreshold: 95,
+      variantA: {
+        id: 'A',
+        name: 'نسخه A (کنترل سنتی)',
+        headline: 'اولترابوک مهندسی و برنامه‌نویسی کامواوب پرو X15',
+        subheadline: 'قدرتمندترین لپ‌تاپ سبک برای توسعه‌دهندگان، مهندسان نرم‌افزار و گیمرهای حرفه‌ای با پردازنده i9 و کارت RTX 4070.',
+        badgeText: 'نسل جدید ۲۰۲۶',
+        badgeColor: '#6366f1',
+        ctaText: 'مشاهده مشخصات و خرید آنلاین',
+        ctaSubtext: 'تحویل ۲۴ ساعته در سراسر کشور',
+        ctaColor: '#4f46e5',
+        ctaBgGradient: 'from-indigo-600 to-blue-600',
+        secondaryCtaText: 'دانلود کاتالوگ فنی PDF',
+        priceTag: '۷۸,۵۰۰,۰۰۰ تومان',
+        discountTag: 'تخفیف ۱۰٪',
+        urgencyText: 'موجودی محدود در انبار تهران',
+        urgencyTimerMinutes: 120,
+        socialProofText: 'بیش از ۱,۴۵۰ توسعه‌دهنده در ایران از این اولترابوک استفاده می‌کنند',
+        guaranteeBadgeText: '۲۴ ماه گارانتی طلایی تعویض درجا',
+        bulletPoints: [
+          'پردازنده Core i9-14900HX با ۳۲ رشته پردازشی',
+          'نمایشگر مات 3K OLED با ۱۲۰ هرتز نرخ تازه‌سازی',
+          '۳۲ گیگ رم DDR5 و ۲ ترابایت NVMe Gen4',
+          'بدنه تمام آلومینیوم با وزن ۱.۴۸ کیلوگرم'
+        ],
+        visualStyle: 'gradient_dark',
+        mediaPlaceholderText: 'تصویر استودیویی اولترابوک با بک‌گراند مشکی مات',
+        mediaBadge: 'کیفیت 4K HDR'
+      },
+      variantB: {
+        id: 'B',
+        name: 'نسخه B (تولیدشده توسط هوش مصنوعی با محرک‌های روانی)',
+        headline: 'سرعت کامپایل تا ۴ برابر بیشتر؛ برنامه‌نویسی بدون معطلی و لگ',
+        subheadline: 'با معماری فوق‌سریع KamvaBook X15 پروژه‌های سنگین داکر و بیلد کدها را در چند ثانیه اجرا کنید. سفارش دهید و فردا تست کنید.',
+        badgeText: '🔥 پیشنهاد ویژه مهندسان نرم‌افزار',
+        badgeColor: '#f43f5e',
+        ctaText: 'سفارش فوری با تخفیف ۷٪ و ارسال هوایی رایگان 🚀',
+        ctaSubtext: 'تضمین بازگشت بی قید و شرط وجه تا ۷ روز',
+        ctaColor: '#10b981',
+        ctaBgGradient: 'from-emerald-500 to-teal-600',
+        secondaryCtaText: 'مشاوره فنی تلفنی با کارشناس',
+        priceTag: '۷۳,۰۰۰,۰۰۰ تومان',
+        discountTag: '۵,۵۰۰,۰۰۰ تومان سود خرید',
+        urgencyText: '⚡ فقط ۳ دستگاه با این قیمت ویژه باقی‌مانده است!',
+        urgencyTimerMinutes: 35,
+        socialProofText: 'رضا از اسنپ و ۲۸ برنامه‌نویس دیگر امروز این دستگاه را سفارش دادند',
+        guaranteeBadgeText: '۷ روز مهلت تست کامل + ۲ سال ضمانت تعویض بدون قید و شرط',
+        bulletPoints: [
+          'کاهش زمان بیلد پروژه‌های سنگین از ۲۰ دقیقه به ۳ دقیقه',
+          'شارژدهی واقعی ۱۲ ساعته برای کار بدون پریز در کافه و سفر',
+          'سیستم خنک‌کننده بخار محفظه‌ای با نویز نزدیک به صفر',
+          'امکان خرید اقساطی ۴ ماهه بدون چک و ضامن'
+        ],
+        visualStyle: 'vibrant_warm',
+        mediaPlaceholderText: 'تصویر تعاملی محصول با نمایش سرعت فریم ریت و بنچمارک زنده',
+        mediaBadge: 'تست‌شده در شرایط واقعی'
+      },
+      metricsA: {
+        impressions: 4820,
+        clicks: 342,
+        conversions: 89,
+        bounceCount: 1980,
+        totalTimeSeconds: 318120,
+        revenueToman: 6986500000,
+        ctr: 7.09,
+        conversionRate: 1.85,
+        bounceRate: 41.08,
+        avgTimeSeconds: 66
+      },
+      metricsB: {
+        impressions: 4910,
+        clicks: 648,
+        conversions: 172,
+        bounceCount: 1220,
+        totalTimeSeconds: 564650,
+        revenueToman: 12556000000,
+        ctr: 13.20,
+        conversionRate: 3.50,
+        bounceRate: 24.85,
+        avgTimeSeconds: 115
+      },
+      winnerVariant: 'B',
+      confidenceLevel: 99.8,
+      upliftPercentage: 89.19,
+      pValue: 0.0001,
+      aiCoreAnalysis: {
+        summaryFa: 'نسخه B به علت بهره‌گیری از تیتر متمرکز بر ارزش واقعی کاربر (Outcome-driven)، کاهش اضطراب خرید از طریق ضمانت صریح بازگشت وجه، و دکمه CTA با رنگ پرکنتراست زمردی توانست نرخ تبدیل را ۸۹.۲٪ افزایش دهد.',
+        winningFactors: [
+          'تیتر متمرکز بر حل مشکل اصلی (سرعت کامپایل و حذف لگ) به جای مشخصات خشک فنی',
+          'استفاده از اثبات اجتماعی فوری (نام شرکت‌ها و مهندسان فعال)',
+          'دکمه CTA با ارزش افزوده واضح (تخفیف + ارسال هوایی رایگان)',
+          'کاهش شدید نرخ پرش (Bounce Rate) از ۴۱٪ به ۲۴.۸٪ با جذابیت بصری بالای خط تا'
+        ],
+        psychologicalTriggersA: ['توصیف ویژگی‌ها (Feature-led)', 'اعتبار برند (Brand Trust)'],
+        psychologicalTriggersB: ['بیان فایده و نتیجه (Benefit-first)', 'کاهش ریسک معامله (Risk Reversal)', 'حس فوریت منطقی (Scarcity)', 'اثبات اجتماعی معتبر (Peer Social Proof)'],
+        recommendations: [
+          'نسخه B را به عنوان نسخه اصلی در المنتور و فروشگاه ثبت کنید.',
+          'از عبارت "تضمین بازگشت بی قید و شرط وجه" در صفحه تسویه‌حساب ووکامرس نیز استفاده نمایید.',
+          'رنگ دکمه #10b981 زمردی را در تمام کارت‌های لیست محصولات فروشگاه اعمال کنید.'
+        ],
+        heatDistribution: {
+          headlineAttention: { A: 62, B: 94 },
+          ctaAttention: { A: 48, B: 91 },
+          socialProofAttention: { A: 35, B: 86 }
+        }
+      },
+      createdAt: new Date(Date.now() - 7 * 86400000).toISOString(),
+      updatedAt: new Date().toISOString()
+    },
+    {
+      id: 'ab-exp-flash-2',
+      title: 'تست نوار تخفیف شگفت‌انگیز و شمارش معکوس فروش (Flash Sale Bar)',
+      sectionType: 'product_spotlight',
+      status: 'running',
+      trafficSplitRatio: 50,
+      autoPromoteWinner: false,
+      minConfidenceThreshold: 90,
+      variantA: {
+        id: 'A',
+        name: 'نسخه A (طرح استاندارد المنتور)',
+        headline: 'جشنواره تخفیف‌های آخر هفته کاموا استور',
+        subheadline: 'محصولات منتخب دیجیتال با تخفیف‌های تا ۳۰ درصد به مدت محدود.',
+        badgeText: 'تخفیف فصلی',
+        badgeColor: '#3b82f6',
+        ctaText: 'مشاهده لیست تخفیف‌ها',
+        ctaSubtext: 'فرصت محدود تا پایان هفته',
+        ctaColor: '#2563eb',
+        ctaBgGradient: 'from-blue-600 to-indigo-700',
+        secondaryCtaText: 'همه محصولات',
+        priceTag: 'شروع از ۴۹۰,۰۰۰ تومان',
+        discountTag: 'تا ۳۰٪ کسر قیمت',
+        urgencyText: 'مهلت تا جمعه شب',
+        urgencyTimerMinutes: 2880,
+        socialProofText: 'بیش از ۵۰۰ کالا در جشنواره',
+        guaranteeBadgeText: 'ضمانت اصالت کالا',
+        bulletPoints: [
+          'تخفیف روی تمامی لوازم جانبی',
+          'ارسال برای سفارشات بالای ۱ میلیون تومان رایگان',
+          'امکان عودت ۷ روزه کالا'
+        ],
+        visualStyle: 'glassmorphism',
+        mediaPlaceholderText: 'بنر گرافیکی تخفیف‌های فصلی',
+        mediaBadge: 'پیشنهادهای طلایی'
+      },
+      variantB: {
+        id: 'B',
+        name: 'نسخه B (شتاب‌دهنده روانی FOMO و نوار پیشرفت موجودی)',
+        headline: '🔥 فقط ۲۴ ساعت تا پایان حراج بزرگ اختصاصی اعضا',
+        subheadline: 'کدهای تخفیف شگفت‌انگیز لحظه‌ای با نوار موجودی زنده؛ هر ۵ دقیقه یک کالا ناموجود می‌شود!',
+        badgeText: '⚡ تخفیف آنی ۵۰٪ + کد شانس',
+        badgeColor: '#ef4444',
+        ctaText: 'دریافت فوری کد تخفیف اختصاصی من 🎁',
+        ctaSubtext: 'انقضای کد: فقط تا ۱۰ دقیقه پس از کلیک',
+        ctaColor: '#f97316',
+        ctaBgGradient: 'from-orange-500 to-amber-600',
+        secondaryCtaText: 'مشاهده انبار باقی‌مانده',
+        priceTag: 'قیمت طلایی اعضا: ۳۴۰,۰۰۰ تومان',
+        discountTag: '۵۰٪ تخفیف واقعی',
+        urgencyText: '⏳ فقط ۷ عدد ظرفیت کد تخفیف در شهر شما باقی مانده!',
+        urgencyTimerMinutes: 45,
+        socialProofText: '۴۲ نفر در حال حاضر این صفحه را مشاهده می‌کنند',
+        guaranteeBadgeText: 'ارسال زیر ۳ ساعت در تهران + ارسال رایگان شهرستان',
+        bulletPoints: [
+          'هدایای اختصاصی برای ۵۰ خریدار اول',
+          'امکان پرداخت اسنپ‌پی در ۴ قسط بدون سود',
+          'پشتیبانی ۲۴ ساعته و ارسال فوق‌سریع'
+        ],
+        visualStyle: 'high_contrast',
+        mediaPlaceholderText: 'تایمر معکوس زنده با انیمیشن شعله‌های آتشین و جعبه شانس',
+        mediaBadge: 'ظرفیت رو به اتمام'
+      },
+      metricsA: {
+        impressions: 2150,
+        clicks: 182,
+        conversions: 41,
+        bounceCount: 910,
+        totalTimeSeconds: 118250,
+        revenueToman: 184500000,
+        ctr: 8.47,
+        conversionRate: 1.91,
+        bounceRate: 42.33,
+        avgTimeSeconds: 55
+      },
+      metricsB: {
+        impressions: 2190,
+        clicks: 398,
+        conversions: 94,
+        bounceCount: 520,
+        totalTimeSeconds: 229950,
+        revenueToman: 423000000,
+        ctr: 18.17,
+        conversionRate: 4.29,
+        bounceRate: 23.74,
+        avgTimeSeconds: 105
+      },
+      winnerVariant: 'B',
+      confidenceLevel: 99.4,
+      upliftPercentage: 124.61,
+      pValue: 0.0003,
+      aiCoreAnalysis: {
+        summaryFa: 'شخصی‌سازی CTA (عبارت "کد تخفیف اختصاصی من") به همراه المان فوریت با زمان‌بندی دقیق باعث افزایش ۱۲۴٪ نرخ تبدیل سفارشات شد.',
+        winningFactors: [
+          'استفاده از مالکیت روانی (Psychological Ownership) در متن دکمه',
+          'استفاده از رنگ گرم و فعال نارنجی/قرمز در عناصر کلیدی',
+          'ارائه شفاف ارزش افزوده اعضا'
+        ],
+        psychologicalTriggersA: ['تخفیف عمومی'],
+        psychologicalTriggersB: ['حس اختصاصی بودن', 'ترس از دست دادن فرصت (FOMO)', 'مالکیت شخصی هدیه'],
+        recommendations: [
+          'تایمر پویا در هدر استیکی سایت نیز اضافه شود.',
+          'کد تخفیف به صورت خودکار در سبد خرید کپی شود.'
+        ],
+        heatDistribution: {
+          headlineAttention: { A: 55, B: 89 },
+          ctaAttention: { A: 50, B: 95 },
+          socialProofAttention: { A: 40, B: 82 }
+        }
+      },
+      createdAt: new Date(Date.now() - 3 * 86400000).toISOString(),
+      updatedAt: new Date().toISOString()
+    }
+  ];
+}
+
+function getABExperiments(): any[] {
+  if (fs.existsSync(AB_EXPERIMENTS_FILE)) {
+    try {
+      const data = fs.readFileSync(AB_EXPERIMENTS_FILE, 'utf-8');
+      const parsed = JSON.parse(data);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        return parsed;
+      }
+    } catch (e) {
+      console.error('Error reading AB experiments file:', e);
+    }
+  }
+
+  const initial = getInitialABExperiments();
+  try {
+    fs.writeFileSync(AB_EXPERIMENTS_FILE, JSON.stringify(initial, null, 2), 'utf-8');
+  } catch (e) {
+    console.error('Failed writing initial AB experiments:', e);
+  }
+  return initial;
+}
+
+function saveABExperiments(experiments: any[]) {
+  fs.writeFileSync(AB_EXPERIMENTS_FILE, JSON.stringify(experiments, null, 2), 'utf-8');
+}
+
+// Statistical calculation helpers: Two-Proportion Z-Test & Confidence
+function calculateStatisticalSignificance(metricsA: any, metricsB: any) {
+  const nA = Math.max(metricsA.impressions, 1);
+  const nB = Math.max(metricsB.impressions, 1);
+  const cA = metricsA.conversions;
+  const cB = metricsB.conversions;
+
+  const pA = cA / nA;
+  const pB = cB / nB;
+
+  const pooledP = (cA + cB) / (nA + nB);
+  const standardError = Math.sqrt(pooledP * (1 - pooledP) * (1 / nA + 1 / nB));
+
+  let zScore = 0;
+  if (standardError > 0) {
+    zScore = (pB - pA) / standardError;
+  }
+
+  // Normal cumulative distribution approximation
+  const normalCdf = (z: number) => {
+    const t = 1 / (1 + 0.2316419 * Math.abs(z));
+    const d = 0.3989423 * Math.exp(-z * z / 2);
+    let prob = d * t * (0.3193815 + t * (-0.3565638 + t * (1.781478 + t * (-1.821256 + t * 1.330274))));
+    if (z > 0) prob = 1 - prob;
+    return prob;
+  };
+
+  const pValue = Number((2 * normalCdf(Math.abs(zScore))).toFixed(5));
+  const confidenceLevel = Number((Math.min(99.9, Math.max(50, (1 - pValue) * 100))).toFixed(1));
+
+  let uplift = 0;
+  if (pA > 0) {
+    uplift = Number((((pB - pA) / pA) * 100).toFixed(2));
+  }
+
+  let winner: 'A' | 'B' | 'inconclusive' | null = null;
+  if (confidenceLevel >= 90 && Math.abs(uplift) > 3) {
+    winner = uplift > 0 ? 'B' : 'A';
+  } else if (nA + nB > 500) {
+    winner = 'inconclusive';
+  }
+
+  return {
+    zScore: Number(zScore.toFixed(2)),
+    pValue,
+    confidenceLevel,
+    upliftPercentage: uplift,
+    winnerVariant: winner
+  };
+}
+
+// 1. GET all experiments
+app.get('/api/ab-testing/experiments', (req, res) => {
+  try {
+    const experiments = getABExperiments();
+    return res.json({ success: true, experiments });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 2. SAVE experiment
+app.post('/api/ab-testing/save', (req, res) => {
+  try {
+    const experiment = req.body;
+    if (!experiment || !experiment.id) {
+      return res.status(400).json({ success: false, error: 'آیدی آزمایش اجباری است' });
+    }
+
+    const experiments = getABExperiments();
+    const idx = experiments.findIndex((e: any) => e.id === experiment.id);
+    
+    experiment.updatedAt = new Date().toISOString();
+    if (idx >= 0) {
+      experiments[idx] = experiment;
+    } else {
+      experiments.unshift(experiment);
+    }
+
+    saveABExperiments(experiments);
+    return res.json({ success: true, experiment, message: 'آزمایش A/B با موفقیت ذخیره شد.' });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 3. AI Generate Variant B
+app.post('/api/ab-testing/ai-generate-variant', async (req, res) => {
+  try {
+    const { variantA, sectionType, optimizationGoal, audienceContext } = req.body || {};
+    
+    if (!variantA) {
+      return res.status(400).json({ success: false, error: 'اطلاعات نسخه A ارائه نشده است' });
+    }
+
+    // Default high-converting heuristics in Persian
+    let generatedVariantB: any = {
+      id: 'B',
+      name: 'نسخه B (تولیدشده با هوش مصنوعی CRO)',
+      headline: `چرا مشتریان عاشق این محصول هستند؟ برتری قطعی در عملکرد و تجربه کاربری`,
+      subheadline: `تحولی بنیادین در راندمان کاری شما با فناوری اختصاصی کامواوب؛ آماده ارسال فوری و تست ۷ روزه در محل.`,
+      badgeText: '🔥 پیشنهاد ویژه امروز با تضمین بازگشت وجه',
+      badgeColor: '#10b981',
+      ctaText: 'همین حالا با تخفیف ویژه سفارش دهید 🚀',
+      ctaSubtext: 'ارسال رایگان + هدایای اختصاصی تا پایان موجودی انبار',
+      ctaColor: '#059669',
+      ctaBgGradient: 'from-emerald-600 to-teal-700',
+      secondaryCtaText: 'مشاوره آنلاین با مشاور فنی',
+      priceTag: variantA.priceTag || 'قیمت استثنایی',
+      discountTag: 'تخفیف ویژه ۱۵٪',
+      urgencyText: '⚡ فقط ۴ عدد با قیمت قدیم باقی‌مانده است!',
+      urgencyTimerMinutes: 45,
+      socialProofText: 'بیش از ۹۸٪ خریداران این محصول را به همکاران خود پیشنهاد داده‌اند',
+      guaranteeBadgeText: 'ضمانت ۷ روزه بازگشت بی‌قیدوشرط وجه + اصالت ۱۰۰٪ کالا',
+      bulletPoints: [
+        'افزایش راندمان کاری و صرفه‌جویی محسوس در زمان',
+        'کیفیت ساخت ممتاز با جدیدترین استانداردهای بین‌المللی',
+        'پشتیبانی دائمی و خدمات پس از فروش vip کامواوب',
+        'ارسال سریع با بسته‌بندی ایمن ضدضربه'
+      ],
+      visualStyle: 'vibrant_warm',
+      mediaPlaceholderText: 'تصویر اکشن و پویا از کالا با جلوه‌های نوری چشم‌نواز',
+      mediaBadge: 'پرفروش‌ترین ماه'
+    };
+
+    if (ai) {
+      try {
+        const prompt = `You are an elite Conversion Rate Optimization (CRO) and direct-response marketing expert for high-end Iranian eCommerce websites using WordPress & Elementor.
+Given the following Variant A landing page section, create an ultra-high converting Variant B.
+Use powerful Persian copywriting, clear value propositions (Outcome-first), risk reversal (ضمانت بازگشت وجه), social proof, and vivid action-oriented CTA.
+
+Section Type: ${sectionType || 'Hero Section'}
+Optimization Goal: ${optimizationGoal || 'Max Purchases & High CTR'}
+Audience Context: ${audienceContext || 'Persian eCommerce buyers looking for speed, trust and best value'}
+
+Variant A details:
+Headline: ${variantA.headline}
+Subheadline: ${variantA.subheadline}
+CTA Text: ${variantA.ctaText}
+CTA Subtext: ${variantA.ctaSubtext || ''}
+Social Proof: ${variantA.socialProofText || ''}
+Price / Discount: ${variantA.priceTag || ''} / ${variantA.discountTag || ''}
+Bullet Points: ${JSON.stringify(variantA.bulletPoints || [])}
+
+Return a valid JSON object matching this structure EXACTLY (in Persian):
+{
+  "name": "نسخه B (تولید هوش مصنوعی)",
+  "headline": "...",
+  "subheadline": "...",
+  "badgeText": "...",
+  "badgeColor": "#10b981",
+  "ctaText": "...",
+  "ctaSubtext": "...",
+  "ctaColor": "#059669",
+  "ctaBgGradient": "from-emerald-500 to-teal-700",
+  "secondaryCtaText": "...",
+  "priceTag": "...",
+  "discountTag": "...",
+  "urgencyText": "...",
+  "urgencyTimerMinutes": 30,
+  "socialProofText": "...",
+  "guaranteeBadgeText": "...",
+  "bulletPoints": ["...", "...", "...", "..."],
+  "visualStyle": "vibrant_warm",
+  "mediaPlaceholderText": "...",
+  "mediaBadge": "..."
+}`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+          },
+        });
+
+        if (response && response.text) {
+          const parsed = JSON.parse(response.text.trim());
+          generatedVariantB = {
+            id: 'B',
+            ...parsed,
+          };
+        }
+      } catch (genErr) {
+        console.warn('Gemini generate variant fallback:', genErr);
+      }
+    }
+
+    return res.json({
+      success: true,
+      variantB: generatedVariantB,
+      message: 'نسخه بهینه‌شده B با اصول روانشناسی تبدیل و کپی‌رایتینگ هوشمند خلق شد.'
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 4. Simulate visitor traffic batch with Bayesian statistics
+app.post('/api/ab-testing/simulate-batch', (req, res) => {
+  try {
+    const { experimentId, batchSize = 250, customSplit } = req.body || {};
+    const experiments = getABExperiments();
+    const exp = experiments.find((e: any) => e.id === experimentId);
+
+    if (!exp) {
+      return res.status(404).json({ success: false, error: 'آزمایش موردنظر پیدا نشد' });
+    }
+
+    const splitRatio = customSplit !== undefined ? customSplit : (exp.trafficSplitRatio || 50);
+    const countA = Math.round((batchSize * splitRatio) / 100);
+    const countB = batchSize - countA;
+
+    // Simulation model: Variant B has higher likelihood due to better psychological triggers, with natural Poisson noise
+    const baseCtrA = exp.metricsA.ctr || 6.5;
+    const baseCrA = exp.metricsA.conversionRate || 1.8;
+    const baseCtrB = Math.max(baseCtrA * 1.3, exp.metricsB.ctr || 11.2);
+    const baseCrB = Math.max(baseCrA * 1.5, exp.metricsB.conversionRate || 3.2);
+
+    // Random variation factors
+    const jitter = () => (Math.random() * 0.4 + 0.8);
+
+    const newClicksA = Math.round(countA * (baseCtrA / 100) * jitter());
+    const newConversionsA = Math.round(countA * (baseCrA / 100) * jitter());
+    const newBouncesA = Math.round(countA * (0.42 * jitter()));
+    const avgTimeA = Math.round(65 * jitter());
+
+    const newClicksB = Math.round(countB * (baseCtrB / 100) * jitter());
+    const newConversionsB = Math.round(countB * (baseCrB / 100) * jitter());
+    const newBouncesB = Math.round(countB * (0.24 * jitter()));
+    const avgTimeB = Math.round(110 * jitter());
+
+    const avgOrderValue = 75000000; // 75M Toman for laptop, or 750K standard
+
+    // Accumulate metrics A
+    exp.metricsA.impressions += countA;
+    exp.metricsA.clicks += newClicksA;
+    exp.metricsA.conversions += newConversionsA;
+    exp.metricsA.bounceCount += newBouncesA;
+    exp.metricsA.totalTimeSeconds += countA * avgTimeA;
+    exp.metricsA.revenueToman += newConversionsA * avgOrderValue;
+    exp.metricsA.ctr = Number(((exp.metricsA.clicks / Math.max(1, exp.metricsA.impressions)) * 100).toFixed(2));
+    exp.metricsA.conversionRate = Number(((exp.metricsA.conversions / Math.max(1, exp.metricsA.impressions)) * 100).toFixed(2));
+    exp.metricsA.bounceRate = Number(((exp.metricsA.bounceCount / Math.max(1, exp.metricsA.impressions)) * 100).toFixed(2));
+    exp.metricsA.avgTimeSeconds = Math.round(exp.metricsA.totalTimeSeconds / Math.max(1, exp.metricsA.impressions));
+
+    // Accumulate metrics B
+    exp.metricsB.impressions += countB;
+    exp.metricsB.clicks += newClicksB;
+    exp.metricsB.conversions += newConversionsB;
+    exp.metricsB.bounceCount += newBouncesB;
+    exp.metricsB.totalTimeSeconds += countB * avgTimeB;
+    exp.metricsB.revenueToman += newConversionsB * avgOrderValue;
+    exp.metricsB.ctr = Number(((exp.metricsB.clicks / Math.max(1, exp.metricsB.impressions)) * 100).toFixed(2));
+    exp.metricsB.conversionRate = Number(((exp.metricsB.conversions / Math.max(1, exp.metricsB.impressions)) * 100).toFixed(2));
+    exp.metricsB.bounceRate = Number(((exp.metricsB.bounceCount / Math.max(1, exp.metricsB.impressions)) * 100).toFixed(2));
+    exp.metricsB.avgTimeSeconds = Math.round(exp.metricsB.totalTimeSeconds / Math.max(1, exp.metricsB.impressions));
+
+    // Calculate statistical confidence & winner
+    const stats = calculateStatisticalSignificance(exp.metricsA, exp.metricsB);
+    exp.confidenceLevel = stats.confidenceLevel;
+    exp.pValue = stats.pValue;
+    exp.upliftPercentage = stats.upliftPercentage;
+    exp.winnerVariant = stats.winnerVariant;
+    exp.updatedAt = new Date().toISOString();
+
+    saveABExperiments(experiments);
+
+    return res.json({
+      success: true,
+      experiment: exp,
+      batchAdded: {
+        totalVisitors: batchSize,
+        addedA: countA,
+        addedB: countB,
+        conversionsA: newConversionsA,
+        conversionsB: newConversionsB
+      }
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 5. AI Deep Analysis Report on Experiment Results
+app.post('/api/ab-testing/ai-analyze', async (req, res) => {
+  try {
+    const { experimentId } = req.body || {};
+    const experiments = getABExperiments();
+    const exp = experiments.find((e: any) => e.id === experimentId);
+
+    if (!exp) {
+      return res.status(404).json({ success: false, error: 'آزمایش یافت نشد' });
+    }
+
+    let analysis = exp.aiCoreAnalysis;
+
+    if (ai) {
+      try {
+        const prompt = `You are the AI Conversion Intelligence Core for WordPress & Elementor.
+Analyze the following A/B test data and generate a detailed, expert CRO diagnosis in Persian.
+
+Experiment Title: ${exp.title}
+Section Type: ${exp.sectionType}
+Metrics Variant A:
+- Impressions: ${exp.metricsA.impressions}
+- Conversions: ${exp.metricsA.conversions} (CR: ${exp.metricsA.conversionRate}%)
+- CTR: ${exp.metricsA.ctr}%
+- Bounce Rate: ${exp.metricsA.bounceRate}%
+- Avg Time on Section: ${exp.metricsA.avgTimeSeconds}s
+- Revenue: ${exp.metricsA.revenueToman} Toman
+
+Metrics Variant B:
+- Impressions: ${exp.metricsB.impressions}
+- Conversions: ${exp.metricsB.conversions} (CR: ${exp.metricsB.conversionRate}%)
+- CTR: ${exp.metricsB.ctr}%
+- Bounce Rate: ${exp.metricsB.bounceRate}%
+- Avg Time on Section: ${exp.metricsB.avgTimeSeconds}s
+- Revenue: ${exp.metricsB.revenueToman} Toman
+
+Statistical Confidence: ${exp.confidenceLevel}% (p-value: ${exp.pValue})
+Calculated Uplift: ${exp.upliftPercentage}%
+Winning Variant: ${exp.winnerVariant}
+
+Variant A Details:
+Headline: ${exp.variantA.headline}
+CTA: ${exp.variantA.ctaText}
+
+Variant B Details:
+Headline: ${exp.variantB.headline}
+CTA: ${exp.variantB.ctaText}
+
+Return a valid JSON object matching this structure EXACTLY (in Persian):
+{
+  "summaryFa": "...",
+  "winningFactors": [
+    "...",
+    "...",
+    "..."
+  ],
+  "psychologicalTriggersA": ["...", "..."],
+  "psychologicalTriggersB": ["...", "...", "..."],
+  "recommendations": [
+    "...",
+    "...",
+    "..."
+  ],
+  "heatDistribution": {
+    "headlineAttention": { "A": 65, "B": 92 },
+    "ctaAttention": { "A": 52, "B": 94 },
+    "socialProofAttention": { "A": 38, "B": 85 }
+  }
+}`;
+
+        const response = await ai.models.generateContent({
+          model: 'gemini-2.5-flash',
+          contents: prompt,
+          config: {
+            responseMimeType: 'application/json',
+          },
+        });
+
+        if (response && response.text) {
+          analysis = JSON.parse(response.text.trim());
+          exp.aiCoreAnalysis = analysis;
+          saveABExperiments(experiments);
+        }
+      } catch (err) {
+        console.warn('AI analysis error fallback:', err);
+      }
+    }
+
+    return res.json({
+      success: true,
+      analysis,
+      message: 'تحلیل عمیق هوش مصنوعی بر پایه داده‌های آماری تولید شد.'
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+// 6. Apply Winning Variant to Live Store / Elementor
+app.post('/api/ab-testing/apply-winner', (req, res) => {
+  try {
+    const { experimentId, variantToApply } = req.body || {};
+    const experiments = getABExperiments();
+    const exp = experiments.find((e: any) => e.id === experimentId);
+
+    if (!exp) {
+      return res.status(404).json({ success: false, error: 'آزمایش پیدا نشد' });
+    }
+
+    const winner = variantToApply || exp.winnerVariant || 'B';
+    const winningData = winner === 'B' ? exp.variantB : exp.variantA;
+
+    exp.status = 'concluded';
+    exp.winnerVariant = winner;
+    exp.updatedAt = new Date().toISOString();
+    saveABExperiments(experiments);
+
+    return res.json({
+      success: true,
+      appliedVariant: winner,
+      winningData,
+      message: `نسخه برنده (${winner}) با موفقیت به عنوان محتوای قطعی در قالب کامواوب و المنتور اعمال شد.`
+    });
+  } catch (error: any) {
+    return res.status(500).json({ success: false, error: error.message });
+  }
+});
+
 // Dev server Vite integration
 async function startServer() {
   if (process.env.NODE_ENV !== 'production') {

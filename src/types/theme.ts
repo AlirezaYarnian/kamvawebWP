@@ -545,3 +545,173 @@ export interface SmartLayoutEngineConfig {
   activeTestPreset: 'normal' | 'flash_sale_surge' | 'mobile_dropoff_rescue' | 'content_heavy_blog' | 'cart_abandonment';
 }
 
+// ==========================================
+// SMART THEME MIGRATOR & LEGACY SETTINGS MAPPER
+// ==========================================
+
+export type LegacyThemeSlug = 
+  | 'woodmart'
+  | 'astra'
+  | 'flatsome'
+  | 'avada'
+  | 'divi'
+  | 'hello_elementor'
+  | 'oceanwp'
+  | 'enfold'
+  | 'betheme'
+  | 'custom_raw';
+
+export type MigrationFieldCategory = 
+  | 'general' 
+  | 'header' 
+  | 'shop' 
+  | 'single_product' 
+  | 'performance' 
+  | 'security' 
+  | 'user_portal' 
+  | 'developer_snippets' 
+  | 'neural_ai';
+
+export interface MappedFieldItem {
+  id: string;
+  category: MigrationFieldCategory;
+  categoryTitleFa: string;
+  legacyKey: string;
+  legacyValueFormatted: string;
+  legacyRawValue: any;
+  nexusKeyPath: string;
+  nexusValue: any;
+  nexusValueFormatted: string;
+  confidenceScore: number; // 0 - 100
+  matchType: 'exact_key' | 'semantic_ai' | 'heuristic_transform' | 'default_inferred';
+  explanationFa: string;
+  isCustomModified?: boolean;
+  status: 'mapped' | 'warning' | 'skipped' | 'auto_optimized';
+}
+
+export interface LegacyPluginReplacement {
+  id: string;
+  legacyPluginName: string;
+  legacySlug: string;
+  originalPayloadKb: number;
+  nexusNativeReplacement: string;
+  benefitFa: string;
+  queriesSaved: number;
+  recommendation: 'safe_to_deactivate' | 'fully_absorbed' | 'compatibility_layer_active';
+}
+
+export interface ThemeMigrationAnalysisResult {
+  id: string;
+  sourceTheme: LegacyThemeSlug;
+  sourceThemeName: string;
+  sourceThemeVersion: string;
+  analyzedAt: string;
+  sourceFormat: 'theme_mods_json' | 'customizer_dat' | 'redux_framework' | 'functions_php' | 'elementor_kit' | 'active_theme_dump';
+  totalExtractedSettings: number;
+  mappedFieldsCount: number;
+  unmappedIgnoredCount: number;
+  averageConfidenceScore: number;
+  performanceProjection: {
+    lighthouseBefore: number;
+    lighthouseAfter: number;
+    pageWeightBeforeKb: number;
+    pageWeightAfterKb: number;
+    domNodeReductionPercent: number;
+    dbQueriesReductionPercent: number;
+    ttfbImprovementMs: number;
+  };
+  incompatibilitiesResolved: string[];
+  mappedItems: MappedFieldItem[];
+  pluginReplacements: LegacyPluginReplacement[];
+  resultingConfig: ThemeOptionsConfig;
+  phpBridgeSnippet: string;
+  migrationNotes: string[];
+}
+
+export interface ThemeMigrationHistoryItem {
+  id: string;
+  sourceThemeName: string;
+  timestamp: string;
+  fieldsCount: number;
+  speedBoost: string;
+  status: 'applied' | 'backed_up' | 'rolled_back';
+  author: string;
+  configSnapshot: ThemeOptionsConfig;
+}
+
+// ==========================================
+// A/B CONTENT TESTING MODULE TYPES
+// ==========================================
+
+export type ABSectionType = 'hero_section' | 'product_spotlight' | 'lead_capture' | 'pricing_matrix' | 'cta_banner';
+
+export interface ABSectionVariant {
+  id: 'A' | 'B';
+  name: string;
+  headline: string;
+  subheadline: string;
+  badgeText: string;
+  badgeColor: string;
+  ctaText: string;
+  ctaSubtext?: string;
+  ctaColor: string;
+  ctaBgGradient: string;
+  secondaryCtaText?: string;
+  priceTag?: string;
+  discountTag?: string;
+  urgencyText?: string;
+  urgencyTimerMinutes?: number;
+  socialProofText: string;
+  guaranteeBadgeText: string;
+  bulletPoints: string[];
+  visualStyle: 'gradient_dark' | 'glassmorphism' | 'high_contrast' | 'vibrant_warm' | 'minimal_clean';
+  mediaPlaceholderText: string;
+  mediaBadge: string;
+}
+
+export interface ABVariantMetrics {
+  impressions: number;
+  clicks: number;
+  conversions: number;
+  bounceCount: number;
+  totalTimeSeconds: number;
+  revenueToman: number;
+  ctr: number; // percentage
+  conversionRate: number; // percentage
+  bounceRate: number; // percentage
+  avgTimeSeconds: number;
+}
+
+export interface ABExperiment {
+  id: string;
+  title: string;
+  sectionType: ABSectionType;
+  status: 'draft' | 'running' | 'paused' | 'concluded';
+  trafficSplitRatio: number; // 50 means 50/50
+  autoPromoteWinner: boolean;
+  minConfidenceThreshold: number; // e.g. 95%
+  variantA: ABSectionVariant;
+  variantB: ABSectionVariant;
+  metricsA: ABVariantMetrics;
+  metricsB: ABVariantMetrics;
+  winnerVariant: 'A' | 'B' | 'inconclusive' | null;
+  confidenceLevel: number; // e.g. 98.6%
+  upliftPercentage: number;
+  pValue: number;
+  aiCoreAnalysis: {
+    summaryFa: string;
+    winningFactors: string[];
+    psychologicalTriggersA: string[];
+    psychologicalTriggersB: string[];
+    recommendations: string[];
+    heatDistribution: {
+      headlineAttention: { A: number; B: number };
+      ctaAttention: { A: number; B: number };
+      socialProofAttention: { A: number; B: number };
+    };
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+
