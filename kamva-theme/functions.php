@@ -108,10 +108,20 @@ function kamvaweb_register_elementor_ai_widgets($widgets_manager) {
     require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-ai-sales-bot.php';
     require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-ai-product-advisor.php';
     require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-ai-dynamic-faq.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-interactive-stories.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-gamified-spin-wheel.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-floating-multi-channel.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-product-hotspots.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-price-drop-alert.php';
 
     $widgets_manager->register(new \KamvaWeb_Elementor_Sales_Bot_Widget());
     $widgets_manager->register(new \KamvaWeb_Elementor_Product_Advisor_Widget());
     $widgets_manager->register(new \KamvaWeb_Elementor_Dynamic_FAQ_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Interactive_Stories_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Gamified_Spin_Wheel_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Floating_Multi_Channel_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Product_Hotspots_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Price_Drop_Alert_Widget());
 }
 add_action('elementor/widgets/register', 'kamvaweb_register_elementor_ai_widgets');
 

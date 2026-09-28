@@ -62,7 +62,12 @@ type WidgetType =
   | 'social-proof-ticker' 
   | 'quick-comparison-table' 
   | 'smart-reviews' 
-  | 'multi-currency-installments';
+  | 'multi-currency-installments'
+  | 'interactive-stories'
+  | 'gamified-spin-wheel'
+  | 'floating-multi-channel'
+  | 'product-hotspots'
+  | 'price-drop-alert';
 
 export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> = ({
   config,
@@ -491,6 +496,101 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
                   </div>
                 </button>
 
+                {/* 11. Interactive Product Stories */}
+                <button
+                  onClick={() => handleSelectWidget('interactive-stories')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'interactive-stories'
+                      ? 'bg-indigo-950/80 border-indigo-500 text-white shadow-lg ring-1 ring-indigo-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Sparkles className={`w-5 h-5 ${selectedWidget === 'interactive-stories' ? 'text-indigo-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-indigo-400 bg-indigo-500/10 px-1.5 py-0.5 rounded">Stories</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">استوری تصویری محصول</span>
+                    <span className="text-[10px] text-slate-400">هایلایت‌های اینستاگرامی</span>
+                  </div>
+                </button>
+
+                {/* 12. Gamified Spin Wheel */}
+                <button
+                  onClick={() => handleSelectWidget('gamified-spin-wheel')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'gamified-spin-wheel'
+                      ? 'bg-purple-950/80 border-purple-500 text-white shadow-lg ring-1 ring-purple-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Award className={`w-5 h-5 ${selectedWidget === 'gamified-spin-wheel' ? 'text-purple-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-purple-400 bg-purple-500/10 px-1.5 py-0.5 rounded">Spin Wheel</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">گردونه شانس تخفیف</span>
+                    <span className="text-[10px] text-slate-400">کوپن‌های جایزه‌دار آنی</span>
+                  </div>
+                </button>
+
+                {/* 13. Floating Multi-Channel Chat */}
+                <button
+                  onClick={() => handleSelectWidget('floating-multi-channel')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'floating-multi-channel'
+                      ? 'bg-emerald-950/80 border-emerald-500 text-white shadow-lg ring-1 ring-emerald-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <MessageSquare className={`w-5 h-5 ${selectedWidget === 'floating-multi-channel' ? 'text-emerald-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">WhatsApp Chat</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">پشتیبانی شناور چندکاناله</span>
+                    <span className="text-[10px] text-slate-400">چت مستقیم واتساپ/تلگرام</span>
+                  </div>
+                </button>
+
+                {/* 14. Product Visual Hotspots */}
+                <button
+                  onClick={() => handleSelectWidget('product-hotspots')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'product-hotspots'
+                      ? 'bg-amber-950/80 border-amber-500 text-white shadow-lg ring-1 ring-amber-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Zap className={`w-5 h-5 ${selectedWidget === 'product-hotspots' ? 'text-amber-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-amber-400 bg-amber-500/10 px-1.5 py-0.5 rounded">Hotspots</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">نقاط داغ تعاملی محصول</span>
+                    <span className="text-[10px] text-slate-400">پاپ‌آپ مشخصات روی تصویر</span>
+                  </div>
+                </button>
+
+                {/* 15. Price Drop Alert */}
+                <button
+                  onClick={() => handleSelectWidget('price-drop-alert')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'price-drop-alert'
+                      ? 'bg-cyan-950/80 border-cyan-500 text-white shadow-lg ring-1 ring-cyan-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <TrendingUp className={`w-5 h-5 ${selectedWidget === 'price-drop-alert' ? 'text-cyan-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">Price Alert</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">تاریخچه و هشدار افت قیمت</span>
+                    <span className="text-[10px] text-slate-400">اطلاع‌رسانی ارزان شدن کالا</span>
+                  </div>
+                </button>
+
               </div>
             </div>
 
@@ -783,6 +883,85 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
                     </div>
                     <button className="px-4 py-2 bg-pink-600 hover:bg-pink-500 rounded-xl text-xs font-bold shadow-md whitespace-nowrap">
                       دریافت تخفیف ۷٪
+                    </button>
+                  </div>
+                )}
+
+                {/* WIDGET 11: INTERACTIVE PRODUCT STORIES */}
+                {selectedWidget === 'interactive-stories' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-indigo-500/40 space-y-3">
+                    <span className="text-xs font-bold text-white block">{widgetTitle}</span>
+                    <div className="flex items-center gap-3 overflow-x-auto pb-1 scrollbar-none">
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="w-12 h-14 rounded-2xl bg-slate-950 p-0.5 border border-indigo-500/80 flex items-center justify-center text-xs">
+                          🎥
+                        </div>
+                        <span className="text-[10px] text-slate-300">تست قدرت X15</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="w-12 h-14 rounded-2xl bg-slate-950 p-0.5 border border-purple-500/80 flex items-center justify-center text-xs">
+                          🎧
+                        </div>
+                        <span className="text-[10px] text-slate-300">آنباکس ANC</span>
+                      </div>
+                      <div className="flex flex-col items-center gap-1">
+                        <div className="w-12 h-14 rounded-2xl bg-slate-950 p-0.5 border border-amber-500/80 flex items-center justify-center text-xs">
+                          ⚡
+                        </div>
+                        <span className="text-[10px] text-slate-300">سرعت شارژ</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 12: GAMIFIED SPIN WHEEL */}
+                {selectedWidget === 'gamified-spin-wheel' && (
+                  <div className="w-full p-4 rounded-2xl bg-gradient-to-br from-purple-950/80 via-slate-900 to-indigo-950/80 border border-purple-500/50 text-center space-y-3">
+                    <span className="text-xs font-bold text-white block">{widgetTitle}</span>
+                    <div className="p-3 bg-purple-500/15 border border-purple-500/30 rounded-xl text-purple-200 text-xs font-bold inline-flex items-center gap-2">
+                      <Award className="w-4 h-4 text-amber-400 animate-bounce" />
+                      <span>کلیک کنید: چرخاندن گردونه تخفیف ۵٪ تا ۳۰٪</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 13: FLOATING MULTI-CHANNEL CHAT */}
+                {selectedWidget === 'floating-multi-channel' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-emerald-500/40 flex items-center justify-between text-xs">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2.5 h-2.5 rounded-full bg-emerald-400 animate-pulse"></span>
+                      <div>
+                        <span className="text-white font-bold block">{widgetTitle}</span>
+                        <span className="text-[10px] text-slate-400 block">پاسخگویی کمتر از ۵ دقیقه</span>
+                      </div>
+                    </div>
+                    <button className="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-xl shadow-md">
+                      ارتباط در واتساپ
+                    </button>
+                  </div>
+                )}
+
+                {/* WIDGET 14: PRODUCT VISUAL HOTSPOTS */}
+                {selectedWidget === 'product-hotspots' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-amber-500/40 space-y-2">
+                    <span className="text-xs font-bold text-white block">{widgetTitle}</span>
+                    <div className="h-28 bg-slate-950 rounded-xl border border-slate-800 relative flex items-center justify-center text-slate-500 text-xs">
+                      نمای ۳۶۰ درجه محصول همراه با ۲ نقطه داغ فعال
+                      <span className="absolute top-3 left-6 w-5 h-5 rounded-full bg-indigo-500 text-white text-[10px] font-bold flex items-center justify-center animate-ping">●</span>
+                      <span className="absolute bottom-4 right-10 w-5 h-5 rounded-full bg-emerald-500 text-white text-[10px] font-bold flex items-center justify-center animate-ping">●</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 15: PRICE DROP ALERT */}
+                {selectedWidget === 'price-drop-alert' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900 border border-cyan-500/40 flex items-center justify-between text-xs">
+                    <div>
+                      <span className="text-[10px] text-slate-400 block">پایین‌ترین قیمت ثبت شده</span>
+                      <span className="text-sm font-bold text-emerald-400 font-mono block">۳۲,۰۸۵,۰۰۰ تومان</span>
+                    </div>
+                    <button className="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl shadow-md">
+                      ارزان شد خبر بده 🔔
                     </button>
                   </div>
                 )}

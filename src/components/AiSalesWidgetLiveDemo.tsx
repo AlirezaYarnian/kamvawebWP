@@ -666,10 +666,11 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
                   نحوه ارسال و ضمانت
                 </button>
                 <button
-                  onClick={() => handleSendMessage('کد تخفیف فوری برای خرید هدفون دارید؟')}
-                  className="px-2.5 py-1 bg-slate-800 hover:bg-indigo-600/40 text-slate-200 rounded-full transition-all shrink-0 cursor-pointer"
+                  onClick={() => handleSendMessage('آیا شما لپ‌تاپ‌های ایسوس ROG هم فروش اقساطی دارید؟')}
+                  className="px-2.5 py-1 bg-indigo-900/60 hover:bg-indigo-600 text-amber-300 font-bold border border-indigo-500/40 rounded-full transition-all shrink-0 cursor-pointer"
+                  title="تست سوال خارج از پایگاه دانش و ارجاع مودبانه به مشاور انسانی"
                 >
-                  تخفیف هدفون ANC
+                  ❓ تست سوال نامشخص (ارجاع به مشاور)
                 </button>
               </div>
 
@@ -694,6 +695,28 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{msg.text}</p>
+
+                      {/* Interactive Human Sales Advisor Transfer Button */}
+                      {msg.sender === 'ai' && (msg.text.includes('مشاور') || msg.text.includes('ارتباط')) && (
+                        <div className="mt-2.5 pt-2 border-t border-slate-800">
+                          <button
+                            onClick={() => {
+                              const confirmMsg: ChatMessage = {
+                                id: `sys-${Date.now()}`,
+                                sender: 'ai',
+                                text: '🎧 درخواست شما با موفقیت برای اولین مشاور فروشگاه ارجاع داده شد. به‌زودی کارشناس فروش با شما ارتباط برقرار خواهد کرد.',
+                                timestamp: 'هم‌اکنون',
+                                source: 'سامانه ارجاع به مشاور انسانی کامواوب',
+                              };
+                              setMessages((prev) => [...prev, confirmMsg]);
+                            }}
+                            className="w-full py-2 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
+                          >
+                            <User className="w-3.5 h-3.5" />
+                            <span>درخواست اتصال به مشاور متخصص فروشگاه</span>
+                          </button>
+                        </div>
+                      )}
                       
                       <div className="mt-1.5 flex items-center justify-between gap-3 text-[10px] text-slate-400 pt-1 border-t border-white/5">
                         <span>{msg.timestamp}</span>
