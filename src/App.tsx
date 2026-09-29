@@ -41,6 +41,7 @@ import { KamvaWPCLIRunner } from './components/KamvaWPCLIRunner';
 import { AiLandingPageOptimizer } from './components/AiLandingPageOptimizer';
 import { AiDesignSystemManager } from './components/AiDesignSystemManager';
 import { KamvaLocalNeuralHub } from './components/KamvaLocalNeuralHub';
+import { AiErrorReportDiagnostic } from './components/AiErrorReportDiagnostic';
 import { 
   Store, 
   LifeBuoy, 
@@ -334,6 +335,11 @@ export default function App() {
               })
             }
           />
+        )}
+
+        {/* Tab: AI Error Report Diagnostic */}
+        {activeTab === 'error-diagnostic' && (
+          <AiErrorReportDiagnostic />
         )}
 
         {/* Tab 9: Google Intelligence & SEO Marketing */}

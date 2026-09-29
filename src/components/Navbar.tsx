@@ -35,7 +35,8 @@ import {
   Terminal,
   Split,
   Palette,
-  Cpu
+  Cpu,
+  Bug
 } from 'lucide-react';
 import { KamvaLogo } from './KamvaLogo';
 
@@ -105,6 +106,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         { id: 'landing-optimizer', label: 'بهینه‌ساز صفحات فرود', icon: Split, badge: 'CRO' },
         { id: 'wp-cli', label: 'ترمینال WP-CLI', icon: Terminal, badge: 'CLI' },
         { id: 'developer-studio', label: 'استودیو برنامه‌نویسی', icon: Code2, badge: 'PHP' },
+        { id: 'error-diagnostic', label: 'عیب‌یاب هوشمند خطاها', icon: Bug, badge: 'Fix-It' },
         { id: 'seo-market', label: 'سئو و گوگل', icon: Search },
       ],
     },
