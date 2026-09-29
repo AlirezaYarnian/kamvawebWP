@@ -75,19 +75,22 @@ class KamvaWeb_Store_Engine {
     }
 
     public function render_mobile_bottom_navbar() {
+        $shop_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('shop') : home_url('/');
+        $cart_url = function_exists('wc_get_cart_url') ? wc_get_cart_url() : home_url('/');
+        $account_url = function_exists('wc_get_page_permalink') ? wc_get_page_permalink('myaccount') : home_url('/');
         ?>
         <div class="kamva-mobile-bottom-bar" style="display:none;position:fixed;bottom:0;left:0;right:0;background:#0f172a;border-top:1px solid #1e293b;padding:8px 0;z-index:99998;justify-content:space-around;">
             <a href="<?php echo esc_url(home_url('/')); ?>" style="text-align:center;color:#94a3b8;text-decoration:none;font-size:11px;">
-                <span>🏠</span><br>خانه
+                <span>🏠</span><br><?php esc_html_e('خانه', 'kamvaweb'); ?>
             </a>
-            <a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>" style="text-align:center;color:#94a3b8;text-decoration:none;font-size:11px;">
-                <span>🛍️</span><br>فروشگاه
+            <a href="<?php echo esc_url($shop_url); ?>" style="text-align:center;color:#94a3b8;text-decoration:none;font-size:11px;">
+                <span>🛍️</span><br><?php esc_html_e('فروشگاه', 'kamvaweb'); ?>
             </a>
-            <a href="<?php echo esc_url(wc_get_cart_url()); ?>" style="text-align:center;color:#6366f1;text-decoration:none;font-size:11px;font-weight:bold;">
-                <span>🛒</span><br>سبد خرید
+            <a href="<?php echo esc_url($cart_url); ?>" style="text-align:center;color:#6366f1;text-decoration:none;font-size:11px;font-weight:bold;">
+                <span>🛒</span><br><?php esc_html_e('سبد خرید', 'kamvaweb'); ?>
             </a>
-            <a href="<?php echo esc_url(wc_get_page_permalink('myaccount')); ?>" style="text-align:center;color:#94a3b8;text-decoration:none;font-size:11px;">
-                <span>👤</span><br>حساب من
+            <a href="<?php echo esc_url($account_url); ?>" style="text-align:center;color:#94a3b8;text-decoration:none;font-size:11px;">
+                <span>👤</span><br><?php esc_html_e('حساب من', 'kamvaweb'); ?>
             </a>
         </div>
         <style>

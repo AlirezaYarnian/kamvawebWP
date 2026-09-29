@@ -53,26 +53,38 @@ class KamvaWeb_Elementor_Sticky_Mobile_Cart_Widget extends \Elementor\Widget_Bas
 
     protected function render() {
         $settings = $this->get_settings_for_display();
+        global $product;
+
+        $currency = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : 'تومان';
+        $title = $settings['product_name'];
+        $price = $settings['product_price'];
+        $cart_url = function_exists('wc_get_cart_url') ? wc_get_cart_url() : home_url('/');
+
+        if (is_a($product, 'WC_Product')) {
+            $title = $product->get_name();
+            $price = number_format(floatval($product->get_price()));
+            $cart_url = '?add-to-cart=' . $product->get_id();
+        }
         ?>
         <div class="kamva-sticky-cart-bar fixed bottom-0 left-0 right-0 z-50 p-3 bg-slate-900/95 backdrop-blur-md border-t border-slate-800 text-slate-100 shadow-2xl block md:hidden" dir="rtl">
             <div class="flex items-center justify-between gap-3 max-w-md mx-auto">
                 <div class="flex items-center gap-2.5 overflow-hidden">
                     <div class="w-10 h-10 rounded-lg bg-amber-500/10 border border-amber-500/30 shrink-0 flex items-center justify-center text-amber-400 font-bold">
-                        📱
+                        🛍️
                     </div>
                     <div class="truncate">
-                        <h5 class="text-xs font-bold truncate text-slate-100"><?php echo esc_html($settings['product_name']); ?></h5>
+                        <h5 class="text-xs font-bold truncate text-slate-100"><?php echo esc_html($title); ?></h5>
                         <div class="flex items-center gap-1.5 mt-0.5">
-                            <span class="text-xs font-extrabold text-amber-400"><?php echo esc_html($settings['product_price']); ?></span>
-                            <span class="text-[10px] text-slate-400">تومان</span>
+                            <span class="text-xs font-extrabold text-amber-400"><?php echo esc_html($price); ?></span>
+                            <span class="text-[10px] text-slate-400"><?php echo esc_html($currency); ?></span>
                         </div>
                     </div>
                 </div>
 
-                <button class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition-all shrink-0 flex items-center gap-1.5">
+                <a href="<?php echo esc_url($cart_url); ?>" class="px-5 py-2.5 bg-amber-500 hover:bg-amber-600 active:scale-95 text-slate-950 font-extrabold text-xs rounded-xl shadow-lg shadow-amber-500/20 transition-all shrink-0 flex items-center gap-1.5 no-underline">
                     <span>🛒</span>
-                    <span>خرید سریع</span>
-                </button>
+                    <span><?php esc_html_e('خرید سریع', 'kamvaweb'); ?></span>
+                </a>
             </div>
         </div>
         <?php

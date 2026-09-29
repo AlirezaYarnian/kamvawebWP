@@ -23,12 +23,15 @@ class KamvaWeb_SEO_Engine {
     public function inject_json_ld_schema() {
         $schema = array();
         if (is_front_page()) {
+            $custom_logo_id = get_theme_mod('custom_logo');
+            $logo_url = $custom_logo_id ? wp_get_attachment_image_url($custom_logo_id, 'full') : (get_template_directory_uri() . '/assets/logo.png');
+
             $schema = array(
                 '@context' => 'https://schema.org',
                 '@type'    => 'Organization',
                 'name'     => get_bloginfo('name'),
                 'url'      => home_url(),
-                'logo'     => get_template_directory_uri() . '/assets/logo.png',
+                'logo'     => $logo_url,
                 'potentialAction' => array(
                     '@type'       => 'SearchAction',
                     'target'      => home_url('/?s={search_term_string}'),
@@ -38,11 +41,16 @@ class KamvaWeb_SEO_Engine {
         } elseif (is_product()) {
             global $product;
             if ($product) {
+                $image_url = wp_get_attachment_url($product->get_image_id());
+                if (!$image_url && function_exists('wc_placeholder_img_src')) {
+                    $image_url = wc_placeholder_img_src();
+                }
+
                 $schema = array(
                     '@context' => 'https://schema.org',
                     '@type'    => 'Product',
                     'name'     => $product->get_name(),
-                    'image'    => wp_get_attachment_url($product->get_image_id()) ?: get_template_directory_uri() . '/assets/placeholder.jpg',
+                    'image'    => $image_url,
                     'description' => wp_strip_all_tags($product->get_short_description() ?: $product->get_description()),
                     'sku'      => $product->get_sku() ?: 'KW-' . $product->get_id(),
                     'brand'    => array(
@@ -57,7 +65,7 @@ class KamvaWeb_SEO_Engine {
                     'offers'   => array(
                         '@type'         => 'Offer',
                         'price'         => $product->get_price(),
-                        'priceCurrency' => get_woocommerce_currency(),
+                        'priceCurrency' => function_exists('get_woocommerce_currency') ? get_woocommerce_currency() : 'IRR',
                         'availability'  => $product->is_in_stock() ? 'https://schema.org/InStock' : 'https://schema.org/OutOfStock',
                         'hasMerchantReturnPolicy' => array(
                             '@type'                  => 'MerchantReturnPolicy',

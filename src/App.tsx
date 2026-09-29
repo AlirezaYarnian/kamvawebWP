@@ -20,7 +20,27 @@ import { SpeedSecurityAuditor } from './components/SpeedSecurityAuditor';
 import { AiLearningAnalytics } from './components/AiLearningAnalytics';
 import { SmartWidgetLayoutEngine } from './components/SmartWidgetLayoutEngine';
 import { SmartThemeMigrator } from './components/SmartThemeMigrator';
+import { DatabaseMigrator } from './components/DatabaseMigrator';
+import { EscMarketStoreStudio } from './components/EscMarketStoreStudio';
 import { AiAutoTuningModal } from './components/AiAutoTuningModal';
+import { AiContentOptimizer } from './components/AiContentOptimizer';
+import { KamvaCacheEngine } from './components/KamvaCacheEngine';
+import { ElementorStyleSync } from './components/ElementorStyleSync';
+import { KamvaMarketingGenius } from './components/KamvaMarketingGenius';
+import { ChildThemeManager } from './components/ChildThemeManager';
+import { AiWorkflowAutomator } from './components/AiWorkflowAutomator';
+import { ThemeComponentIsolationLab } from './components/ThemeComponentIsolationLab';
+import { NexusRealtimeTrafficMonitor } from './components/NexusRealtimeTrafficMonitor';
+import { AiSeoContentCalendar } from './components/AiSeoContentCalendar';
+import { GlobalAiBehaviorSettings } from './components/GlobalAiBehaviorSettings';
+import { GlobalSafetyProtocol } from './components/GlobalSafetyProtocol';
+import { PredictiveResourceScaler } from './components/PredictiveResourceScaler';
+import { AutomatedSchemaGenerator } from './components/AutomatedSchemaGenerator';
+import { AiPluginCompatibilityScanner } from './components/AiPluginCompatibilityScanner';
+import { KamvaWPCLIRunner } from './components/KamvaWPCLIRunner';
+import { AiLandingPageOptimizer } from './components/AiLandingPageOptimizer';
+import { AiDesignSystemManager } from './components/AiDesignSystemManager';
+import { KamvaLocalNeuralHub } from './components/KamvaLocalNeuralHub';
 import { 
   Store, 
   LifeBuoy, 
@@ -178,6 +198,21 @@ export default function App() {
       {/* Main Content Viewport */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
         
+        {/* Tab ESCMarket: Complete E-Commerce Store Studio (escmarket.shop UI) */}
+        {activeTab === 'escmarket-store' && (
+          <EscMarketStoreStudio />
+        )}
+
+        {/* Tab: AI Content Optimizer for Gutenberg and Elementor */}
+        {activeTab === 'content-optimizer' && (
+          <AiContentOptimizer />
+        )}
+
+        {/* Tab: Kamva Marketing Genius */}
+        {activeTab === 'marketing-genius' && (
+          <KamvaMarketingGenius />
+        )}
+
         {/* Tab 1: Kamva Store & Comprehensive Theme Options */}
         {activeTab === 'options' && (
           <ThemeOptionsPanel
@@ -323,9 +358,94 @@ export default function App() {
           />
         )}
 
+        {/* Tab: Elementor Style Sync */}
+        {activeTab === 'elementor-sync' && (
+          <ElementorStyleSync />
+        )}
+
+        {/* Tab: Kamva Cache Engine */}
+        {activeTab === 'kamva-cache' && (
+          <KamvaCacheEngine />
+        )}
+
+        {/* Tab: Child Theme Manager */}
+        {activeTab === 'child-theme' && (
+          <ChildThemeManager />
+        )}
+
+        {/* Tab: AI Workflow Automator */}
+        {activeTab === 'workflow-automator' && (
+          <AiWorkflowAutomator />
+        )}
+
+        {/* Tab: Theme Component Isolation Lab */}
+        {activeTab === 'component-lab' && (
+          <ThemeComponentIsolationLab />
+        )}
+
+        {/* Tab: Automated Schema Generator */}
+        {activeTab === 'auto-schema' && (
+          <AutomatedSchemaGenerator />
+        )}
+
+        {/* Tab: Kamva WP-CLI Runner */}
+        {activeTab === 'wp-cli' && (
+          <KamvaWPCLIRunner />
+        )}
+
+        {/* Tab: AI Landing Page Optimizer */}
+        {activeTab === 'landing-optimizer' && (
+          <AiLandingPageOptimizer />
+        )}
+
+        {/* Tab: AI Design System Manager */}
+        {activeTab === 'design-system' && (
+          <AiDesignSystemManager />
+        )}
+
+        {/* Tab: Kamva Local Neural Hub */}
+        {activeTab === 'local-neural' && (
+          <KamvaLocalNeuralHub />
+        )}
+
+        {/* Tab: AI Plugin Compatibility Scanner */}
+        {activeTab === 'plugin-scanner' && (
+          <AiPluginCompatibilityScanner />
+        )}
+
+        {/* Tab: Nexus Realtime Traffic Monitor */}
+        {activeTab === 'realtime-traffic' && (
+          <NexusRealtimeTrafficMonitor />
+        )}
+
+        {/* Tab: Predictive Resource Scaler */}
+        {activeTab === 'predictive-scaler' && (
+          <PredictiveResourceScaler />
+        )}
+
+        {/* Tab: AI SEO Content Calendar */}
+        {activeTab === 'seo-calendar' && (
+          <AiSeoContentCalendar />
+        )}
+
+        {/* Tab: Global AI Behavior Settings */}
+        {activeTab === 'ai-behavior' && (
+          <GlobalAiBehaviorSettings />
+        )}
+
+        {/* Tab: Global Safety Protocol */}
+        {activeTab === 'global-safety' && (
+          <GlobalSafetyProtocol />
+        )}
+
         {/* Tab 12: Learning Analytics & Conversion Tracking */}
         {activeTab === 'analytics' && (
           <AiLearningAnalytics />
+        )}
+
+        {/* Tab 13: Database Schema Migrator */}
+        {activeTab === 'db-migrator' && (
+          <DatabaseMigrator />
         )}
 
       </main>

@@ -67,7 +67,15 @@ class KamvaWeb_Elementor_Installment_Calculator_Widget extends \Elementor\Widget
 
     protected function render() {
         $settings = $this->get_settings_for_display();
+        global $product;
+
+        $currency = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : 'تومان';
         $base_price = floatval($settings['default_price']);
+
+        if (is_a($product, 'WC_Product') && floatval($product->get_price()) > 0) {
+            $base_price = floatval($product->get_price());
+        }
+
         $prepayment_percent = floatval($settings['prepayment_percent']['size']);
         $interest_rate = floatval($settings['interest_rate']);
 

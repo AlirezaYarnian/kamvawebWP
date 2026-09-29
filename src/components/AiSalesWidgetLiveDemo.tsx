@@ -18,7 +18,13 @@ import {
   ShieldCheck,
   CheckCircle,
   Sliders,
-  HelpCircle
+  HelpCircle,
+  DollarSign,
+  Award,
+  Truck,
+  ShoppingCart,
+  Percent,
+  CheckCircle2
 } from 'lucide-react';
 
 interface AiSalesWidgetLiveDemoProps {
@@ -54,6 +60,15 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
   const [isLoading, setIsLoading] = useState(false);
   const [lastLatencyMs, setLastLatencyMs] = useState<number>(16);
   const [lastEngineSource, setLastEngineSource] = useState<string>('مغز خودمختار کامواوب (Zero Server Load)');
+  
+  // Real-time Sales Intent & Auto-Knowledge Extraction State
+  const [salesIntent, setSalesIntent] = useState<any>({
+    purchaseIntentScore: 78,
+    intentCategory: 'کسب اطلاعات محصول / آماده‌سازی خرید',
+    conversionProbability: 'بالا (High Probability)'
+  });
+  const [isExtractingKb, setIsExtractingKb] = useState(false);
+  const [extractKbFeedback, setExtractKbFeedback] = useState<string | null>(null);
 
   // Quick live crawl from within chat demo
   const [quickCrawlUrl, setQuickCrawlUrl] = useState('');
@@ -143,6 +158,10 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
       const latency = Math.round(endTime - startTime);
       setLastLatencyMs(latency);
 
+      if (data.salesAnalytics) {
+        setSalesIntent(data.salesAnalytics);
+      }
+
       // Check if any custom training FAQ matches
       let finalReply = data.reply || 'اطلاعات بررسی شد و در خدمت شما هستم.';
       const matchedFaq = customTrainingFaqs.find(f => textToSend.toLowerCase().includes(f.q.toLowerCase().slice(0, 5)));
@@ -172,6 +191,31 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
       setMessages((prev) => [...prev, fallbackMsg]);
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleExtractKnowledgeFromChat = async () => {
+    if (messages.length < 2 || isExtractingKb) return;
+    setIsExtractingKb(true);
+    setExtractKbFeedback(null);
+
+    try {
+      const res = await fetch('/api/ai/chat/extract-knowledge', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ messagesHistory: messages }),
+      });
+      const data = await res.json();
+      if (data.success && data.newItems) {
+        onUpdateKnowledgeBase([...data.newItems, ...knowledgeBase]);
+        setExtractKbFeedback(data.message);
+        setTimeout(() => setExtractKbFeedback(null), 5000);
+      }
+    } catch (e) {
+      console.error('Failed to extract knowledge', e);
+      setExtractKbFeedback('خطا در استخراج دانش خودکار از چت.');
+    } finally {
+      setIsExtractingKb(false);
     }
   };
 
@@ -468,6 +512,109 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
             </div>
           </div>
 
+          {/* Bottom Full-Width: Advanced Sales & Objection Handling Matrix */}
+          <div className="lg:col-span-12 space-y-4">
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 shadow-xl space-y-5">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-slate-800 pb-4">
+                <div className="flex items-center gap-2.5">
+                  <div className="p-2 rounded-xl bg-amber-500/10 text-amber-400">
+                    <Award className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-sm font-bold text-white">ماتریس آموزش پیشرفته فنون فروش و رفع اعتراضات مشتریان (Objection Handling Matrix)</h3>
+                    <p className="text-[11px] text-slate-400">سناریوهای روانشناسی تبدیل و مذاکره خودکار هوش مصنوعی برای افزایش فروشگاه</p>
+                  </div>
+                </div>
+                <span className="px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-xs font-bold border border-emerald-500/20 self-start sm:self-auto">
+                  ۶ سناریوی هوشمند فعال
+                </span>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                {[
+                  {
+                    icon: DollarSign,
+                    color: 'text-amber-400 bg-amber-500/10 border-amber-500/20',
+                    title: 'مدیریت اعتراض به قیمت (Price Resistance)',
+                    userQuery: 'قیمت محصولاتتون خیلی بالاست، تخفیف بیشتری نمیدین؟',
+                    strategy: 'تاکید بر ۲۴ ماه گارانتی تعویض درجا، ارزش مالکیت طولانی‌مدت، فعال‌سازی کد تخفیف ۷٪ آنی (KAMVA-VIP) و پیشنهاد خرید اقساطی ۴ ماهه بدون ضامن.',
+                    triggerText: 'تست زنده سناریوی قیمت',
+                  },
+                  {
+                    icon: ShieldCheck,
+                    color: 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20',
+                    title: 'رفع تردید در اصالت کالا (Trust & Authenticity)',
+                    userQuery: 'از کجا معلوم کالاها اصل باشن و فیک نباشه؟',
+                    strategy: 'ارائه نماد اعتماد اینماد ۵ ستاره، تضمین بازگشت ۱۰۰٪ وجه تا ۷ روز بی‌قید و شرط، ارسال فاکتور رسمی و ثبت سریال در سامانه گارانتی.',
+                    triggerText: 'تست سناریوی اصالت',
+                  },
+                  {
+                    icon: Percent,
+                    color: 'text-indigo-400 bg-indigo-500/10 border-indigo-500/20',
+                    title: 'مشاوره خرید اقساطی بدون چک (BNPL Financing)',
+                    userQuery: 'شرایط خرید اقساطی با اسنپ‌پی بدون چک چطوره؟',
+                    strategy: 'توضیح تسویه در ۴ قسط بدون سود و کارمزد با اعتبارسنجی زیر ۳ دقیقه فقط با کدملی، بدون نیاز به چک، سفته یا ضامن.',
+                    triggerText: 'تست سناریوی اقساط',
+                  },
+                  {
+                    icon: Truck,
+                    color: 'text-cyan-400 bg-cyan-500/10 border-cyan-500/20',
+                    title: 'پاسخ به سوالات لجستیک و ارسال (Delivery Timing)',
+                    userQuery: 'سفارش من دقیقاً چند روزه به شهرستان می‌رسه؟',
+                    strategy: 'تحویل زیر ۳ ساعت در تهران، ۲۴ الی ۴۸ ساعت برای شهرستان‌ها با پست پیشتاز و تیپاکس، همراه با بیمه کامل و ارسال رایگان بالای ۲ میلیون تومان.',
+                    triggerText: 'تست سناریوی ارسال',
+                  },
+                  {
+                    icon: TrendingUp,
+                    color: 'text-rose-400 bg-rose-500/10 border-rose-500/20',
+                    title: 'کشف نیاز و مشاوره بودجه (Need & Budget Discovery)',
+                    userQuery: 'با بودجه محدود زیر ۱۰ میلیون چی پیشنهاد می‌دین؟',
+                    strategy: 'تحلیل دقیق سقف بودجه، معرفی مدل‌های با بالاترین ارزش خرید (Value-for-Money) و ارائه راهکار ارتقاء سبد با اقساط ماهانه.',
+                    triggerText: 'تست کشف نیاز بودجه',
+                  },
+                  {
+                    icon: ShoppingCart,
+                    color: 'text-purple-400 bg-purple-500/10 border-purple-500/20',
+                    title: 'مقایسه محصولات و پیشنهاد باندل (Cross-Sell / Up-Sell)',
+                    userQuery: 'بین لپ‌تاپ مهندسی و هدفون مانیتورینگ کدوم بهتره؟',
+                    strategy: 'تفکیک کاربردها بر اساس نیاز کاری، معرفی پکیج باندل با ۱۵٪ تخفیف روی کل سبد خرید و اکسسوری‌های هدیه.',
+                    triggerText: 'تست مقایسه و باندل',
+                  }
+                ].map((scenario, sIdx) => {
+                  const Icon = scenario.icon;
+                  return (
+                    <div key={sIdx} className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-3 flex flex-col justify-between">
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <div className={`p-1.5 rounded-lg border ${scenario.color}`}>
+                            <Icon className="w-4 h-4" />
+                          </div>
+                          <span className="text-xs font-bold text-white">{scenario.title}</span>
+                        </div>
+                        <div className="bg-slate-900/90 p-2.5 rounded-lg border border-slate-800 text-[11px] text-amber-200/90">
+                          <strong>پرسش مشتری:</strong> «{scenario.userQuery}»
+                        </div>
+                        <p className="text-[11px] text-slate-400 leading-relaxed">
+                          <strong className="text-slate-300">استراتژی فروش:</strong> {scenario.strategy}
+                        </p>
+                      </div>
+                      <button
+                        onClick={() => {
+                          setActiveSubView('chat-kb');
+                          handleSendMessage(scenario.userQuery);
+                        }}
+                        className="w-full py-2 bg-slate-900 hover:bg-indigo-600/30 text-indigo-300 hover:text-white border border-slate-700 hover:border-indigo-500/40 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center justify-center gap-1.5"
+                      >
+                        <Sparkles className="w-3.5 h-3.5" />
+                        <span>{scenario.triggerText}</span>
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
         </div>
       ) : (
         /* Main Grid: Knowledge Base (Right) & Live Chat Widget (Left) */
@@ -644,33 +791,91 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
                 </div>
 
                 <div className="flex items-center gap-2">
+                  <button
+                    onClick={handleExtractKnowledgeFromChat}
+                    disabled={isExtractingKb || messages.length < 2}
+                    className="px-2.5 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-extrabold text-[10px] rounded-lg transition-all flex items-center gap-1 shadow cursor-pointer disabled:opacity-50"
+                    title="استخراج و ساخت خودکار دانش جدید از گفتگوی چت"
+                  >
+                    <GraduationCap className={`w-3.5 h-3.5 ${isExtractingKb ? 'animate-spin' : ''}`} />
+                    <span>{isExtractingKb ? 'استخراج دانش...' : 'استخراج دانش خودکار'}</span>
+                  </button>
+
                   <span className="text-[10px] px-2.5 py-1 rounded-full bg-black/30 text-emerald-300 font-mono font-bold">
                     {lastLatencyMs}ms
                   </span>
                 </div>
               </div>
 
-              {/* Quick Prompt Badges */}
-              <div className="bg-slate-950/80 border-b border-slate-800/80 px-3 py-2.5 flex items-center gap-1.5 overflow-x-auto text-[11px]">
-                <span className="text-slate-400 shrink-0 text-[10px]">تست سریع:</span>
+              {/* Real-time Sales Intent & Conversion Probability Bar */}
+              <div className="bg-slate-950 px-4 py-2 border-b border-slate-800/80 flex items-center justify-between text-xs">
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-400 font-bold">نیت خرید خریدار (Sales Intent):</span>
+                  <span className="px-2 py-0.5 bg-indigo-500/20 text-indigo-300 border border-indigo-500/30 rounded text-[10px] font-bold">
+                    {salesIntent.intentCategory}
+                  </span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-slate-400">احتمال تبدیل:</span>
+                  <span className="text-xs font-mono font-extrabold text-emerald-400">
+                    {salesIntent.purchaseIntentScore}% ({salesIntent.conversionProbability})
+                  </span>
+                </div>
+              </div>
+
+              {extractKbFeedback && (
+                <div className="bg-emerald-950/90 text-emerald-200 text-xs px-4 py-2 border-b border-emerald-500/40 flex items-center justify-between animate-fade-in">
+                  <span className="font-bold flex items-center gap-1.5">
+                    <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                    {extractKbFeedback}
+                  </span>
+                </div>
+              )}
+
+              {/* Quick Consultative Sales Prompt Badges */}
+              <div className="bg-slate-950/80 border-b border-slate-800/80 px-3 py-2.5 flex items-center gap-1.5 overflow-x-auto text-[11px] scrollbar-thin">
+                <span className="text-slate-400 shrink-0 text-[10px] font-bold">تست سناریوهای فروش:</span>
                 <button
-                  onClick={() => handleSendMessage('قیمت و شرایط لپ‌تاپ کامواوب چیست؟')}
+                  onClick={() => handleSendMessage('قیمت و مشخصات فنی اولترابوک کامواوب X15 رو بفرمایید')}
                   className="px-2.5 py-1 bg-slate-800 hover:bg-indigo-600/40 text-slate-200 rounded-full transition-all shrink-0 cursor-pointer"
                 >
-                  لپ‌تاپ کامواوب X15
+                  💻 لپ‌تاپ X15
                 </button>
                 <button
-                  onClick={() => handleSendMessage('شرایط گارانتی و ارسال شهرستان چطوره؟')}
-                  className="px-2.5 py-1 bg-slate-800 hover:bg-indigo-600/40 text-slate-200 rounded-full transition-all shrink-0 cursor-pointer"
+                  onClick={() => handleSendMessage('قیمت محصولاتتون خیلی بالاست، تخفیف بیشتری نمیدین؟')}
+                  className="px-2.5 py-1 bg-amber-950/60 hover:bg-amber-600 text-amber-200 border border-amber-500/30 rounded-full transition-all shrink-0 cursor-pointer"
+                  title="تست روانشناسی فروش و مدیریت اعتراض به قیمت"
                 >
-                  نحوه ارسال و ضمانت
+                  💰 اعتراض به قیمت
+                </button>
+                <button
+                  onClick={() => handleSendMessage('از کجا مطمئن بشم کالاهای شما اصل هستن و فیک نیست؟')}
+                  className="px-2.5 py-1 bg-emerald-950/60 hover:bg-emerald-600 text-emerald-200 border border-emerald-500/30 rounded-full transition-all shrink-0 cursor-pointer"
+                  title="تست اعتماد و تضمین اصالت و اینماد"
+                >
+                  🛡️ شک در اصالت
+                </button>
+                <button
+                  onClick={() => handleSendMessage('شرایط خرید اقساطی با اسنپ‌پی بدون چک و ضامن چطوره؟')}
+                  className="px-2.5 py-1 bg-indigo-950/60 hover:bg-indigo-600 text-indigo-200 border border-indigo-500/30 rounded-full transition-all shrink-0 cursor-pointer"
+                  title="تست خرید اقساطی BNPL در ۴ قسط"
+                >
+                  💳 خرید اقساطی
+                </button>
+                <button
+                  onClick={() => handleSendMessage('بین لپ‌تاپ مهندسی و هدفون مانیتورینگ کدوم برای کار من بهتره؟')}
+                  className="px-2.5 py-1 bg-purple-950/60 hover:bg-purple-600 text-purple-200 border border-purple-500/30 rounded-full transition-all shrink-0 cursor-pointer"
+                  title="تست کشف نیاز، مقایسه و پیشنهاد باندل"
+                >
+                  ⚖️ مقایسه و باندل
                 </button>
                 <button
                   onClick={() => handleSendMessage('آیا شما لپ‌تاپ‌های ایسوس ROG هم فروش اقساطی دارید؟')}
-                  className="px-2.5 py-1 bg-indigo-900/60 hover:bg-indigo-600 text-amber-300 font-bold border border-indigo-500/40 rounded-full transition-all shrink-0 cursor-pointer"
+                  className="px-2.5 py-1 bg-slate-900 hover:bg-rose-900/60 text-rose-300 font-bold border border-rose-500/30 rounded-full transition-all shrink-0 cursor-pointer"
                   title="تست سوال خارج از پایگاه دانش و ارجاع مودبانه به مشاور انسانی"
                 >
-                  ❓ تست سوال نامشخص (ارجاع به مشاور)
+                  ❓ ارجاع به مشاور انسانی
                 </button>
               </div>
 
@@ -690,31 +895,75 @@ export const AiSalesWidgetLiveDemo: React.FC<AiSalesWidgetLiveDemoProps> = ({
                     <div
                       className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed ${
                         msg.sender === 'user'
-                          ? 'bg-indigo-600 text-white rounded-br-none shadow-md shadow-indigo-600/20'
+                           ? 'bg-indigo-600 text-white rounded-br-none shadow-md shadow-indigo-600/20'
                           : 'bg-slate-900 border border-slate-800 text-slate-100 rounded-bl-none shadow-md'
                       }`}
                     >
                       <p className="whitespace-pre-wrap">{msg.text}</p>
 
-                      {/* Interactive Human Sales Advisor Transfer Button */}
-                      {msg.sender === 'ai' && (msg.text.includes('مشاور') || msg.text.includes('ارتباط')) && (
-                        <div className="mt-2.5 pt-2 border-t border-slate-800">
-                          <button
-                            onClick={() => {
-                              const confirmMsg: ChatMessage = {
-                                id: `sys-${Date.now()}`,
-                                sender: 'ai',
-                                text: '🎧 درخواست شما با موفقیت برای اولین مشاور فروشگاه ارجاع داده شد. به‌زودی کارشناس فروش با شما ارتباط برقرار خواهد کرد.',
-                                timestamp: 'هم‌اکنون',
-                                source: 'سامانه ارجاع به مشاور انسانی کامواوب',
-                              };
-                              setMessages((prev) => [...prev, confirmMsg]);
-                            }}
-                            className="w-full py-2 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
-                          >
-                            <User className="w-3.5 h-3.5" />
-                            <span>درخواست اتصال به مشاور متخصص فروشگاه</span>
-                          </button>
+                      {/* Interactive Consultative Conversion Actions */}
+                      {msg.sender === 'ai' && (
+                        <div className="mt-2.5 pt-2 border-t border-slate-800 space-y-1.5">
+                          {/* Discount Copy Trigger */}
+                          {msg.text.includes('KAMVA-VIP') && (
+                            <button
+                              onClick={() => {
+                                navigator.clipboard?.writeText('KAMVA-VIP');
+                                const sysMsg: ChatMessage = {
+                                  id: `sys-coupon-${Date.now()}`,
+                                  sender: 'ai',
+                                  text: '🎁 کد تخفیف ۷٪ آنی (KAMVA-VIP) با موفقیت در کلیپ‌بورد شما ذخیره شد و در مرحله تسویه حساب اعمال خواهد شد!',
+                                  timestamp: 'هم‌اکنون',
+                                  source: 'تخفیف اختصاصی مشاور فروش'
+                                };
+                                setMessages((prev) => [...prev, sysMsg]);
+                              }}
+                              className="w-full py-1.5 px-3 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                            >
+                              <Percent className="w-3.5 h-3.5" />
+                              <span>کپی کد تخفیف ۷٪ آنی (KAMVA-VIP)</span>
+                            </button>
+                          )}
+
+                          {/* Installment Guide Trigger */}
+                          {(msg.text.includes('اسنپ‌پی') || msg.text.includes('قسط')) && (
+                            <button
+                              onClick={() => {
+                                const sysMsg: ChatMessage = {
+                                  id: `sys-bnpl-${Date.now()}`,
+                                  sender: 'ai',
+                                  text: '💳 راهنمای خرید اقساطی: سبد خرید خود را تکمیل نمایید و در درگاه پرداخت، گزینه «اسنپ‌پی» را انتخاب کنید. قسط اول در لحظه خرید و ۳ قسط دیگر در ماه‌های آینده بدون ضامن کسر خواهد شد.',
+                                  timestamp: 'هم‌اکنون',
+                                  source: 'سرویس BNPL اسنپ‌پی و تارا'
+                                };
+                                setMessages((prev) => [...prev, sysMsg]);
+                              }}
+                              className="w-full py-1.5 px-3 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/40 rounded-xl text-[11px] font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                            >
+                              <CheckCircle2 className="w-3.5 h-3.5" />
+                              <span>مشاهده راهنمای خرید در ۴ قسط بدون سود</span>
+                            </button>
+                          )}
+
+                          {/* Human Sales Advisor Transfer Button */}
+                          {(msg.text.includes('مشاور') || msg.text.includes('ارتباط')) && (
+                            <button
+                              onClick={() => {
+                                const confirmMsg: ChatMessage = {
+                                  id: `sys-${Date.now()}`,
+                                  sender: 'ai',
+                                  text: '🎧 درخواست شما با موفقیت برای اولین مشاور فروشگاه ارجاع داده شد. شماره تماس مستقیم: ۰۲۱-۹۱۰۰۰۰۰۰ | پشتیبانی برخط واتساپ در خدمت شماست.',
+                                  timestamp: 'هم‌اکنون',
+                                  source: 'سامانه ارجاع به مشاور انسانی کامواوب',
+                                };
+                                setMessages((prev) => [...prev, confirmMsg]);
+                              }}
+                              className="w-full py-2 px-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-xs rounded-xl shadow-md flex items-center justify-center gap-2 cursor-pointer transition-all"
+                            >
+                              <User className="w-3.5 h-3.5" />
+                              <span>درخواست اتصال به مشاور متخصص فروشگاه</span>
+                            </button>
+                          )}
                         </div>
                       )}
                       

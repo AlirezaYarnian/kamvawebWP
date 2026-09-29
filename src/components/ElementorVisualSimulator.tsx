@@ -69,7 +69,9 @@ type WidgetType =
   | 'product-hotspots'
   | 'price-drop-alert'
   | 'trust-badges'
-  | 'before-after-slider';
+  | 'before-after-slider'
+  | 'ai-product-recommender'
+  | 'live-sales-counter';
 
 export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> = ({
   config,
@@ -298,7 +300,7 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
               <div className="flex items-center justify-between pb-3 border-b border-slate-800">
                 <span className="text-xs font-bold text-white flex items-center gap-2">
                   <Sparkles className="w-4 h-4 text-pink-400" />
-                  مجموعه ۱۰ ویجت اختصاصی المنتور
+                  مجموعه ۱۶ ویجت پیشرفته المنتور
                 </span>
                 <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-mono font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30">
                   Ready for WooCommerce
@@ -593,6 +595,44 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
                   </div>
                 </button>
 
+                {/* 16. AI Product Recommender */}
+                <button
+                  onClick={() => handleSelectWidget('ai-product-recommender')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'ai-product-recommender'
+                      ? 'bg-indigo-950/80 border-indigo-500 text-white shadow-lg ring-1 ring-indigo-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Wand2 className={`w-5 h-5 ${selectedWidget === 'ai-product-recommender' ? 'text-cyan-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-cyan-400 bg-cyan-500/10 px-1.5 py-0.5 rounded">AI Neural</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">پیشنهاددهنده هوشمند کالا</span>
+                    <span className="text-[10px] text-slate-400">تطابق عصبی و یادگیری ماشین</span>
+                  </div>
+                </button>
+
+                {/* 17. Live Sales Counter */}
+                <button
+                  onClick={() => handleSelectWidget('live-sales-counter')}
+                  className={`p-3 rounded-2xl border text-right transition-all flex flex-col justify-between h-28 ${
+                    selectedWidget === 'live-sales-counter'
+                      ? 'bg-emerald-950/80 border-emerald-500 text-white shadow-lg ring-1 ring-emerald-500/40'
+                      : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:text-white hover:border-slate-700'
+                  }`}
+                >
+                  <div className="flex items-center justify-between w-full">
+                    <Activity className={`w-5 h-5 ${selectedWidget === 'live-sales-counter' ? 'text-emerald-400' : 'text-slate-500'}`} />
+                    <span className="text-[9px] font-mono text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded">Live Proof</span>
+                  </div>
+                  <div>
+                    <span className="text-xs font-bold block text-white">شمارنده زنده سفارشات</span>
+                    <span className="text-[10px] text-slate-400">اثبات اجتماعی و کمبود موجودی</span>
+                  </div>
+                </button>
+
               </div>
             </div>
 
@@ -769,8 +809,8 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
                         <Users className="w-5 h-5" />
                       </div>
                       <div>
-                        <span className="text-xs font-bold text-white block">علی از تبریز ۵ دقیقه پیش خرید کرد</span>
-                        <span className="text-[10px] text-slate-400">اولترابوک مهندسی KamvaBook X15 با ارسال اکسپرس</span>
+                        <span className="text-xs font-bold text-white block">سفارش جدید با پرداخت آنلاین ۵ دقیقه پیش ثبت شد</span>
+                        <span className="text-[10px] text-slate-400">ارسال اکسپرس به همراه ضمانت اصالت و سلامت فیزیکی</span>
                       </div>
                     </div>
                     <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded font-bold font-mono">
@@ -983,6 +1023,81 @@ export const ElementorVisualSimulator: React.FC<ElementorVisualSimulatorProps> =
                     <div className="h-20 bg-gradient-to-r from-red-950 via-slate-950 to-emerald-950 rounded-xl border border-slate-800 flex items-center justify-around font-mono text-[10px]">
                       <span className="text-rose-400">قبل: ۶.۲ ثانیه 🐌</span>
                       <span className="text-emerald-400">بعد: ۰.۳ ثانیه ✨</span>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 18: AI PRODUCT RECOMMENDER */}
+                {selectedWidget === 'ai-product-recommender' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900/90 border border-indigo-500/40 space-y-3" dir="rtl">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <span className="w-2 h-2 rounded-full bg-cyan-400 animate-pulse"></span>
+                        <span className="text-xs font-bold text-white">پیشنهادات هوشمند منطبق بر سلیقه شما</span>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono font-bold">KamvaCore AI</span>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 text-xs">
+                      <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">۹۸٪ تطابق عصبی</span>
+                          <span className="text-[10px] text-rose-400 font-bold">ویژه</span>
+                        </div>
+                        <span className="font-bold text-white block truncate text-[11px]">اولترابوک مهندسی KamvaBook X15</span>
+                        <span className="text-[10px] text-slate-400 block">پردازنده Core i9 + OLED 3K</span>
+                        <div className="flex items-center justify-between pt-1 border-t border-slate-900">
+                          <span className="text-[11px] font-bold text-amber-400 font-mono">۷۸,۵۰۰,۰۰۰ ت</span>
+                          <span className="text-[9px] text-slate-500">اقساط ۴ ماهه</span>
+                        </div>
+                      </div>
+
+                      <div className="bg-slate-950 p-2.5 rounded-xl border border-slate-800 space-y-1.5">
+                        <div className="flex items-center justify-between">
+                          <span className="text-[9px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-bold">۹۵٪ تطابق عصبی</span>
+                          <span className="text-[10px] text-indigo-400 font-bold">باندل</span>
+                        </div>
+                        <span className="font-bold text-white block truncate text-[11px]">هدفون استودیویی Kamva Pro ANC</span>
+                        <span className="text-[10px] text-slate-400 block">حذف نویز 48dB + باتری ۶۵ ساعته</span>
+                        <div className="flex items-center justify-between pt-1 border-t border-slate-900">
+                          <span className="text-[11px] font-bold text-amber-400 font-mono">۶,۲۰۰,۰۰۰ ت</span>
+                          <span className="text-[9px] text-slate-500">ارسال فوری</span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* WIDGET 19: LIVE SALES COUNTER */}
+                {selectedWidget === 'live-sales-counter' && (
+                  <div className="w-full p-4 rounded-2xl bg-slate-900/90 border border-emerald-500/40 space-y-3" dir="rtl">
+                    <div className="flex items-center justify-between pb-2 border-b border-slate-800">
+                      <div className="flex items-center gap-2">
+                        <span className="relative flex h-2 w-2">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                          <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                        </span>
+                        <span className="text-xs font-bold text-emerald-400">سفارشات موفق ۲۴ ساعت گذشته</span>
+                      </div>
+                      <span className="text-[10px] px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-slate-300 font-mono font-bold">۸۴+ سفارش زنده</span>
+                    </div>
+
+                    <div className="p-2.5 bg-slate-950 rounded-xl border border-slate-800 space-y-2">
+                      <div className="flex items-center justify-between text-[11px]">
+                        <span className="text-amber-400 font-bold flex items-center gap-1">
+                          <span>🔥</span>
+                          <span>سهمیه تخفیف انبار:</span>
+                        </span>
+                        <span className="text-rose-400 font-bold font-mono">تنها ۵ عدد باقی مانده</span>
+                      </div>
+                      <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-gradient-to-r from-amber-500 to-rose-500 rounded-full animate-pulse" style={{ width: '85%' }}></div>
+                      </div>
+                    </div>
+
+                    <div className="text-[10px] text-slate-400 flex items-center gap-1.5 bg-slate-950/60 p-2 rounded-lg border border-slate-800/80">
+                      <span className="text-emerald-400 font-bold">آخرین خرید:</span>
+                      <span>سارا م. از اصفهان ۴ دقیقه پیش «هدفون Kamva Pro ANC» را سفارش داد.</span>
                     </div>
                   </div>
                 )}

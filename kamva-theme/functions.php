@@ -30,9 +30,11 @@ require_once KAMVAWEB_THEME_DIR . '/inc/file-media-security-scanner.php';
 require_once KAMVAWEB_THEME_DIR . '/inc/speed-optimizer.php';
 require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-cache-manager.php';
 require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-query-analyzer.php';
+require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-query-optimizer.php';
 
 // ۶. موتور سئو، تولید خودکار اسکیما JSON-LD و رصد رقبا
 require_once KAMVAWEB_THEME_DIR . '/inc/seo-engine.php';
+require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-seo-optimizer.php';
 
 // ۷. پایش و پاکسازی خودکار دیتابیس وردپرس با هسته هوش مصنوعی (جداول یتیم و ترنزینت‌ها)
 require_once KAMVAWEB_THEME_DIR . '/inc/database-ai-cleaner.php';
@@ -46,9 +48,14 @@ require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-migration-manager.php';
 
 // ۱۰. کتابخانه الگوهای سراسری و کامپوننت‌های نکسوس (NexusAI Global Pattern Library)
 require_once KAMVAWEB_THEME_DIR . '/inc/nexus-pattern-library.php';
+require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-widget-exporter.php';
 
 // ۱۱. ماژول تحلیل رفتار مشتری و بهینه‌سازی نرخ تبدیل (Customer Behavior & CRO Engine)
 require_once KAMVAWEB_THEME_DIR . '/inc/customer-behavior.php';
+require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-sales-psychology.php';
+
+// ۱۲. موتور قالب و رابط کاربری فروشگاهی سبک ESCMarket (تجهیزات اندازه‌گیری و ابزار)
+require_once KAMVAWEB_THEME_DIR . '/inc/class-escmarket-ui-engine.php';
 
 // راه‌اندازی کنترل‌پنل تم‌آپشن در پیشخوان وردپرس
 if (is_admin()) {
@@ -62,6 +69,12 @@ function kamvaweb_theme_setup() {
     load_theme_textdomain('kamvaweb', KAMVAWEB_THEME_DIR . '/languages');
     add_theme_support('title-tag');
     add_theme_support('post-thumbnails');
+    add_theme_support('custom-logo', array(
+        'height'      => 80,
+        'width'       => 240,
+        'flex-width'  => true,
+        'flex-height' => true,
+    ));
     add_theme_support('html5', array('search-form', 'comment-form', 'gallery', 'caption', 'style', 'script'));
     add_theme_support('woocommerce');
     add_theme_support('wc-product-gallery-zoom');
@@ -73,8 +86,31 @@ function kamvaweb_theme_setup() {
     add_theme_support('wp-block-styles');
     add_theme_support('interactivity-api');
     add_theme_support('block-template-parts');
+
+    // ثبت فهرست‌های استاندارد ناوبری وردپرس
+    register_nav_menus(array(
+        'primary' => esc_html__('منوی اصلی سربرگ', 'kamvaweb'),
+        'footer'  => esc_html__('منوی دسترسی سریع فوتر', 'kamvaweb'),
+        'mobile'  => esc_html__('منوی موبایل و کشویی', 'kamvaweb'),
+    ));
 }
 add_action('after_setup_theme', 'kamvaweb_theme_setup');
+
+/**
+ * ثبت ابزارک‌های استاندارد وردپرس
+ */
+function kamvaweb_register_sidebars() {
+    register_sidebar(array(
+        'name'          => esc_html__('سایدبار اصلی وبلاگ و فروشگاه', 'kamvaweb'),
+        'id'            => 'sidebar-main',
+        'description'   => esc_html__('ابزارک‌های سایدبار وبلاگ و فروشگاه', 'kamvaweb'),
+        'before_widget' => '<section id="%1$s" class="widget %2$s p-5 bg-slate-900 border border-slate-800 rounded-2xl mb-6">',
+        'after_widget'  => '</section>',
+        'before_title'  => '<h3 class="widget-title text-sm font-bold text-white mb-3">',
+        'after_title'   => '</h3>',
+    ));
+}
+add_action('widgets_init', 'kamvaweb_register_sidebars');
 
 /**
  * بارگذاری اسکریپت‌ها و استایل‌ها به صورت مینیمایز و سبک
@@ -91,12 +127,15 @@ function kamvaweb_enqueue_scripts() {
     );
 
     wp_localize_script('kamvaweb-sales-bot', 'kamvaWebData', array(
-        'ajaxUrl'   => admin_url('admin-ajax.php'),
-        'restUrl'   => esc_url_raw(rest_url('kamvaweb/v1/')),
-        'nonce'     => wp_create_nonce('kamvaweb_security_nonce'),
-        'botName'   => get_option('kamvaweb_bot_name', 'دستیار هوشمند کامواوب'),
-        'welcome'   => get_option('kamvaweb_welcome_msg', 'سلام! چطور می‌تونم برای بهترین انتخاب به شما کمک کنم؟'),
-        'themeUrl'  => KAMVAWEB_THEME_URI,
+        'ajaxUrl'         => admin_url('admin-ajax.php'),
+        'restUrl'         => esc_url_raw(rest_url('kamvaweb/v1/')),
+        'nonce'           => wp_create_nonce('kamvaweb_security_nonce'),
+        'botName'         => get_option('kamvaweb_bot_name', 'مشاور هوشمند فروش کامواوب'),
+        'welcome'         => get_option('kamvaweb_welcome_msg', 'سلام! چطور می‌تونم برای بهترین انتخاب به شما کمک کنم؟'),
+        'supportPhone'    => get_option('kamva_support_phone', get_bloginfo('admin_email')),
+        'supportWhatsapp' => get_option('kamva_support_whatsapp', ''),
+        'adminEmail'      => get_bloginfo('admin_email'),
+        'themeUrl'        => KAMVAWEB_THEME_URI,
     ));
 }
 add_action('wp_enqueue_scripts', 'kamvaweb_enqueue_scripts');
@@ -121,6 +160,8 @@ function kamvaweb_register_elementor_ai_widgets($widgets_manager) {
     require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-flash-sale-countdown.php';
     require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-sticky-mobile-cart.php';
     require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-before-after-slider.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-ai-product-recommender.php';
+    require_once KAMVAWEB_THEME_DIR . '/inc/elementor-widgets/class-live-sales-counter.php';
 
     $widgets_manager->register(new \KamvaWeb_Elementor_Sales_Bot_Widget());
     $widgets_manager->register(new \KamvaWeb_Elementor_Product_Advisor_Widget());
@@ -136,6 +177,8 @@ function kamvaweb_register_elementor_ai_widgets($widgets_manager) {
     $widgets_manager->register(new \KamvaWeb_Elementor_Flash_Sale_Countdown_Widget());
     $widgets_manager->register(new \KamvaWeb_Elementor_Sticky_Mobile_Cart_Widget());
     $widgets_manager->register(new \KamvaWeb_Elementor_Before_After_Slider_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_AI_Product_Recommender_Widget());
+    $widgets_manager->register(new \KamvaWeb_Elementor_Live_Sales_Counter_Widget());
 }
 add_action('elementor/widgets/register', 'kamvaweb_register_elementor_ai_widgets');
 

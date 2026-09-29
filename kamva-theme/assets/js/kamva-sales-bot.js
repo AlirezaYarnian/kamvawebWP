@@ -73,7 +73,17 @@
 
         connectToHumanConsultant: function(e) {
             e.preventDefault();
-            alert('در حال انتقال شما به مشاور فروشگاه... همکاران ما در واحد پشتیبانی و فروش تا چند لحظه دیگر پاسخگوی شما خواهند بود.');
+            var phone = (window.kamvaWebData && window.kamvaWebData.supportPhone) ? window.kamvaWebData.supportPhone : '';
+            var whatsapp = (window.kamvaWebData && window.kamvaWebData.supportWhatsapp) ? window.kamvaWebData.supportWhatsapp : '';
+
+            if (whatsapp) {
+                window.location.href = 'https://wa.me/' + whatsapp.replace(/[^0-9]/g, '');
+            } else if (phone && phone.indexOf('@') === -1) {
+                window.location.href = 'tel:' + phone;
+            } else {
+                var notice = 'همکاران ما در واحد مشاوره و فروش آماده پاسخگویی هستند.' + (phone ? ' شماره تماس / ایمیل: ' + phone : '');
+                this.appendMessage('ai', notice);
+            }
         },
 
         escapeHtml: function(string) {

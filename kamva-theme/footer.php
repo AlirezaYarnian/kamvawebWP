@@ -8,35 +8,53 @@
                     </p>
                 </div>
                 <div>
-                    <h5 class="text-white font-semibold text-xs mb-3">دسترسی سریع</h5>
-                    <ul class="space-y-1.5 text-xs text-slate-400">
-                        <li><a href="<?php echo esc_url(home_url('/')); ?>" class="hover:text-white">صفحه اصلی</a></li>
-                        <li><a href="<?php echo esc_url(home_url('/shop')); ?>" class="hover:text-white">فروشگاه آنلاین</a></li>
-                        <li><a href="<?php echo esc_url(home_url('/blog')); ?>" class="hover:text-white">وبلاگ و مقالات</a></li>
-                    </ul>
+                    <h5 class="text-white font-semibold text-xs mb-3"><?php esc_html_e('دسترسی سریع', 'kamvaweb'); ?></h5>
+                    <?php if (has_nav_menu('footer')) : ?>
+                        <?php wp_nav_menu(array(
+                            'theme_location' => 'footer',
+                            'menu_class'     => 'space-y-1.5 text-xs text-slate-400',
+                            'container'      => false,
+                            'fallback_cb'    => false,
+                        )); ?>
+                    <?php else : ?>
+                        <ul class="space-y-1.5 text-xs text-slate-400">
+                            <li><a href="<?php echo esc_url(home_url('/')); ?>" class="hover:text-white"><?php esc_html_e('صفحه اصلی', 'kamvaweb'); ?></a></li>
+                            <?php if (function_exists('wc_get_page_permalink')) : ?>
+                                <li><a href="<?php echo esc_url(wc_get_page_permalink('shop')); ?>" class="hover:text-white"><?php esc_html_e('فروشگاه آنلاین', 'kamvaweb'); ?></a></li>
+                            <?php endif; ?>
+                            <li><a href="<?php echo esc_url(get_permalink(get_option('page_for_posts')) ?: home_url('/')); ?>" class="hover:text-white"><?php esc_html_e('وبلاگ و مقالات', 'kamvaweb'); ?></a></li>
+                        </ul>
+                    <?php endif; ?>
                 </div>
                 <div>
-                    <h5 class="text-white font-semibold text-xs mb-3">پشتیبانی و امنیت</h5>
+                    <h5 class="text-white font-semibold text-xs mb-3"><?php esc_html_e('پشتیبانی و امنیت', 'kamvaweb'); ?></h5>
                     <p class="text-xs text-slate-400 leading-relaxed">
-                        کلیه پرداخت‌ها تحت پروتکل SSL و درگاه‌های شاپرک با حداکثر امنیت انجام می‌شود.
+                        <?php echo esc_html(get_option('kamva_footer_security_text', esc_html__('کلیه پرداخت‌ها تحت پروتکل امن SSL و درگاه‌های شاپرک با حداکثر امنیت انجام می‌شود.', 'kamvaweb'))); ?>
                     </p>
                 </div>
                 <div>
-                    <h5 class="text-white font-semibold text-xs mb-3">نمادهای اعتماد الکترونیکی</h5>
-                    <div class="flex items-center gap-2">
-                        <div class="w-16 h-16 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center text-[10px] text-slate-400 text-center p-1">
-                            اینماد معتبر
+                    <h5 class="text-white font-semibold text-xs mb-3"><?php esc_html_e('نمادهای اعتماد الکترونیکی', 'kamvaweb'); ?></h5>
+                    <?php 
+                    $enamad_html = get_option('kamva_enamad_html');
+                    if (!empty($enamad_html)) :
+                        echo wp_kses_post($enamad_html);
+                    else :
+                    ?>
+                        <div class="flex items-center gap-2">
+                            <div class="w-16 h-16 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center text-[10px] text-slate-400 text-center p-1">
+                                <?php esc_html_e('اینماد معتبر', 'kamvaweb'); ?>
+                            </div>
+                            <div class="w-16 h-16 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center text-[10px] text-slate-400 text-center p-1">
+                                <?php esc_html_e('ساماندهی', 'kamvaweb'); ?>
+                            </div>
                         </div>
-                        <div class="w-16 h-16 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-center text-[10px] text-slate-400 text-center p-1">
-                            ساماندهی
-                        </div>
-                    </div>
+                    <?php endif; ?>
                 </div>
             </div>
 
             <div class="border-t border-slate-800/80 mt-8 pt-6 flex flex-col sm:flex-row items-center justify-between text-xs text-slate-400">
-                <p>&copy; <?php echo date('Y'); ?> <?php bloginfo('name'); ?>. تمامی حقوق محفوظ است.</p>
-                <p class="mt-2 sm:mt-0">توسعه یافته بر پایه کامواوب پرو | نسخه ۴.۲.۰</p>
+                <p>&copy; <?php echo esc_html(date('Y')); ?> <?php bloginfo('name'); ?>. <?php esc_html_e('تمامی حقوق محفوظ است.', 'kamvaweb'); ?></p>
+                <p class="mt-2 sm:mt-0"><?php printf(esc_html__('توسعه یافته بر پایه کامواوب پرو | نسخه %s', 'kamvaweb'), esc_html(KAMVAWEB_THEME_VERSION)); ?></p>
             </div>
         </div>
     </footer>

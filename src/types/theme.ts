@@ -714,4 +714,79 @@ export interface ABExperiment {
   updatedAt: string;
 }
 
+// ============================================================================
+// AI CONTENT OPTIMIZER (GUTENBERG & ELEMENTOR INTEGRATION)
+// ============================================================================
+export type ContentOptimizerTarget = 'blog_post' | 'product_description' | 'landing_elementor' | 'category_archive';
+export type EditorConnectionType = 'gutenberg' | 'elementor' | 'woocommerce_rest' | 'classic_tinymce';
+export type ContentTone = 'persuasive_sales' | 'authoritative_technical' | 'engaging_story' | 'luxury_vip' | 'educational_seo';
+
+export interface GrammarIssue {
+  id: string;
+  originalText: string;
+  suggestedText: string;
+  explanation: string;
+  category: 'half_space' | 'redundancy' | 'punctuation' | 'spelling' | 'flow';
+  applied: boolean;
+}
+
+export interface SeoRecommendation {
+  id: string;
+  type: 'density' | 'heading' | 'meta' | 'lsi' | 'schema' | 'linking';
+  title: string;
+  description: string;
+  impact: 'critical' | 'high' | 'medium' | 'low';
+  currentVal?: string;
+  targetVal?: string;
+  autoFixSnippet?: string;
+}
+
+export interface ReadabilityMetric {
+  score: number;
+  label: string;
+  grade: 'excellent' | 'good' | 'average' | 'poor';
+  sentenceCount: number;
+  wordCount: number;
+  avgWordLength: number;
+  passiveVoicePercentage: number;
+  transitionWordsPercentage: number;
+  longSentenceCount: number;
+  paragraphCount: number;
+  fleschScoreEquivalent: number;
+}
+
+export interface GutenbergBlockItem {
+  id: string;
+  blockName: string; // e.g. 'core/paragraph', 'core/heading', 'core/list', 'woocommerce/product-summary', 'kamva/faq-accordion'
+  innerHtml: string;
+  suggestedHtml?: string;
+  attributes?: Record<string, any>;
+  hasIssues?: boolean;
+}
+
+export interface ContentDocument {
+  id: string;
+  title: string;
+  slug: string;
+  targetType: ContentOptimizerTarget;
+  editorType: EditorConnectionType;
+  focusKeyphrase: string;
+  secondaryKeywords: string[];
+  metaTitle: string;
+  metaDescription: string;
+  contentRaw: string;
+  optimizedContent?: string;
+  blocks?: GutenbergBlockItem[];
+  elementorData?: any;
+  tone: ContentTone;
+  lastOptimized?: string;
+  seoScore: number;
+  readabilityScore: number;
+  grammarScore: number;
+  grammarIssues: GrammarIssue[];
+  seoRecommendations: SeoRecommendation[];
+  readabilityMetrics: ReadabilityMetric;
+}
+
+
 

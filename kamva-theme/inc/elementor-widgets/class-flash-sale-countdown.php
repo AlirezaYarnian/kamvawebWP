@@ -65,28 +65,35 @@ class KamvaWeb_Elementor_Flash_Sale_Countdown_Widget extends \Elementor\Widget_B
         $left = intval($settings['items_left']);
         $total = intval($settings['total_items']);
         $percentage = max(5, min(100, round(($left / max(1, $total)) * 100)));
+
+        $now = current_time('timestamp');
+        $end_of_day = strtotime('tomorrow', $now);
+        $diff = max(0, $end_of_day - $now);
+        $hours = sprintf('%02d', floor($diff / 3600));
+        $minutes = sprintf('%02d', floor(($diff % 3600) / 60));
+        $seconds = sprintf('%02d', $diff % 60);
         ?>
         <div class="kamva-flash-sale my-6 p-5 bg-gradient-to-r from-red-950/90 via-slate-900 to-slate-900 border border-red-500/40 rounded-2xl text-slate-100 shadow-2xl relative overflow-hidden" dir="rtl">
             <div class="flex flex-col md:flex-row items-center justify-between gap-4 mb-4">
                 <div class="flex items-center gap-3">
-                    <span class="px-3 py-1 bg-red-500 text-white font-extrabold text-xs rounded-full animate-pulse">فروش ویژه</span>
+                    <span class="px-3 py-1 bg-red-500 text-white font-extrabold text-xs rounded-full animate-pulse"><?php esc_html_e('فروش ویژه', 'kamvaweb'); ?></span>
                     <h4 class="font-extrabold text-slate-100 text-base md:text-lg"><?php echo esc_html($settings['sale_title']); ?></h4>
                 </div>
 
-                <div class="flex items-center gap-2 dir-ltr text-center">
+                <div class="flex items-center gap-2 dir-ltr text-center font-mono">
                     <div class="bg-slate-950/80 px-3 py-1.5 rounded-lg border border-red-500/30">
-                        <span class="block text-sm font-extrabold text-red-400">08</span>
-                        <span class="text-[9px] text-slate-400">ساعت</span>
+                        <span class="block text-sm font-extrabold text-red-400 countdown-hours"><?php echo esc_html($hours); ?></span>
+                        <span class="text-[9px] text-slate-400"><?php esc_html_e('ساعت', 'kamvaweb'); ?></span>
                     </div>
                     <span class="text-red-400 font-bold">:</span>
                     <div class="bg-slate-950/80 px-3 py-1.5 rounded-lg border border-red-500/30">
-                        <span class="block text-sm font-extrabold text-red-400">42</span>
-                        <span class="text-[9px] text-slate-400">دقیقه</span>
+                        <span class="block text-sm font-extrabold text-red-400 countdown-minutes"><?php echo esc_html($minutes); ?></span>
+                        <span class="text-[9px] text-slate-400"><?php esc_html_e('دقیقه', 'kamvaweb'); ?></span>
                     </div>
                     <span class="text-red-400 font-bold">:</span>
                     <div class="bg-slate-950/80 px-3 py-1.5 rounded-lg border border-red-500/30">
-                        <span class="block text-sm font-extrabold text-red-400">19</span>
-                        <span class="text-[9px] text-slate-400">ثانیه</span>
+                        <span class="block text-sm font-extrabold text-red-400 countdown-seconds"><?php echo esc_html($seconds); ?></span>
+                        <span class="text-[9px] text-slate-400"><?php esc_html_e('ثانیه', 'kamvaweb'); ?></span>
                     </div>
                 </div>
             </div>

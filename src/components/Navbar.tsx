@@ -20,7 +20,22 @@ import {
   ArrowRightLeft,
   ChevronDown,
   LayoutGrid,
-  Sparkles
+  Sparkles,
+  Database,
+  FileCheck,
+  Sliders,
+  Calendar,
+  GitFork,
+  Workflow,
+  Box,
+  Target,
+  SlidersHorizontal,
+  ShieldAlert,
+  FileCode,
+  Terminal,
+  Split,
+  Palette,
+  Cpu
 } from 'lucide-react';
 import { KamvaLogo } from './KamvaLogo';
 
@@ -55,7 +70,8 @@ export const Navbar: React.FC<NavbarProps> = ({
       id: 'store-core',
       title: 'فروشگاه و ساختار',
       items: [
-        { id: 'options', label: 'تنظیمات قالب', icon: Store, badge: 'Main' },
+        { id: 'escmarket-store', label: 'فروشگاه ESCMarket', icon: Store, badge: 'ESC' },
+        { id: 'options', label: 'تنظیمات قالب', icon: LayoutGrid, badge: 'Main' },
         { id: 'theme-migrator', label: 'مهاجرت قالب', icon: ArrowRightLeft },
         { id: 'smart-widgets', label: 'چیدمان ویجت‌ها', icon: Flame },
         { id: 'user-portal', label: 'پنل کاربری', icon: UserCheck },
@@ -65,7 +81,12 @@ export const Navbar: React.FC<NavbarProps> = ({
       id: 'ai-core',
       title: 'هوش مصنوعی و ML',
       items: [
+        { id: 'content-optimizer', label: 'بهینه‌ساز محتوا AI', icon: FileCheck, badge: 'Gutenberg' },
+        { id: 'marketing-genius', label: 'نابغه بازاریابی AI', icon: Calendar, badge: 'Calendar' },
+        { id: 'seo-calendar', label: 'تقویم سئو سالانه AI', icon: Target, badge: 'SEO' },
+        { id: 'ai-behavior', label: 'رفتار سراسری AI', icon: SlidersHorizontal, badge: 'Global' },
         { id: 'neural-ml', label: 'شبکه عصبی ML', icon: BrainCircuit, badge: 'AI' },
+        { id: 'local-neural', label: 'موتور عصبی محلی', icon: Cpu, badge: 'Local' },
         { id: 'smart-config', label: 'کانفیگ AI', icon: Wand2 },
         { id: 'sales-ai', label: 'دستیار فروش', icon: MessageSquareHeart },
         { id: 'analytics', label: 'تحلیل و نرخ تبدیل', icon: TrendingUp },
@@ -76,6 +97,13 @@ export const Navbar: React.FC<NavbarProps> = ({
       title: 'طراحی و توسعه',
       items: [
         { id: 'elementor', label: 'استودیو المنتور', icon: Boxes },
+        { id: 'elementor-sync', label: 'همگام‌ساز المنتور', icon: Sparkles, badge: 'Tokens' },
+        { id: 'design-system', label: 'دیزاین سیستم و توکن‌ها', icon: Palette, badge: 'Tokens' },
+        { id: 'child-theme', label: 'مدیر قالب کودک', icon: GitFork, badge: 'Child' },
+        { id: 'component-lab', label: 'آزمایشگاه ایزوله', icon: Box, badge: 'Sandbox' },
+        { id: 'auto-schema', label: 'تزریق‌کننده اسکیما AI', icon: FileCode, badge: 'Schema' },
+        { id: 'landing-optimizer', label: 'بهینه‌ساز صفحات فرود', icon: Split, badge: 'CRO' },
+        { id: 'wp-cli', label: 'ترمینال WP-CLI', icon: Terminal, badge: 'CLI' },
         { id: 'developer-studio', label: 'استودیو برنامه‌نویسی', icon: Code2, badge: 'PHP' },
         { id: 'seo-market', label: 'سئو و گوگل', icon: Search },
       ],
@@ -85,13 +113,20 @@ export const Navbar: React.FC<NavbarProps> = ({
       title: 'سرعت و امنیت',
       items: [
         { id: 'cache-optimizer', label: 'بهینه‌سازی کش', icon: Zap },
+        { id: 'kamva-cache', label: 'موتور کش کاموا', icon: Sliders, badge: '.htaccess' },
         { id: 'speed-security', label: 'امنیت و فایروال', icon: ShieldCheck, badge: 'AIOS' },
+        { id: 'plugin-scanner', label: 'اسکنر افزونه‌ها', icon: Boxes, badge: 'Scanner' },
+        { id: 'realtime-traffic', label: 'ترافیک زنده AIOS', icon: Activity, badge: 'Live' },
+        { id: 'predictive-scaler', label: 'مقیاس‌پذیر پیش‌بینانه', icon: TrendingUp, badge: 'Scaler' },
+        { id: 'global-safety', label: 'پروتکل ایمنی جهانی', icon: ShieldAlert, badge: 'Kill-Switch' },
       ],
     },
     {
       id: 'ops-deploy',
       title: 'استقرار و نگهداری',
       items: [
+        { id: 'db-migrator', label: 'مایگریشن دیتابیس', icon: Database, badge: 'v1.4' },
+        { id: 'workflow-automator', label: 'اتوماسیون جریان کاری', icon: Workflow, badge: 'Scheduler' },
         { id: 'deploy-helper', label: 'استقرار پروداکشن', icon: Rocket },
         { id: 'disaster-recovery', label: 'بک‌آپ و بازیابی', icon: LifeBuoy },
         { id: 'health-report', label: 'گزارش سلامت', icon: Activity },

@@ -874,7 +874,7 @@ Kamva_Smart_Widget_Engine::get_instance();
                 )}
               </div>
 
-              {/* Mock WordPress Header Navigation */}
+              {/* Live WordPress Header Navigation Preview */}
               <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-3.5 mb-3 flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <div className="w-7 h-7 rounded-lg bg-[#f05023] flex items-center justify-center text-white font-black text-xs">

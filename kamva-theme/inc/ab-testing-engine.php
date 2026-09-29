@@ -50,7 +50,7 @@ class Kamva_Elementor_AB_Engine {
             'kamva-ab-tracker',
             get_template_directory_uri() . '/assets/js/kamva-ab-tracker.js',
             array('jquery'),
-            KAMVA_THEME_VERSION,
+            defined('KAMVAWEB_THEME_VERSION') ? KAMVAWEB_THEME_VERSION : '4.2.0',
             true
         );
 

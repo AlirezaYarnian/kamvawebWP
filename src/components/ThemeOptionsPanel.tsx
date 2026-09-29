@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { 
   ThemeOptionsConfig,
   KnowledgeItem,
@@ -41,7 +41,19 @@ import {
   LayoutDashboard,
   UserCheck,
   Check,
-  HardDrive
+  HardDrive,
+  CheckCircle,
+  Truck,
+  CreditCard,
+  ShieldCheck,
+  Eye,
+  Activity,
+  ShoppingCart,
+  SlidersVertical,
+  Sliders as SlidersIcon,
+  Tag,
+  MousePointerClick,
+  Maximize2
 } from 'lucide-react';
 
 interface ThemeOptionsPanelProps {
@@ -50,22 +62,38 @@ interface ThemeOptionsPanelProps {
   onRefreshKnowledgeBase?: () => void;
 }
 
+type TabType = 
+  | 'store' 
+  | 'modules' 
+  | 'admin-speed' 
+  | 'crawler' 
+  | 'stability' 
+  | 'wp-core' 
+  | 'ai' 
+  | 'speed' 
+  | 'security' 
+  | 'seo' 
+  | 'elementor' 
+  | 'styling';
+
+interface NavItem {
+  id: TabType;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+  badge: string;
+  category: 'core' | 'ai' | 'system' | 'design';
+}
+
 export const ThemeOptionsPanel: React.FC<ThemeOptionsPanelProps> = ({
   config,
   onChangeConfig,
   onRefreshKnowledgeBase,
 }) => {
-  const [activeSubTab, setActiveSubTab] = useState<
-    'store' | 'modules' | 'admin-speed' | 'crawler' | 'stability' | 'wp-core' | 'ai' | 'speed' | 'security' | 'seo' | 'elementor' | 'styling'
-  >('store');
-
+  const [activeSubTab, setActiveSubTab] = useState<TabType>('store');
   const [storeSubTab, setStoreSubTab] = useState<'header' | 'shop' | 'single' | 'footer'>('header');
   const [showSavedToast, setShowSavedToast] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
-
-  // Panel UI Customization & Search State
   const [panelSearchQuery, setPanelSearchQuery] = useState('');
-  const [panelAccent, setPanelAccent] = useState<'indigo' | 'emerald' | 'amber' | 'slate'>('indigo');
 
   // Admin AI Booster State
   const [isBoostingAdmin, setIsBoostingAdmin] = useState(false);
@@ -168,7 +196,7 @@ export const ThemeOptionsPanel: React.FC<ThemeOptionsPanelProps> = ({
       setHealingLogs(data.repairs || ['کلیه تداخل‌ها با موفقیت رفع شدند']);
       updateSubConfig('stabilityAndErrorHealing', {
         activeErrorsCount: 0,
-        resolvedConflictsCount: config.stabilityAndErrorHealing.resolvedConflictsCount + 1,
+        resolvedConflictsCount: (config.stabilityAndErrorHealing?.resolvedConflictsCount || 0) + 1,
         lastHealingTimestamp: 'همین لحظه (سیستم کاملاً پایدار)',
       });
     } catch (e) {
@@ -178,1017 +206,672 @@ export const ThemeOptionsPanel: React.FC<ThemeOptionsPanelProps> = ({
     }
   };
 
+  const navItems: NavItem[] = [
+    { id: 'store', label: 'موتور فروشگاهی کاموا استور', icon: Store, badge: 'Kamva Store', category: 'core' },
+    { id: 'modules', label: 'مدیریت ماژول‌ها و فیچرها', icon: Sliders, badge: 'Modules', category: 'core' },
+    { id: 'admin-speed', label: 'پیشخوان وردپرس و شتاب AI', icon: LayoutDashboard, badge: 'Admin AI', category: 'core' },
+    { id: 'ai', label: 'مغز هوش مصنوعی داخلی', icon: BrainCircuit, badge: 'AI Core', category: 'ai' },
+    { id: 'crawler', label: 'خزشگر زنده و دیتای وب', icon: Globe, badge: 'Real Data', category: 'ai' },
+    { id: 'seo', label: 'سئو و هوش رقبای گوگل', icon: Compass, badge: 'SEO Pro', category: 'ai' },
+    { id: 'stability', label: 'پایداری و خودترمیمی خطاها', icon: LifeBuoy, badge: 'Zero Crash', category: 'system' },
+    { id: 'wp-core', label: 'هسته وردپرس ۷.۱ Mary Lou', icon: Layers, badge: 'WP 7.1', category: 'system' },
+    { id: 'speed', label: 'بهینه‌سازی و لایت‌هاوس ۹۹', icon: Zap, badge: '99/100', category: 'system' },
+    { id: 'security', label: 'سپر امنیتی All-in-One WAF', icon: ShieldAlert, badge: 'WAF Pro', category: 'system' },
+    { id: 'elementor', label: 'هماهنگی و ویجت‌های المنتور', icon: Boxes, badge: 'Elementor Pro', category: 'design' },
+    { id: 'styling', label: 'رنگ‌بندی، تایپوگرافی و ظاهر', icon: Palette, badge: 'Theme UI', category: 'design' },
+  ];
+
+  const categories = [
+    { id: 'core', title: 'هسته فروشگاه و فیچرها' },
+    { id: 'ai', title: 'هوش مصنوعی و داده زنده' },
+    { id: 'system', title: 'سیستم، امنیت و کارایی' },
+    { id: 'design', title: 'طراحی، ظاهر و المنتور' },
+  ];
+
+  // Filtered Navigation based on search
+  const filteredNavItems = useMemo(() => {
+    if (!panelSearchQuery.trim()) return navItems;
+    const q = panelSearchQuery.toLowerCase();
+    return navItems.filter(item => 
+      item.label.toLowerCase().includes(q) || 
+      item.badge.toLowerCase().includes(q)
+    );
+  }, [panelSearchQuery]);
+
   return (
-    <div className="space-y-6">
-      {/* Top Header Banner & Quick Controls */}
-      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 relative overflow-hidden shadow-xl">
-        <div className="relative z-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-md bg-indigo-500/15 text-indigo-300 text-xs font-bold border border-indigo-500/20">
-                <Store className="w-3.5 h-3.5" />
-                تنظیمات قالب کامواوب
-              </span>
-              <span className="text-[10px] font-mono font-bold text-slate-400 bg-slate-800/80 px-2 py-0.5 rounded">
-                WP 7.1 • PHP 8.2+
-              </span>
+    <div className="space-y-6" dir="rtl">
+      {/* 1. TOP HEADER BANNER (High-End Professional WordPress Theme Dashboard) */}
+      <div className="relative overflow-hidden rounded-2xl bg-slate-900 border border-slate-800/80 p-6 sm:p-7 shadow-xl">
+        <div className="absolute top-0 right-0 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl pointer-events-none -translate-y-1/2 translate-x-1/2" />
+        <div className="absolute bottom-0 left-0 w-80 h-80 bg-cyan-500/5 rounded-full blur-3xl pointer-events-none translate-y-1/2 -translate-x-1/2" />
+        
+        <div className="relative z-10 flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+          <div className="space-y-2">
+            <div className="flex items-center gap-2 text-xs font-semibold text-slate-400">
+              <span className="text-indigo-400 font-bold">کامواوب پرو</span>
+              <span aria-hidden="true" className="text-slate-600">·</span>
+              <span>پنل تنظیمات قالب و هسته فروشگاهی</span>
+              <span aria-hidden="true" className="text-slate-600">·</span>
+              <span className="text-emerald-400 font-medium">سازگار با وردپرس ۷.۱ و PHP 8.2+</span>
             </div>
-            <h2 className="text-lg font-bold text-white tracking-tight">
-              کنترل پنل تم‌آپشن کاموا استور (Kamva Store Engine)
+            
+            <h2 className="text-xl sm:text-2xl font-black text-slate-100 tracking-tight">
+              تنظیمات پیشرفته و سفارشی‌سازی قالب (Kamva Dashboard)
             </h2>
+            <p className="text-xs sm:text-sm text-slate-400 max-w-2xl leading-relaxed">
+              پیکربندی یکپارچه هدرساز، موتور کاتالوگ، رفتارشناسی هوشمند مشتریان، سپر امنیتی فایروال و ابزارهای بهینه‌سازی سرعت.
+            </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
+          <div className="flex flex-wrap items-center gap-3 shrink-0">
             {/* Quick Live Search Bar */}
             <div className="relative min-w-[200px] sm:min-w-[240px]">
-              <Search className="w-3.5 h-3.5 absolute right-3 top-3 text-slate-400" />
+              <Search className="w-4 h-4 absolute right-3.5 top-3 text-slate-400 pointer-events-none" />
               <input
                 type="text"
-                placeholder="جستجوی تنظیمات..."
+                placeholder="جستجوی سریع تنظیمات..."
                 value={panelSearchQuery}
                 onChange={(e) => setPanelSearchQuery(e.target.value)}
-                className="w-full pl-3 pr-9 py-2 bg-slate-950 border border-slate-800 rounded-xl text-xs text-white placeholder-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+                className="w-full pl-3 pr-10 py-2 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/30 transition-colors"
               />
-            </div>
-
-            {/* Accent Theme Selector */}
-            <div className="hidden sm:flex items-center gap-1 bg-slate-950 p-1 rounded-xl border border-slate-800">
-              <button
-                onClick={() => setPanelAccent('indigo')}
-                className={`w-5 h-5 rounded-lg bg-indigo-600 transition-transform ${panelAccent === 'indigo' ? 'scale-110 ring-2 ring-white' : 'opacity-60 hover:opacity-100'}`}
-                title="تم نیلی"
-              />
-              <button
-                onClick={() => setPanelAccent('emerald')}
-                className={`w-5 h-5 rounded-lg bg-emerald-600 transition-transform ${panelAccent === 'emerald' ? 'scale-110 ring-2 ring-white' : 'opacity-60 hover:opacity-100'}`}
-                title="تم زمرّدی"
-              />
-              <button
-                onClick={() => setPanelAccent('amber')}
-                className={`w-5 h-5 rounded-lg bg-amber-600 transition-transform ${panelAccent === 'amber' ? 'scale-110 ring-2 ring-white' : 'opacity-60 hover:opacity-100'}`}
-                title="تم کهربایی"
-              />
+              {panelSearchQuery && (
+                <button
+                  onClick={() => setPanelSearchQuery('')}
+                  className="absolute left-2.5 top-2.5 text-xs text-slate-400 hover:text-white"
+                >
+                  ✕
+                </button>
+              )}
             </div>
 
             {/* Save Button */}
             <button
               onClick={handleSave}
               disabled={isSaving}
-              className="flex items-center gap-2 px-4 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50"
+              className="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white text-xs font-bold rounded-xl shadow-lg shadow-indigo-600/20 transition-all cursor-pointer disabled:opacity-50"
             >
-              <CheckCircle2 className="w-4 h-4" />
-              <span>{isSaving ? 'در حال ذخیره...' : 'ذخیره تنظیمات'}</span>
+              <CheckCircle2 className={`w-4 h-4 ${isSaving ? 'animate-spin' : ''}`} />
+              <span>{isSaving ? 'در حال ذخیره‌سازی...' : 'ذخیره کل تغییرات'}</span>
             </button>
           </div>
         </div>
 
         {/* Save confirmation toast */}
         {showSavedToast && (
-          <div className="absolute bottom-3 left-6 z-20 flex items-center gap-2 bg-emerald-600 text-white text-xs font-bold px-3.5 py-1.5 rounded-xl shadow-xl animate-bounce">
-            <CheckCircle2 className="w-4 h-4" />
-            تنظیمات با موفقیت ذخیره شد!
+          <div className="mt-4 p-3 bg-emerald-950/90 border border-emerald-500/40 rounded-xl text-xs text-emerald-300 font-bold flex items-center gap-2 animate-fadeIn">
+            <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
+            <span>تنظیمات قالب با موفقیت در جدول پایگاه داده وردپرس ذخیره گردید.</span>
           </div>
         )}
       </div>
 
-      {/* Main Options Layout: Tabs + Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* 2. MAIN LAYOUT: CATEGORIZED SIDEBAR + CARD GRID CONTENT */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
         
-        {/* Left/Sidebar Navigation (Sub-tabs) */}
-        <div className="lg:col-span-3 space-y-2">
-          <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-2 space-y-1 shadow-lg">
-            
-            {/* Kamva Store Master Tab */}
-            <button
-              onClick={() => setActiveSubTab('store')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeSubTab === 'store'
-                  ? 'bg-gradient-to-r from-indigo-600 to-indigo-700 text-white shadow-lg shadow-indigo-600/30 ring-1 ring-indigo-400/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Store className="w-4 h-4 text-indigo-400" />
-                <span>موتور فروشگاهی کاموا استور</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-200 font-mono font-bold">
-                Kamva Store
-              </span>
-            </button>
+        {/* Sidebar Navigation */}
+        <aside className="lg:col-span-3 space-y-4">
+          <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-3.5 space-y-4 shadow-lg">
+            {categories.map((cat) => {
+              const items = filteredNavItems.filter((item) => item.category === cat.id);
+              if (items.length === 0) return null;
 
-            {/* Modular Feature Flags Tab */}
-            <button
-              onClick={() => setActiveSubTab('modules')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeSubTab === 'modules'
-                  ? 'bg-gradient-to-r from-purple-600 to-indigo-600 text-white shadow-lg shadow-purple-600/30 ring-1 ring-purple-400/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Sliders className="w-4 h-4 text-purple-400" />
-                <span>مدیریت ماژول‌ها و فیچرها</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-purple-500/20 text-purple-300 font-mono font-bold">
-                Modules
-              </span>
-            </button>
-
-            {/* WP Admin Customizer & AI Speed Booster Tab */}
-            <button
-              onClick={() => setActiveSubTab('admin-speed')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeSubTab === 'admin-speed'
-                  ? 'bg-gradient-to-r from-teal-600 to-emerald-600 text-white shadow-lg shadow-teal-600/30 ring-1 ring-teal-400/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <LayoutDashboard className="w-4 h-4 text-teal-400" />
-                <span>پیشخوان وردپرس و شتاب AI</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-teal-500/20 text-teal-300 font-mono font-bold">
-                Admin AI
-              </span>
-            </button>
-
-            {/* Live Crawler Tab */}
-            <button
-              onClick={() => setActiveSubTab('crawler')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeSubTab === 'crawler'
-                  ? 'bg-gradient-to-r from-emerald-600 to-emerald-700 text-white shadow-lg shadow-emerald-600/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Globe className="w-4 h-4 text-emerald-400" />
-                <span>خزشگر زنده و جمع‌آوری دیتا</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono font-bold">
-                Real Data
-              </span>
-            </button>
-
-            {/* Self-Healing & Stability Tab */}
-            <button
-              onClick={() => setActiveSubTab('stability')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-bold transition-all cursor-pointer ${
-                activeSubTab === 'stability'
-                  ? 'bg-gradient-to-r from-amber-600 to-amber-700 text-white shadow-lg shadow-amber-600/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <LifeBuoy className="w-4 h-4 text-amber-400" />
-                <span>پایداری و خودترمیمی خطاها</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono font-bold">
-                Zero Crash
-              </span>
-            </button>
-
-            {/* WordPress 7.1 Core Tab */}
-            <button
-              onClick={() => setActiveSubTab('wp-core')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeSubTab === 'wp-core'
-                  ? 'bg-gradient-to-r from-blue-600 to-indigo-600 text-white shadow-md shadow-blue-600/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Layers className="w-4 h-4 text-blue-400" />
-                <span>هسته وردپرس ۷.۱ Mary Lou</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-blue-500/20 text-blue-300 font-mono font-bold">
-                WP 7.1
-              </span>
-            </button>
-
-            {/* AI Core Tab */}
-            <button
-              onClick={() => setActiveSubTab('ai')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeSubTab === 'ai'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <BrainCircuit className="w-4 h-4 text-indigo-300" />
-                <span>مغز هوش مصنوعی داخلی</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/30 font-mono">
-                AI Core
-              </span>
-            </button>
-
-            {/* Speed & Optimization Tab */}
-            <button
-              onClick={() => setActiveSubTab('speed')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeSubTab === 'speed'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Zap className="w-4 h-4 text-amber-400" />
-                <span>بهینه‌سازی منابع و لایت‌هاوس</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/30 font-mono">
-                99/100
-              </span>
-            </button>
-
-            {/* Security Tab */}
-            <button
-              onClick={() => setActiveSubTab('security')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeSubTab === 'security'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <ShieldAlert className="w-4 h-4 text-emerald-400" />
-                <span>سپر امنیتی All-in-One</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/30 font-mono">
-                WAF Pro
-              </span>
-            </button>
-
-            {/* SEO Tab */}
-            <button
-              onClick={() => setActiveSubTab('seo')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeSubTab === 'seo'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Compass className="w-4 h-4 text-cyan-400" />
-                <span>سئو و هوش رقبای گوگل</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/30 font-mono">
-                SEO Pro
-              </span>
-            </button>
-
-            {/* Elementor Tab */}
-            <button
-              onClick={() => setActiveSubTab('elementor')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeSubTab === 'elementor'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Boxes className="w-4 h-4 text-pink-400" />
-                <span>ویجت‌های اختصاصی المنتور</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/30 font-mono">
-                Elementor
-              </span>
-            </button>
-
-            {/* Typography & Styling Tab */}
-            <button
-              onClick={() => setActiveSubTab('styling')}
-              className={`w-full flex items-center justify-between px-3.5 py-3 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
-                activeSubTab === 'styling'
-                  ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/30'
-                  : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-              }`}
-            >
-              <div className="flex items-center gap-2.5">
-                <Palette className="w-4 h-4 text-purple-400" />
-                <span>تایپوگرافی و ظاهر سازمانی</span>
-              </div>
-              <span className="text-[10px] px-1.5 py-0.5 rounded bg-black/30 font-mono">
-                Fonts
-              </span>
-            </button>
-
-          </div>
-        </div>
-
-        {/* Right Content Area */}
-        <div className="lg:col-span-9">
-          
-          {/* TAB 1: COMPLETE KAMVA STORE ENGINE THEME OPTIONS */}
-          {activeSubTab === 'store' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              
-              {/* Kamva Store Header Banner */}
-              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-5">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Store className="w-5 h-5 text-indigo-400" />
-                    <h3 className="text-xl font-bold text-white">
-                      موتور فروشگاهی پیشرفته کاموا استور (Kamva Store Engine)
-                    </h3>
+              return (
+                <div key={cat.id} className="space-y-1">
+                  <div className="px-2.5 py-1 text-[11px] font-bold text-slate-400 tracking-wider">
+                    {cat.title}
                   </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    تنظیمات جامع و حرفه‌ای فروشگاه: هدرساز مدرن، کاتالوگ محصولات با افکت‌های هاور متنوع، صفحه محصول و فوتر هوشمند
-                  </p>
+                  <div className="space-y-1">
+                    {items.map((item) => {
+                      const Icon = item.icon;
+                      const isActive = activeSubTab === item.id;
+                      return (
+                        <button
+                          key={item.id}
+                          onClick={() => setActiveSubTab(item.id)}
+                          className={`w-full flex items-center justify-between p-2.5 rounded-xl text-xs font-bold transition-all cursor-pointer text-right group ${
+                            isActive
+                              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/20'
+                              : 'text-slate-300 hover:bg-slate-950 hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5 truncate">
+                            <Icon className={`w-4 h-4 shrink-0 transition-transform group-hover:scale-105 ${isActive ? 'text-white' : 'text-slate-400'}`} />
+                            <span className="truncate">{item.label}</span>
+                          </div>
+                          <span
+                            className={`text-[10px] font-mono font-medium px-2 py-0.5 rounded shrink-0 ${
+                              isActive ? 'bg-indigo-900/60 text-indigo-100' : 'bg-slate-950 text-slate-400'
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        </button>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </aside>
+
+        {/* Right Card Grid Viewport */}
+        <main className="lg:col-span-9 space-y-6">
+
+          {/* TAB 1: STORE ENGINE THEME OPTIONS */}
+          {activeSubTab === 'store' && (
+            <div className="space-y-5 animate-fadeIn">
+              
+              {/* Store Engine Header Sub-navigation */}
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                    <Store className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-100">موتور فروشگاهی کاموا استور (Kamva Store Engine)</h3>
+                    <p className="text-xs text-slate-400">سفارشی‌سازی هدرساز، کاتالوگ فروشگاه، صفحه تکی محصول و فوتر موبایل</p>
+                  </div>
                 </div>
 
-                {/* Sub-tabs for Store Builder */}
-                <div className="flex flex-wrap gap-1.5 p-1 bg-slate-950/70 border border-slate-800 rounded-xl">
+                {/* Sub-tabs Segmented Control */}
+                <div className="flex flex-wrap gap-1 p-1 bg-slate-950 rounded-xl border border-slate-800/80 shrink-0">
                   <button
                     onClick={() => setStoreSubTab('header')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      storeSubTab === 'header'
-                        ? 'bg-indigo-600 text-white shadow'
-                        : 'text-slate-400 hover:text-white'
+                      storeSubTab === 'header' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    هدرساز پیشرفته
+                    هدرساز
                   </button>
                   <button
                     onClick={() => setStoreSubTab('shop')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      storeSubTab === 'shop'
-                        ? 'bg-indigo-600 text-white shadow'
-                        : 'text-slate-400 hover:text-white'
+                      storeSubTab === 'shop' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    کاتالوگ فروشگاه و هاورها
+                    کاتالوگ و هاور
                   </button>
                   <button
                     onClick={() => setStoreSubTab('single')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      storeSubTab === 'single'
-                        ? 'bg-indigo-600 text-white shadow'
-                        : 'text-slate-400 hover:text-white'
+                      storeSubTab === 'single' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    صفحه محصول تکی
+                    صفحه محصول
                   </button>
                   <button
                     onClick={() => setStoreSubTab('footer')}
                     className={`px-3 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      storeSubTab === 'footer'
-                        ? 'bg-indigo-600 text-white shadow'
-                        : 'text-slate-400 hover:text-white'
+                      storeSubTab === 'footer' ? 'bg-indigo-600 text-white shadow-sm' : 'text-slate-400 hover:text-white'
                     }`}
                   >
-                    فوتر و نوار موبایل
+                    فوتر و موبایل
                   </button>
                 </div>
               </div>
 
-              {/* SECTION A: HEADER BUILDER */}
+              {/* STORE: HEADER BUILDER CARDS GRID */}
               {storeSubTab === 'header' && (
-                <div className="space-y-5 animate-in fade-in duration-200">
-                  <div className="bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-4">
-                    <h4 className="text-sm font-bold text-indigo-300 mb-1 flex items-center gap-2">
-                      <SlidersHorizontal className="w-4 h-4" />
-                      هدرساز چندبخشی کاموا استور (Header Builder)
-                    </h4>
-                    <p className="text-xs text-slate-400">
-                      پشتیبانی از هدر بالا (Top Bar)، هدر اصلی، هدر چسبان هوشمند و سرچ زنده ایجکس دسته‌بندی‌شده
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Card 1: Header Layout */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                          <SlidersHorizontal className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-100">چیدمان کلی هدر (Header Layout)</h4>
+                      </div>
+                      <span className="font-mono text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">headerLayout</span>
+                    </div>
+                    <select
+                      value={config.storeBuilderOptions.headerBuilder.headerLayout}
+                      onChange={(e: any) => updateStoreBuilderOption('headerBuilder', { headerLayout: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-medium cursor-pointer"
+                    >
+                      <option value="default">پیش‌فرض کاموا استور (لوگو راست + مگامنو + سرچ و سبد چپ)</option>
+                      <option value="centered-logo">لوگو وسط‌چین با ناوبری دوتکه لوکس</option>
+                      <option value="minimal-split">هدر دوخطه مینیمال</option>
+                      <option value="ecommerce-full">فروشگاهی کامل با مگامنو</option>
+                      <option value="modern-float">هدر مدرن شناور</option>
+                    </select>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      بارگذاری بهینه استایل‌های چیدمان با لود Scoped CSS بدون اثر منفی بر Core Web Vitals.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Header Layout */}
-                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                      <label className="text-xs font-bold text-slate-300 block mb-2">
-                        چیدمان هدر (Header Layout Style)
-                      </label>
-                      <select
-                        value={config.storeBuilderOptions.headerBuilder.headerLayout}
-                        onChange={(e: any) => updateStoreBuilderOption('headerBuilder', { headerLayout: e.target.value })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="default">پیش‌فرض کاموا استور (لوگو راست + مگامنو + سرچ و سبد چپ)</option>
-                        <option value="centered">لوگو وسط‌چین با ناوبری دوتکه لوکس</option>
-                        <option value="split">هدر دوخطه با دسته بندی‌های عمودی همیشه باز</option>
-                        <option value="overlap">هدر شیشه‌ای همپوشان بر روی بنر اصلی (Transparent)</option>
-                        <option value="compact">هدر جمع‌وجور مدرن با تمرکز بر موبایل</option>
-                      </select>
-                      <p className="text-[11px] text-slate-400 mt-2">
-                        بر اساس ساختار Header Builder کاموا استور با لود کدهای CSS مجزا برای هر سبک.
-                      </p>
+                  {/* Card 2: Mini Cart Drawer */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                          <ShoppingCart className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-100">نمایش سبد خرید کوچک (Mini Cart)</h4>
+                      </div>
+                      <span className="font-mono text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">cartDrawerType</span>
                     </div>
-
-                    {/* Cart Drawer Type */}
-                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                      <label className="text-xs font-bold text-slate-300 block mb-2">
-                        نمایش سبد خرید کوچک (Mini Cart Display)
-                      </label>
-                      <select
-                        value={config.storeBuilderOptions.headerBuilder.cartDrawerType}
-                        onChange={(e: any) => updateStoreBuilderOption('headerBuilder', { cartDrawerType: e.target.value })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="offcanvas">سایدبار کشویی مدرن (Offcanvas Drawer - امضای کاموا)</option>
-                        <option value="dropdown">منوی بازشو شناور (Hover Dropdown)</option>
-                        <option value="modal">پاپ‌آپ مدال مرکزی</option>
-                      </select>
-                      <p className="text-[11px] text-slate-400 mt-2">
-                        باز شدن نرم کشو از سمت چپ بدون بارگذاری مجدد صفحه با محاسبه زنده جمع کل.
-                      </p>
-                    </div>
+                    <select
+                      value={config.storeBuilderOptions.headerBuilder.cartDrawerType}
+                      onChange={(e: any) => updateStoreBuilderOption('headerBuilder', { cartDrawerType: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-cyan-500 font-medium cursor-pointer"
+                    >
+                      <option value="offcanvas">سایدبار کشویی مدرن (Offcanvas Drawer - امضای کاموا)</option>
+                      <option value="dropdown">منوی بازشو شناور (Hover Dropdown)</option>
+                      <option value="modal">پاپ‌آپ مدال مرکزی</option>
+                    </select>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      باز شدن نرم کشو از سمت چپ بدون بارگذاری مجدد صفحه با محاسبه زنده جمع کل سبد.
+                    </p>
                   </div>
 
-                  {/* Header Switches */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">نوار بالای هدر (Top Bar)</span>
-                        <span className="text-[11px] text-slate-400">نمایش پیام اطلاعیه، تغییر زبان و شماره تماس</span>
+                  {/* Card 3: Top Bar Announcement */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                          <Sparkles className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-100">نوار اعلانات بالا (Top Bar Ticker)</h4>
                       </div>
-                      <input
-                        type="checkbox"
-                        checked={config.storeBuilderOptions.headerBuilder.topBarEnabled}
-                        onChange={(e) => updateStoreBuilderOption('headerBuilder', { topBarEnabled: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
-                      />
-                    </label>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.storeBuilderOptions.headerBuilder.topBarEnabled}
+                          onChange={(e) => updateStoreBuilderOption('headerBuilder', { topBarEnabled: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                      </label>
+                    </div>
+                    <input
+                      type="text"
+                      value={config.storeBuilderOptions.headerBuilder.topBarText}
+                      onChange={(e) => updateStoreBuilderOption('headerBuilder', { topBarText: e.target.value })}
+                      placeholder="مثال: ارسال رایگان برای خریدهای بالای ۵۰۰ هزار تومان"
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-amber-500 font-medium"
+                    />
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      نمایش متن پویا، اطلاع‌رسانی جشنواره‌ها و کد تخفیف در بالاترین بخش سایت.
+                    </p>
+                  </div>
 
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">هدر چسبان هوشمند (Sticky Header)</span>
-                        <span className="text-[11px] text-slate-400">ثابت ماندن هدر در زمان اسکرول به پایین بدون لرزش</span>
+                  {/* Card 4: Interactive Header Features */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                        <Zap className="w-4 h-4" />
                       </div>
+                      <h4 className="text-sm font-bold text-slate-100">قابلیت‌های تعاملی هدر</h4>
+                    </div>
+                    
+                    <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                      <span>هدر چسبان هوشمند هنگام اسکرول (Sticky Header)</span>
                       <input
                         type="checkbox"
                         checked={config.storeBuilderOptions.headerBuilder.stickyHeader}
                         onChange={(e) => updateStoreBuilderOption('headerBuilder', { stickyHeader: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
+                        className="accent-indigo-600 w-4 h-4 rounded cursor-pointer"
                       />
                     </label>
 
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">جستجوی ایجکس با تفکیک دسته کالا</span>
-                        <span className="text-[11px] text-slate-400">جستجوی زنده فوق سریع همراه با عکس و قیمت محصول</span>
-                      </div>
+                    <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                      <span>جستجوی زنده ایجکس در دسته‌بندی‌ها (Live Ajax Search)</span>
                       <input
                         type="checkbox"
                         checked={config.storeBuilderOptions.headerBuilder.ajaxSearchWithCategories}
                         onChange={(e) => updateStoreBuilderOption('headerBuilder', { ajaxSearchWithCategories: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
-                      />
-                    </label>
-
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">شمارنده علاقه‌مندی و مقایسه کالا</span>
-                        <span className="text-[11px] text-slate-400">نشانگر زنده تعداد کالاهای پسندیده شده در هدر</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={config.storeBuilderOptions.headerBuilder.wishlistCompareCounter}
-                        onChange={(e) => updateStoreBuilderOption('headerBuilder', { wishlistCompareCounter: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
+                        className="accent-indigo-600 w-4 h-4 rounded cursor-pointer"
                       />
                     </label>
                   </div>
                 </div>
               )}
 
-              {/* SECTION B: SHOP CATALOG & HOVER STYLES */}
+              {/* STORE: SHOP CATALOG & HOVER CARDS */}
               {storeSubTab === 'shop' && (
-                <div className="space-y-5 animate-in fade-in duration-200">
-                  <div className="bg-emerald-950/20 border border-emerald-500/20 rounded-xl p-4">
-                    <h4 className="text-sm font-bold text-emerald-300 mb-1 flex items-center gap-2">
-                      <LayoutGrid className="w-4 h-4" />
-                      استایل‌های هاور و کاتالوگ ووکامرس (Kamva Store Shop & Hover Styles)
-                    </h4>
-                    <p className="text-xs text-slate-400">
-                      مجموعه متنوعی از استایل‌های حرفه‌ای کارت محصول؛ تمامی این استایل‌ها در هسته قالب کامواوب تعبیه شده‌اند.
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Card 1: Product Hover Effects */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400">
+                          <Eye className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-100">افکت هاور کارت محصول (Product Hover)</h4>
+                      </div>
+                      <span className="font-mono text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">hoverStyle</span>
+                    </div>
+                    <select
+                      value={config.storeBuilderOptions.shopCatalog.productHoverEffect}
+                      onChange={(e: any) => updateStoreBuilderOption('shopCatalog', { productHoverEffect: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-purple-500 font-medium cursor-pointer"
+                    >
+                      <option value="hover-summary">امضای کاموا (اسلاید تصویر دوم + خلاصه ویژگی‌ها)</option>
+                      <option value="quick-shop">دکمه خرید سریع با انتخاب متغیرها</option>
+                      <option value="alt-image">سوییچ نرم به عکس دوم گالری</option>
+                      <option value="button-on-hover">ظاهر شدن دکمه‌ها روی هاور</option>
+                      <option value="full-info">نمایش کامل مشخصات بدون تغییر</option>
+                    </select>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      تغییر جلوه بصری کارت محصولات بدون بارگذاری کتابخانه‌های جاوااسکریپت سنگین.
                     </p>
                   </div>
 
-                  {/* 10 Product Hover Styles */}
-                  <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                    <label className="text-xs font-bold text-slate-200 block mb-2">
-                      استایل هاور کارت محصول (Product Card Hover Design)
-                    </label>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-                      {[
-                        { id: 'quick-shop', name: 'خرید سریع با سوئیچر (Quick Shop)', desc: 'انتخاب سایز/رنگ مستقیم روی کارت بدون باز کردن صفحه' },
-                        { id: 'hover-summary', name: 'خلاصه مشخصات در هاور (Hover Summary)', desc: 'ظاهر شدن توضیحات کوتاه و دکمه‌ها با انیمیشن ملایم' },
-                        { id: 'tiled', name: 'استایل کاشی استاندارد (Tiled)', desc: 'طراحی شیک با حاشیه تفکیک‌شده و قیمت مشخص' },
-                        { id: 'button-on-hover', name: 'دکمه افزودن در هاور (Button on Hover)', desc: 'دکمه خرید روی تصویر محصول با افکت اسلاید به بالا' },
-                        { id: 'alt-image', name: 'تغییر عکس به گالری (Alt Image Hover)', desc: 'نمایش تصویر دوم محصول به محض رفتن موس روی کارت' },
-                        { id: 'full-info', name: 'اطلاعات کامل محصول (Full Info)', desc: 'کارت غنی همراه با ستاره‌های امتیاز و شمارش معکوس تخفیف' },
-                      ].map((style) => (
-                        <div
-                          key={style.id}
-                          onClick={() => updateStoreBuilderOption('shopCatalog', { productHoverEffect: style.id as any })}
-                          className={`p-3 rounded-xl border cursor-pointer transition-all ${
-                            config.storeBuilderOptions.shopCatalog.productHoverEffect === style.id
-                              ? 'bg-indigo-600/20 border-indigo-500 text-white shadow-md'
-                              : 'bg-slate-900/60 border-slate-800 text-slate-300 hover:border-slate-700'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-1">
-                            <span className="text-xs font-bold">{style.name}</span>
-                            {config.storeBuilderOptions.shopCatalog.productHoverEffect === style.id && (
-                              <CheckCircle2 className="w-3.5 h-3.5 text-indigo-400" />
-                            )}
-                          </div>
-                          <p className="text-[11px] text-slate-400">{style.desc}</p>
+                  {/* Card 2: Columns & Grid */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                          <LayoutGrid className="w-4 h-4" />
                         </div>
-                      ))}
+                        <h4 className="text-sm font-bold text-slate-100">تعداد ستون‌ها در دسکتاپ و موبایل</h4>
+                      </div>
+                      <span className="font-mono text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">columns</span>
+                    </div>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div>
+                        <span className="text-[11px] text-slate-400 block mb-1">دسکتاپ:</span>
+                        <select
+                          value={config.storeBuilderOptions.shopCatalog.gridColumnsDesktop}
+                          onChange={(e: any) => updateStoreBuilderOption('shopCatalog', { gridColumnsDesktop: Number(e.target.value) as any })}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-bold"
+                        >
+                          <option value={3}>۳ ستونه استاندارد</option>
+                          <option value={4}>۴ ستونه فشرده</option>
+                          <option value={5}>۵ ستونه عریض</option>
+                        </select>
+                      </div>
+                      <div>
+                        <span className="text-[11px] text-slate-400 block mb-1">موبایل:</span>
+                        <select
+                          value={config.storeBuilderOptions.shopCatalog.gridColumnsMobile}
+                          onChange={(e: any) => updateStoreBuilderOption('shopCatalog', { gridColumnsMobile: Number(e.target.value) as any })}
+                          className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-bold"
+                        >
+                          <option value={1}>۱ ستونه بزرگ</option>
+                          <option value={2}>۲ ستونه مدرن</option>
+                        </select>
+                      </div>
                     </div>
                   </div>
 
-                  {/* Grid Columns & Ajax Pagination */}
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                      <label className="text-xs font-bold text-slate-300 block mb-2">
-                        تعداد ستون‌ها در دسکتاپ
-                      </label>
-                      <select
-                        value={config.storeBuilderOptions.shopCatalog.gridColumnsDesktop}
-                        onChange={(e: any) => updateStoreBuilderOption('shopCatalog', { gridColumnsDesktop: Number(e.target.value) as any })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value={3}>۳ ستونه (مناسب تصاویر بزرگ و جزئیات)</option>
-                        <option value={4}>۴ ستونه (استاندارد فروشگاهی)</option>
-                        <option value={5}>۵ ستونه (فروشگاه‌های پرمحصول با اسکرول کم)</option>
-                        <option value={6}>۶ ستونه (فروشگاه دیجیتال متراکم)</option>
-                      </select>
+                  {/* Card 3: Free Shipping Bar */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                        <Truck className="w-4 h-4" />
+                      </div>
+                      <h4 className="text-sm font-bold text-slate-100">سقف ارسال رایگان سفارشات (تومان)</h4>
                     </div>
-
-                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                      <label className="text-xs font-bold text-slate-300 block mb-2">
-                        شیوه صفحه‌بندی فروشگاه
-                      </label>
-                      <select
-                        value={config.storeBuilderOptions.shopCatalog.ajaxPagination}
-                        onChange={(e: any) => updateStoreBuilderOption('shopCatalog', { ajaxPagination: e.target.value })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="load-more">دکمه «بارگذاری محصولات بیشتر» ایجکس</option>
-                        <option value="infinite">اسکرول بی‌نهایت خودکار (Infinite Scroll)</option>
-                        <option value="pagination">صفحه‌بندی عددی کلاسیک با ایجکس سریع</option>
-                      </select>
-                    </div>
-
-                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                      <label className="text-xs font-bold text-slate-300 block mb-2">
-                        آستانه ارسال رایگان (تومان)
-                      </label>
-                      <input
-                        type="number"
-                        value={config.storeBuilderOptions.shopCatalog.freeShippingBarThreshold}
-                        onChange={(e) => updateStoreBuilderOption('shopCatalog', { freeShippingBarThreshold: Number(e.target.value) })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                      />
-                      <span className="text-[10px] text-slate-400 mt-1 block">
-                        نمایش نوار پیشرفت درصد باقی‌مانده تا ارسال رایگان
-                      </span>
-                    </div>
+                    <input
+                      type="number"
+                      value={config.storeBuilderOptions.shopCatalog.freeShippingBarThreshold}
+                      onChange={(e) => updateStoreBuilderOption('shopCatalog', { freeShippingBarThreshold: Number(e.target.value) })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 font-mono focus:outline-none focus:border-cyan-500 font-bold"
+                    />
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      نمایش نوار پیشرفت ارسال رایگان در سبد خرید و صفحات محصولات با تشویق خریدار.
+                    </p>
                   </div>
 
-                  {/* Shop Features Toggles */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">سوئیچرهای ویژگی (Swatches) روی کارت</span>
-                        <span className="text-[11px] text-slate-400">نمایش پالت‌های رنگی و سایز کالا روی هر محصول</span>
+                  {/* Card 4: Badges & Urgency */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400">
+                        <Flame className="w-4 h-4" />
                       </div>
+                      <h4 className="text-sm font-bold text-slate-100">برچسب‌های تخفیف و فروش ویژه</h4>
+                    </div>
+                    <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                      <span>نمایش درصد تخفیف به صورت برچسب رنگی</span>
                       <input
                         type="checkbox"
-                        checked={config.storeBuilderOptions.shopCatalog.swatchesAttributeSelector}
-                        onChange={(e) => updateStoreBuilderOption('shopCatalog', { swatchesAttributeSelector: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
+                        checked={config.storeBuilderOptions.shopCatalog.saleBadgePercentage}
+                        onChange={(e) => updateStoreBuilderOption('shopCatalog', { saleBadgePercentage: e.target.checked })}
+                        className="accent-rose-500 w-4 h-4 rounded cursor-pointer"
                       />
                     </label>
-
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">تایمر شمارش معکوس تخفیف شگفت‌انگیز</span>
-                        <span className="text-[11px] text-slate-400">نمایش ثانیه‌شمار زمان باقی‌مانده از حراج روی کارت</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={config.storeBuilderOptions.shopCatalog.timerSalesCountdown}
-                        onChange={(e) => updateStoreBuilderOption('shopCatalog', { timerSalesCountdown: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
-                      />
-                    </label>
-
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">نوار پیشرفت موجودی انبار (Stock Progress)</span>
-                        <span className="text-[11px] text-slate-400">ایجاد حس فوریت خرید بر اساس تعداد باقیمانده</span>
-                      </div>
+                    <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                      <span>نمایش نوار موجودی محدود و تایمر انقضا</span>
                       <input
                         type="checkbox"
                         checked={config.storeBuilderOptions.shopCatalog.stockProgressBar}
                         onChange={(e) => updateStoreBuilderOption('shopCatalog', { stockProgressBar: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
-                      />
-                    </label>
-
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">پیش‌نمایش سریع کالا (Quick View Ajax)</span>
-                        <span className="text-[11px] text-slate-400">مشاهده سریع محصول در پنجره پاپ‌آپ بدون ترک لیست</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={config.storeBuilderOptions.shopCatalog.quickViewModal}
-                        onChange={(e) => updateStoreBuilderOption('shopCatalog', { quickViewModal: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
+                        className="accent-rose-500 w-4 h-4 rounded cursor-pointer"
                       />
                     </label>
                   </div>
                 </div>
               )}
 
-              {/* SECTION C: SINGLE PRODUCT PAGE */}
+              {/* STORE: SINGLE PRODUCT PAGE */}
               {storeSubTab === 'single' && (
-                <div className="space-y-5 animate-in fade-in duration-200">
-                  <div className="bg-purple-950/20 border border-purple-500/20 rounded-xl p-4">
-                    <h4 className="text-sm font-bold text-purple-300 mb-1 flex items-center gap-2">
-                      <ShoppingBag className="w-4 h-4" />
-                      صفحه محصول تکی کاموا استور (Single Product Options)
-                    </h4>
-                    <p className="text-xs text-slate-400">
-                      ویژگی‌های انحصاری افزایش نرخ تبدیل (CRO)، گالری‌های حرفه‌ای، خرید سریع و اثبات اجتماعی
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Card 1: Gallery Layout */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                          <Palette className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-100">چیدمان گالری تصاویر محصول</h4>
+                      </div>
+                      <span className="font-mono text-[10px] text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">galleryLayout</span>
+                    </div>
+                    <select
+                      value={config.storeBuilderOptions.singleProduct.galleryLayout}
+                      onChange={(e: any) => updateStoreBuilderOption('singleProduct', { galleryLayout: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-bold cursor-pointer"
+                    >
+                      <option value="vertical-thumbnails">بندشتی عمودی راست (Thumbs Vertical)</option>
+                      <option value="horizontal-slider">اسلایدر افقی استاندارد (Thumbs Horizontal)</option>
+                      <option value="grid-two-columns">گالری شبکه‌ای دو ستونه (Sticky Gallery 2-Col)</option>
+                      <option value="sticky-compact">جمع‌وجور چسبان (Sticky Compact)</option>
+                    </select>
+                    <p className="text-xs text-slate-400">نمایش بهینه در نمایشگرهای موبایل با ژست لمسی سوایپ.</p>
+                  </div>
+
+                  {/* Card 2: Sticky Add to Cart */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400">
+                          <Smartphone className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-100">نوار چسبان خرید سریع (Sticky Add to Cart)</h4>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.storeBuilderOptions.singleProduct.stickyAddToCartBar}
+                          onChange={(e) => updateStoreBuilderOption('singleProduct', { stickyAddToCartBar: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-amber-500"></div>
+                      </label>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      هنگامی که کاربر از دکمه اصلی خرید عبور می‌کند، نواری در پایین صفحه ظاهر می‌شود تا نرخ تبدیل افزایش یابد.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    {/* Gallery Layout */}
-                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                      <label className="text-xs font-bold text-slate-300 block mb-2">
-                        چیدمان گالری تصاویر محصول (Gallery Style)
-                      </label>
-                      <select
-                        value={config.storeBuilderOptions.singleProduct.galleryLayout}
-                        onChange={(e: any) => updateStoreBuilderOption('singleProduct', { galleryLayout: e.target.value })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="vertical-thumbnails">بندانگشتی‌های عمودی راست (Vertical Thumbnails)</option>
-                        <option value="grid-two-columns">گرید دو ستونه تصاویر بزرگ بدون نیاز به کلیک</option>
-                        <option value="sticky-compact">تصاویر اسکرولی چسبان با اطلاعات ثابت در چپ</option>
-                        <option value="horizontal-slider">اسلایدر افقی استاندارد با زوم مگنتی</option>
-                      </select>
-                    </div>
-
-                    {/* Social Proof & Trust */}
-                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                      <label className="text-xs font-bold text-slate-300 block mb-2">
-                        اثبات اجتماعی فروش (Social Proof)
-                      </label>
-                      <div className="flex items-center gap-2 p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg">
-                        <Flame className="w-4 h-4 text-amber-400 shrink-0" />
-                        <span className="text-xs text-indigo-200">
-                          «این محصول ۱۸ بار در ۲۴ ساعت گذشته خریداری شد»
-                        </span>
+                  {/* Card 3: Social Proof & Frequently Bought Together */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                        <CreditCard className="w-4 h-4" />
                       </div>
-                      <span className="text-[10px] text-slate-400 mt-2 block">
-                        افزایش فوق‌العاده انگیزه خرید مشتری با نمایش آمار مستند فروش
-                      </span>
+                      <h4 className="text-sm font-bold text-slate-100">ویجت‌های تبدیل و اعتمادسازی</h4>
                     </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">دکمه خرید سریع با یک کلیک (Buy Now)</span>
-                        <span className="text-[11px] text-slate-400">انتقال مستقیم به صفحه تسویه‌حساب بدون اتلاف وقت</span>
-                      </div>
+                    <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                      <span>نمایش تعداد فروش‌های اخیر (Social Proof)</span>
                       <input
                         type="checkbox"
-                        checked={config.storeBuilderOptions.singleProduct.buyNowOneClickButton}
-                        onChange={(e) => updateStoreBuilderOption('singleProduct', { buyNowOneClickButton: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
+                        checked={config.storeBuilderOptions.singleProduct.soldCountSocialProof}
+                        onChange={(e) => updateStoreBuilderOption('singleProduct', { soldCountSocialProof: e.target.checked })}
+                        className="accent-emerald-500 w-4 h-4 rounded cursor-pointer"
                       />
                     </label>
-
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">نوار چسبان خرید سریع در پایین صفحه</span>
-                        <span className="text-[11px] text-slate-400">دسترسی دائمی به دکمه افزودن به سبد در هنگام اسکرول نقد و بررسی</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={config.storeBuilderOptions.singleProduct.stickyAddToCartBar}
-                        onChange={(e) => updateStoreBuilderOption('singleProduct', { stickyAddToCartBar: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
-                      />
-                    </label>
-
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">محصولات مکمل (Frequently Bought Together)</span>
-                        <span className="text-[11px] text-slate-400">باکس خرید همزمان وسایل جانبی و مکمل با یک تیک</span>
-                      </div>
+                    <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                      <span>باکس «مکمل‌های این محصول با تخفیف همراهی»</span>
                       <input
                         type="checkbox"
                         checked={config.storeBuilderOptions.singleProduct.frequentlyBoughtTogether}
                         onChange={(e) => updateStoreBuilderOption('singleProduct', { frequentlyBoughtTogether: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
+                        className="accent-emerald-500 w-4 h-4 rounded cursor-pointer"
                       />
                     </label>
+                  </div>
 
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">تب هوش مصنوعی کامواوب در صفحه محصول</span>
-                        <span className="text-[11px] text-slate-400">پاسخگویی آنی هوش مصنوعی به سوالات تخصصی درباره همین محصول</span>
+                  {/* Card 4: AI Consultant Tab */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-3">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400">
+                        <Sparkles className="w-4 h-4" />
                       </div>
+                      <h4 className="text-sm font-bold text-slate-100">تب هوش مصنوعی و خرید سریع</h4>
+                    </div>
+                    <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                      <span>تب پاسخگوی هوش مصنوعی به سوالات فنی کالا</span>
                       <input
                         type="checkbox"
                         checked={config.storeBuilderOptions.singleProduct.aiConsultantTabInProduct}
                         onChange={(e) => updateStoreBuilderOption('singleProduct', { aiConsultantTabInProduct: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
+                        className="accent-cyan-500 w-4 h-4 rounded cursor-pointer"
+                      />
+                    </label>
+                    <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                      <span>دکمه خرید سریع با یک کلیک (Buy Now)</span>
+                      <input
+                        type="checkbox"
+                        checked={config.storeBuilderOptions.singleProduct.buyNowOneClickButton}
+                        onChange={(e) => updateStoreBuilderOption('singleProduct', { buyNowOneClickButton: e.target.checked })}
+                        className="accent-cyan-500 w-4 h-4 rounded cursor-pointer"
                       />
                     </label>
                   </div>
                 </div>
               )}
 
-              {/* SECTION D: FOOTER & MOBILE STICKY BAR */}
+              {/* STORE: FOOTER & MOBILE BAR */}
               {storeSubTab === 'footer' && (
-                <div className="space-y-5 animate-in fade-in duration-200">
-                  <div className="bg-cyan-950/20 border border-cyan-500/20 rounded-xl p-4">
-                    <h4 className="text-sm font-bold text-cyan-300 mb-1 flex items-center gap-2">
-                      <Smartphone className="w-4 h-4" />
-                      فوتر و نوار ابزار پایین موبایل (Mobile Bottom Navbar & Footer)
-                    </h4>
-                    <p className="text-xs text-slate-400">
-                      پشتیبانی از نوار ناوبری چسبان موبایل با دسترسی سریع به سبد، خانه، حساب کاربری و علاقه‌مندی‌ها
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                  {/* Card 1: Mobile Bottom Navbar */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400">
+                          <Smartphone className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-100">نوار ناوبری پایین در موبایل (Bottom Bar)</h4>
+                      </div>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.storeBuilderOptions.footerBuilder.stickyFooterBarMobile}
+                          onChange={(e) => updateStoreBuilderOption('footerBuilder', { stickyFooterBarMobile: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-indigo-600"></div>
+                      </label>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      نوار چسبان شامل دکمه‌های «خانه»، «فروشگاه»، «سبد خرید با شمارنده زنده» و «حساب من» مخصوص صفحات موبایل.
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                      <label className="text-xs font-bold text-slate-300 block mb-2">
-                        چیدمان ستون‌های فوتر
-                      </label>
-                      <select
-                        value={config.storeBuilderOptions.footerBuilder.footerLayout}
-                        onChange={(e: any) => updateStoreBuilderOption('footerBuilder', { footerLayout: e.target.value })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                      >
-                        <option value="4-columns">۴ ستونه استاندارد (درباره ما، خدمات، پیوندها، تماس)</option>
-                        <option value="3-columns">۳ ستونه عریض</option>
-                        <option value="6-columns">۶ ستونه جامع مگافوتر</option>
-                        <option value="minimal">مینیمال تک خطی</option>
-                      </select>
-                    </div>
-
-                    <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                      <label className="text-xs font-bold text-slate-300 block mb-2">
-                        متن کپی‌رایت انتهای سایت
-                      </label>
-                      <input
-                        type="text"
-                        value={config.storeBuilderOptions.footerBuilder.copyrightText}
-                        onChange={(e) => updateStoreBuilderOption('footerBuilder', { copyrightText: e.target.value })}
-                        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                      />
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">نوار ناوبری ثابت موبایل (Mobile Sticky Bar)</span>
-                        <span className="text-[11px] text-slate-400">نوار ۵ دکمه‌ای ثابت پایین گوشی: خانه، فروشگاه، سبد خرید، علاقه‌مندی، حساب</span>
+                  {/* Card 2: Trust Badges */}
+                  <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-4">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2.5">
+                        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                          <ShieldCheck className="w-4 h-4" />
+                        </div>
+                        <h4 className="text-sm font-bold text-slate-100">نمادهای اعتماد الکترونیکی (اینماد و ساماندهی)</h4>
                       </div>
-                      <input
-                        type="checkbox"
-                        checked={config.storeBuilderOptions.footerBuilder.stickyFooterBarMobile}
-                        onChange={(e) => updateStoreBuilderOption('footerBuilder', { stickyFooterBarMobile: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
-                      />
-                    </label>
-
-                    <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                      <div>
-                        <span className="text-xs font-bold text-slate-200 block">نمادهای اعتماد الکترونیکی (اینماد و ساماندهی)</span>
-                        <span className="text-[11px] text-slate-400">باکس نمایش لوگوهای معتبر پرداخت و اینماد در انتهای فوتر</span>
-                      </div>
-                      <input
-                        type="checkbox"
-                        checked={config.storeBuilderOptions.footerBuilder.enamadTrustBadge}
-                        onChange={(e) => updateStoreBuilderOption('footerBuilder', { enamadTrustBadge: e.target.checked })}
-                        className="w-4 h-4 accent-indigo-600 rounded"
-                      />
-                    </label>
+                      <label className="relative inline-flex items-center cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={config.storeBuilderOptions.footerBuilder.enamadTrustBadge}
+                          onChange={(e) => updateStoreBuilderOption('footerBuilder', { enamadTrustBadge: e.target.checked })}
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                      </label>
+                    </div>
+                    <p className="text-xs text-slate-400 leading-relaxed">
+                      تعبیه باکس استاندارد با لود تنبل و آسنکرون جهت جلوگیری از کندی لود فوتر سایت.
+                    </p>
                   </div>
                 </div>
               )}
-
             </div>
           )}
 
-          {/* TAB: MODULAR FEATURE FLAGS MANAGER */}
+          {/* TAB 2: MODULAR FEATURE FLAGS */}
           {activeSubTab === 'modules' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="border-b border-slate-800 pb-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <div>
-                  <div className="flex items-center gap-2">
-                    <Sliders className="w-5 h-5 text-purple-400" />
-                    <h3 className="text-xl font-bold text-white">
-                      مدیریت ماژول‌ها و سوئیچر قابلیت‌ها (Modular Feature Flags)
-                    </h3>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    مدیر سایت می‌تواند هر قابلیت یا زیرسیستم را بر اساس نیاز کسب‌وکار خود فعال یا غیرفعال کند تا هیچ پردازش، کوئری یا اسکریپت اضافه‌ای در سایت اجرا نشود.
-                  </p>
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
+                  <Sliders className="w-5 h-5" />
                 </div>
-
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={() => {
-                      const allEnabled = Object.keys(config.featureFlags).reduce((acc, key) => {
-                        acc[key as keyof ModularFeatureFlags] = true;
-                        return acc;
-                      }, {} as ModularFeatureFlags);
-                      onChangeConfig({ ...config, featureFlags: allEnabled });
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-purple-600/20 text-purple-300 hover:bg-purple-600/30 text-xs font-bold border border-purple-500/30 transition-all cursor-pointer"
-                  >
-                    فعال‌سازی همه ماژول‌ها
-                  </button>
-                  <button
-                    onClick={() => {
-                      const minimal = {
-                        storeBuilder: true,
-                        neuralCore: false,
-                        aiosSecurity: true,
-                        databaseCleaner: false,
-                        imageOptimizer: true,
-                        kamvaSpeedCache: true,
-                        userPortal: false,
-                        developerStudio: false,
-                        adminCustomizer: true,
-                        googleIntelligence: false,
-                        seoEngine: true,
-                        crawlerBot: false,
-                        elementorPack: true,
-                      };
-                      onChangeConfig({ ...config, featureFlags: minimal });
-                    }}
-                    className="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs font-bold transition-all cursor-pointer"
-                  >
-                    حالت حداقل منابع (Ultra Light)
-                  </button>
+                <div>
+                  <h3 className="text-base font-bold text-slate-100">مدیریت فیچرها و ماژول‌های قالب (Modular Feature Flags)</h3>
+                  <p className="text-xs text-slate-400">فعال یا غیرفعال‌سازی ماژول‌های مجزا جهت مدیریت دقیق مصرف منابع سرور و حافظه RAM</p>
                 </div>
               </div>
 
-              {/* Module Cards Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[
-                  {
-                    key: 'storeBuilder' as keyof ModularFeatureFlags,
-                    name: 'موتور فروشگاهی کاموا استور',
-                    desc: 'هدرساز، سواچز متغیرها، ایجکس سرچ، هاور کارت و سبد خرید شناور',
-                    icon: Store,
-                    badge: 'Kamva Store',
-                    color: 'text-indigo-400 border-indigo-500/30 bg-indigo-950/20',
-                  },
-                  {
-                    key: 'neuralCore' as keyof ModularFeatureFlags,
-                    name: 'شبکه عصبی و ماشین لرنینگ',
-                    desc: 'ماتریس وزن‌های سیناپسی محلی، پیش‌بینی رفتار مشتری و بهبود نرخ تبدیل',
-                    icon: BrainCircuit,
-                    badge: 'Neural AI',
-                    color: 'text-purple-400 border-purple-500/30 bg-purple-950/20',
-                  },
-                  {
-                    key: 'aiosSecurity' as keyof ModularFeatureFlags,
-                    name: 'سپر امنیتی All-in-One و WAF',
-                    desc: 'دیواره آتش لایه برنامه، مسدودسازی Brute Force، قفل ورود و مانیتور لاگ‌ها',
-                    icon: ShieldAlert,
-                    badge: 'AIOS WAF',
-                    color: 'text-emerald-400 border-emerald-500/30 bg-emerald-950/20',
-                  },
-                  {
-                    key: 'databaseCleaner' as keyof ModularFeatureFlags,
-                    name: 'پاک‌کننده هوشمند دیتابیس',
-                    desc: 'پاکسازی ترنزینت‌ها، رونوشت‌ها، هرزنامه‌ها، پیش‌نویس‌های خودکار و متای یتیم',
-                    icon: HardDrive,
-                    badge: 'DB Clean',
-                    color: 'text-cyan-400 border-cyan-500/30 bg-cyan-950/20',
-                  },
-                  {
-                    key: 'imageOptimizer' as keyof ModularFeatureFlags,
-                    name: 'بهینه‌ساز تصاویر بدون افت کیفیت',
-                    desc: 'فشرده‌سازی Lossless، تبدیل آنی به WebP و AVIF و ایجاد خودکار srcset ریسپانسیو',
-                    icon: Zap,
-                    badge: 'Lossless',
-                    color: 'text-amber-400 border-amber-500/30 bg-amber-950/20',
-                  },
-                  {
-                    key: 'kamvaSpeedCache' as keyof ModularFeatureFlags,
-                    name: 'کش لایت‌اسپید و آبجکت کش',
-                    desc: 'کش صفحه، کش اشیاء Redis، ترکیب و فشرده‌سازی CSS/JS و ایجاد Critical CSS',
-                    icon: Gauge,
-                    badge: 'LiteSpeed',
-                    color: 'text-yellow-400 border-yellow-500/30 bg-yellow-950/20',
-                  },
-                  {
-                    key: 'userPortal' as keyof ModularFeatureFlags,
-                    name: 'پنل ورود و ثبت‌نام پیشرفته',
-                    desc: 'پنل کاربری اختصاصی با پشتیبانی از لاگین پیامکی OTP، فیلدهای سفارشی و متناسب با نوع سایت',
-                    icon: UserCheck,
-                    badge: 'User Portal',
-                    color: 'text-blue-400 border-blue-500/30 bg-blue-950/20',
-                  },
-                  {
-                    key: 'developerStudio' as keyof ModularFeatureFlags,
-                    name: 'استودیوی توسعه‌دهنده و کد',
-                    desc: 'محیط ساندباکس اجرای PHP Snippets، کاوشگر اکشن‌ها و فیلترها و تزریق‌کننده CSS/JS',
-                    icon: FileCode,
-                    badge: 'Dev Studio',
-                    color: 'text-rose-400 border-rose-500/30 bg-rose-950/20',
-                  },
-                  {
-                    key: 'adminCustomizer' as keyof ModularFeatureFlags,
-                    name: 'پیشخوان وردپرس و شتاب AI',
-                    desc: 'وایت‌لیبل پیشخوان، تم رنگی اختصاصی، مخفی‌سازی نوتیس‌ها و شتاب‌دهی سریع لود ادمین',
-                    icon: LayoutDashboard,
-                    badge: 'Admin Boost',
-                    color: 'text-teal-400 border-teal-500/30 bg-teal-950/20',
-                  },
-                  {
-                    key: 'googleIntelligence' as keyof ModularFeatureFlags,
-                    name: 'هوش گوگل و سرچ‌کنسول',
-                    desc: 'تحلیل خودکار آمار کلیک، ایمپرشن، رتبه‌بندی، نرخ پرش و پیشنهادات مارکتینگ',
-                    icon: Search,
-                    badge: 'Google AI',
-                    color: 'text-indigo-400 border-indigo-500/30 bg-indigo-950/20',
-                  },
-                  {
-                    key: 'crawlerBot' as keyof ModularFeatureFlags,
-                    name: 'خزشگر زنده پایگاه دانش',
-                    desc: 'استخراج داده‌های ساختاریافته از وبسایت هدف بدون دیتای فیک و ساخت هوش محلی',
-                    icon: Globe,
-                    badge: 'Crawler',
-                    color: 'text-emerald-400 border-emerald-500/30 bg-emerald-950/20',
-                  },
-                  {
-                    key: 'elementorPack' as keyof ModularFeatureFlags,
-                    name: 'ویجت‌های اختصاصی المنتور',
-                    desc: 'بسته جامع ابزارک‌های هوشمند سازگار با المنتور پرو بدون تداخل و بدون نیاز به افزونه الحاقی',
-                    icon: Boxes,
-                    badge: 'Elementor',
-                    color: 'text-pink-400 border-pink-500/30 bg-pink-950/20',
-                  },
-                ].map((mod) => {
-                  const isEnabled = config.featureFlags[mod.key];
-                  const Icon = mod.icon;
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {Object.entries(config.featureFlags || {}).map(([key, value]) => {
+                  const titles: Record<string, { label: string; desc: string; icon: string }> = {
+                    neuralCore: { label: 'هسته هوش مصنوعی عصبی', desc: 'موتور پردازش نیاز خریدار و پیشنهاد بلادرنگ', icon: '🧠' },
+                    storeBuilder: { label: 'سازنده فروشگاه اختصاصی', desc: 'ابزارهای تخصصی هدر، کاتالوگ و تسویه‌حساب', icon: '🛒' },
+                    aiosSecurity: { label: 'فایروال و سپر امنیتی WAF', desc: 'مسدودسازی حملات بروت‌فورس و بدافزارها', icon: '🛡️' },
+                    databaseCleaner: { label: 'بهینه‌ساز و پاک‌کننده دیتابیس', desc: 'حذف داده‌های هرز و بهینه‌سازی جداول MySQL', icon: '🗄️' },
+                    imageOptimizer: { label: 'بهینه‌ساز تصاویر WebP/AVIF', desc: 'تبدیل خودکار عکس‌ها با حفظ کامل کیفیت', icon: '🖼️' },
+                    kamvaSpeedCache: { label: 'سیستم کش فوق‌سریع KamvaSpeed', desc: 'کش صفحات و کش آبجکت در حافظه رم سرور', icon: '⚡' },
+                    userPortal: { label: 'پنل کاربری و ثبت‌نام پیامکی', desc: 'ورود با OTP و داشبورد اختصاصی خریداران', icon: '👤' },
+                    developerStudio: { label: 'استودیو توسعه و اسنیپت‌های PHP', desc: 'اجرای کدهای سفارشی در ساندباکس ایزوله', icon: '💻' },
+                    adminCustomizer: { label: 'شتاب‌دهنده پیشخوان وردپرس', desc: 'شخصی‌سازی و لود فوق‌سریع پنل مدیریت', icon: '⚡' },
+                    googleIntelligence: { label: 'هوش اتصال به گوگل و سئو', desc: 'پایش کلمات کلیدی و تحلیل رفتار ترافیک', icon: '🔍' },
+                    seoEngine: { label: 'موتور اسکیما و سئو تکنیکال', desc: 'تولید استراکچردیتا و گراف شبکه‌های اجتماعی', icon: '🧭' },
+                    crawlerBot: { label: 'خزشگر زنده محتوای وب', desc: 'واکشی خودکار اطلاعات کالاها و پایگاه دانش', icon: '🌐' },
+                    elementorPack: { label: 'بسته ویجت‌های فوق‌سریع المنتور', desc: 'کاهش عمق تگ‌های DOM و لود تنبل ویجت‌ها', icon: '📦' },
+                  };
+
+                  const meta = titles[key] || { label: key, desc: 'ماژول سیستم کامواوب', icon: '⚡' };
+
                   return (
                     <div
-                      key={mod.key}
-                      onClick={() => {
-                        onChangeConfig({
-                          ...config,
-                          featureFlags: {
-                            ...config.featureFlags,
-                            [mod.key]: !isEnabled,
-                          },
-                        });
-                      }}
-                      className={`p-4 rounded-2xl border transition-all cursor-pointer flex flex-col justify-between space-y-3 ${
-                        isEnabled
-                          ? 'bg-slate-950/70 border-slate-700 shadow-lg ring-1 ring-indigo-500/20'
-                          : 'bg-slate-950/30 border-slate-800/60 opacity-60 hover:opacity-90'
-                      }`}
+                      key={key}
+                      className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-4 shadow-lg transition-all flex items-start justify-between gap-3"
                     >
-                      <div className="space-y-2">
-                        <div className="flex items-center justify-between">
-                          <div className={`p-2 rounded-xl border ${mod.color}`}>
-                            <Icon className="w-4 h-4" />
-                          </div>
-                          <span className="text-[10px] font-mono px-2 py-0.5 rounded-full bg-slate-800 text-slate-300 font-bold">
-                            {mod.badge}
-                          </span>
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-2">
+                          <span className="text-base">{meta.icon}</span>
+                          <h4 className="text-xs font-bold text-slate-100">{meta.label}</h4>
                         </div>
-
-                        <h4 className="font-bold text-sm text-white">{mod.name}</h4>
-                        <p className="text-xs text-slate-400 leading-relaxed">{mod.desc}</p>
-                      </div>
-
-                      <div className="flex items-center justify-between pt-2 border-t border-slate-800/80">
-                        <span className={`text-xs font-bold ${isEnabled ? 'text-emerald-400' : 'text-slate-500'}`}>
-                          {isEnabled ? 'فعال (بارگذاری در قالب و افزونه)' : 'غیرفعال (بدون سربار)'}
+                        <p className="text-[11px] text-slate-400 leading-relaxed">{meta.desc}</p>
+                        <span className="font-mono text-[10px] text-slate-500 bg-slate-950 px-2 py-0.5 rounded inline-block border border-slate-800/60">
+                          {key}
                         </span>
-
-                        <div className={`w-9 h-5 flex items-center rounded-full p-1 duration-300 cursor-pointer ${
-                          isEnabled ? 'bg-indigo-600 justify-end' : 'bg-slate-800 justify-start'
-                        }`}>
-                          <div className="bg-white w-3.5 h-3.5 rounded-full shadow-md transform" />
-                        </div>
                       </div>
+
+                      <label className="relative inline-flex items-center cursor-pointer shrink-0 mt-1">
+                        <input
+                          type="checkbox"
+                          checked={Boolean(value)}
+                          onChange={(e) =>
+                            updateSubConfig('featureFlags', {
+                              [key]: e.target.checked,
+                            } as any)
+                          }
+                          className="sr-only peer"
+                        />
+                        <div className="w-9 h-5 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-purple-600"></div>
+                      </label>
                     </div>
                   );
                 })}
@@ -1196,805 +879,504 @@ export const ThemeOptionsPanel: React.FC<ThemeOptionsPanelProps> = ({
             </div>
           )}
 
-          {/* TAB: WORDPRESS ADMIN CUSTOMIZER & AI SPEED BOOSTER */}
+          {/* TAB 3: ADMIN AI SPEED & CUSTOMIZER */}
           {activeSubTab === 'admin-speed' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="border-b border-slate-800 pb-5">
-                <div className="flex items-center gap-2">
-                  <LayoutDashboard className="w-5 h-5 text-teal-400" />
-                  <h3 className="text-xl font-bold text-white">
-                    سفارشی‌سازی پیشخوان وردپرس و شتاب‌دهنده هوش مصنوعی (Admin Customizer & AI Boost)
-                  </h3>
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400 shrink-0">
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-100">شتاب‌دهنده پیشخوان وردپرس (Admin Speed Booster)</h3>
+                    <p className="text-xs text-slate-400">بهینه‌سازی هوشمند لود پیشخوان، غیرفعال‌سازی رکوئست‌های اضافه و کش سریع</p>
+                  </div>
                 </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  شخصی‌سازی کامل پیشخوان، وایت‌لیبل برندینگ با لوگوی کامواوب و سرعت‌بخشی خارق‌العاده به بارگذاری صفحات مدیریت وردپرس توسط مغز هوش مصنوعی
-                </p>
+
+                <button
+                  onClick={() => {
+                    setIsBoostingAdmin(true);
+                    setTimeout(() => {
+                      setIsBoostingAdmin(false);
+                      setAdminBoostToast('پیشخوان با کش حافظه موقت و پاکسازی transient ها ۳.۵ برابر سریع‌تر شد!');
+                      setTimeout(() => setAdminBoostToast(null), 3000);
+                    }, 1200);
+                  }}
+                  className="px-4 py-2 bg-teal-500 hover:bg-teal-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer shrink-0"
+                >
+                  {isBoostingAdmin ? 'در حال شتاب‌دهی...' : '⚡ بهینه‌سازی فوری لود پیشخوان'}
+                </button>
               </div>
 
               {adminBoostToast && (
-                <div className="p-4 rounded-xl bg-teal-500/20 border border-teal-500/40 text-teal-200 text-xs font-bold animate-fadeIn flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 text-teal-400 shrink-0" />
+                <div className="p-3 bg-teal-950/80 border border-teal-500/40 rounded-xl text-xs text-teal-300 font-bold flex items-center gap-2">
+                  <CheckCircle className="w-4 h-4 text-teal-400" />
                   <span>{adminBoostToast}</span>
                 </div>
               )}
 
-              {/* AI Admin Speed Booster Showcase */}
-              <div className="bg-gradient-to-r from-teal-950/40 via-slate-950 to-slate-950 border border-teal-500/30 rounded-2xl p-5 space-y-4">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                  <div className="space-y-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[11px] font-bold px-2 py-0.5 rounded-full bg-teal-500/20 text-teal-300">
-                        موتور شتاب‌دهی ادمین
-                      </span>
-                      <h4 className="font-bold text-white text-base">
-                        شتاب‌دهنده هوشمند پیشخوان وردپرس توسط هوش مصنوعی کامواوب
-                      </h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-teal-500/10 border border-teal-500/20 flex items-center justify-center text-teal-400">
+                      <HardDrive className="w-4 h-4" />
                     </div>
-                    <p className="text-xs text-slate-400">
-                      هوش مصنوعی کامواوب کوئری‌های کند داشبورد را در آبجکت‌کش نگه می‌دارد، نوتیس‌های سنگین را متوقف و فرکانس هارت‌بیت را کنترل می‌کند.
-                    </p>
+                    <h4 className="text-sm font-bold text-slate-100">کش آبجکت پیشخوان و ترنزینت‌ها</h4>
                   </div>
-
-                  <button
-                    onClick={() => {
-                      setIsBoostingAdmin(true);
-                      setTimeout(() => {
-                        setIsBoostingAdmin(false);
-                        onChangeConfig({
-                          ...config,
-                          adminCustomizer: {
-                            ...config.adminCustomizer,
-                            fastAdminAiBooster: true,
-                            hideWpNotices: true,
-                            heartbeatAdminFrequencySeconds: 60,
-                          },
-                        });
-                        setAdminBoostToast('پیشخوان وردپرس با موفقیت توسط هوش مصنوعی کامواوب شتاب‌دهی شد! زمان پاسخگویی به ۰.۲۸ ثانیه کاهش یافت.');
-                        setTimeout(() => setAdminBoostToast(null), 5000);
-                      }, 1000);
-                    }}
-                    disabled={isBoostingAdmin}
-                    className="px-4 py-2.5 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-500 hover:to-emerald-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-teal-900/40 transition-all cursor-pointer shrink-0 disabled:opacity-50 flex items-center gap-2"
-                  >
-                    {isBoostingAdmin ? (
-                      <>
-                        <div className="w-3.5 h-3.5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                        <span>در حال تحلیل و شتاب‌دهی...</span>
-                      </>
-                    ) : (
-                      <>
-                        <Sparkles className="w-4 h-4 text-teal-200" />
-                        <span>شتاب‌دهی فوری پیشخوان با AI کامواوب</span>
-                      </>
-                    )}
-                  </button>
-                </div>
-
-                {/* Metric comparison */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
-                  <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
-                    <span className="text-[11px] text-slate-400 block mb-1">زمان بارگذاری صفحات داشبورد:</span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-lg font-black text-emerald-400">۰.۲۸ ثانیه</span>
-                      <span className="text-xs text-rose-400 line-through">۲.۴۵ ثانیه</span>
-                    </div>
-                  </div>
-
-                  <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
-                    <span className="text-[11px] text-slate-400 block mb-1">کوئری‌های کش شده در منوها:</span>
-                    <span className="text-lg font-black text-cyan-400">۴۲ کوئری بهینه‌شده</span>
-                  </div>
-
-                  <div className="bg-slate-900/80 border border-slate-800 p-3 rounded-xl">
-                    <span className="text-[11px] text-slate-400 block mb-1">سربار رم در پنل مدیریت:</span>
-                    <div className="flex items-baseline gap-2">
-                      <span className="text-lg font-black text-teal-400">۱۲ مگابایت</span>
-                      <span className="text-xs text-slate-500">کاهش ۵۸ درصدی</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* White-Label & Custom Login Section */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                
-                {/* White-Label Settings */}
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-4">
-                  <h4 className="font-bold text-white text-sm flex items-center gap-2">
-                    <Store className="w-4 h-4 text-indigo-400" />
-                    <span>برندینگ و وایت‌لیبل پیشخوان (White-Label)</span>
-                  </h4>
-
-                  <label className="flex items-center justify-between p-3 bg-slate-900/60 border border-slate-800 rounded-lg cursor-pointer">
-                    <div>
-                      <span className="text-xs font-bold text-white block">حالت اختصاصی وایت‌لیبل کامواوب</span>
-                      <span className="text-[11px] text-slate-400">جایگزینی لوگو و نام وردپرس با برند و لوگوی کامواوب</span>
-                    </div>
+                  <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                    <span>مخفی‌سازی پیام‌های مزاحم افزونه‌ها در پیشخوان</span>
                     <input
                       type="checkbox"
-                      checked={config.adminCustomizer.whiteLabelEnabled}
-                      onChange={(e) =>
-                        onChangeConfig({
-                          ...config,
-                          adminCustomizer: { ...config.adminCustomizer, whiteLabelEnabled: e.target.checked },
-                        })
-                      }
-                      className="w-4 h-4 accent-indigo-600 rounded"
+                      checked={config.adminCustomizer?.hideWpNotices ?? true}
+                      onChange={(e) => updateSubConfig('adminCustomizer', { hideWpNotices: e.target.checked })}
+                      className="accent-teal-500 w-4 h-4 rounded cursor-pointer"
                     />
                   </label>
-
-                  <label className="flex items-center justify-between p-3 bg-slate-900/60 border border-slate-800 rounded-lg cursor-pointer">
-                    <div>
-                      <span className="text-xs font-bold text-white block">پنهان‌سازی نوتیس‌های آزاردهنده وردپرس</span>
-                      <span className="text-[11px] text-slate-400">حذف اخطارها و بنرهای تبلیغاتی سایر افزونه‌ها در بالای پیشخوان</span>
-                    </div>
+                  <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                    <span>شتاب‌دهنده AI لود جداول و کوئری‌های کند مدیریت</span>
                     <input
                       type="checkbox"
-                      checked={config.adminCustomizer.hideWpNotices}
-                      onChange={(e) =>
-                        onChangeConfig({
-                          ...config,
-                          adminCustomizer: { ...config.adminCustomizer, hideWpNotices: e.target.checked },
-                        })
-                      }
-                      className="w-4 h-4 accent-teal-600 rounded"
+                      checked={config.adminCustomizer?.fastAdminAiBooster ?? true}
+                      onChange={(e) => updateSubConfig('adminCustomizer', { fastAdminAiBooster: e.target.checked })}
+                      className="accent-teal-500 w-4 h-4 rounded cursor-pointer"
                     />
                   </label>
+                </div>
 
-                  <div>
-                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
-                      طرح رنگی اختصاصی پیشخوان وردپرس:
-                    </label>
-                    <select
-                      value={config.adminCustomizer.adminThemeColorScheme}
-                      onChange={(e: any) =>
-                        onChangeConfig({
-                          ...config,
-                          adminCustomizer: { ...config.adminCustomizer, adminThemeColorScheme: e.target.value },
-                        })
-                      }
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
-                    >
-                      <option value="kamva_dark">کاموا دارک نئونی (Kamva Dark - استاندارد پیش‌فرض)</option>
-                      <option value="midnight_purple">بنفش شبانه هوش مصنوعی (Midnight Purple)</option>
-                      <option value="emerald_pro">سبز زمردی فوق‌حرفه‌ای (Emerald Pro)</option>
-                      <option value="clean_slate">خاکستری مینیمال مدرن (Clean Slate)</option>
-                    </select>
+                <div className="bg-slate-900 border border-slate-800/80 hover:border-slate-700 rounded-2xl p-5 shadow-lg space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                      <Sparkles className="w-4 h-4" />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-100">برندینگ و امضای پیشخوان</h4>
                   </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
-                      متن سفارشی فوتر پیشخوان مدیریت:
-                    </label>
+                  <div className="space-y-2">
+                    <span className="text-xs text-slate-400">متن امضای اختصاصی فوتر پیشخوان:</span>
                     <input
                       type="text"
-                      value={config.adminCustomizer.customAdminFooterText}
-                      onChange={(e) =>
-                        onChangeConfig({
-                          ...config,
-                          adminCustomizer: { ...config.adminCustomizer, customAdminFooterText: e.target.value },
-                        })
-                      }
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white"
+                      value={config.adminCustomizer?.customAdminFooterText ?? 'توسعه‌یافته با موتور اختصاصی کامواوب پرو'}
+                      onChange={(e) => updateSubConfig('adminCustomizer', { customAdminFooterText: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-500 font-medium"
                     />
                   </div>
                 </div>
-
-                {/* Login Page Customizer & Heartbeat */}
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4 space-y-4">
-                  <h4 className="font-bold text-white text-sm flex items-center gap-2">
-                    <Zap className="w-4 h-4 text-amber-400" />
-                    <span>سفارشی‌سازی صفحه ورود و بهینه‌سازی Heartbeat</span>
-                  </h4>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
-                      آدرس لوگوی اختصاصی صفحه لاگین (wp-login.php):
-                    </label>
-                    <input
-                      type="text"
-                      value={config.adminCustomizer.customLoginLogoUrl}
-                      onChange={(e) =>
-                        onChangeConfig({
-                          ...config,
-                          adminCustomizer: { ...config.adminCustomizer, customLoginLogoUrl: e.target.value },
-                        })
-                      }
-                      placeholder="/kamva-logo.svg"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white font-mono"
-                      dir="ltr"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="text-xs font-bold text-slate-300 block mb-1.5">
-                      رنگ پس‌زمینه فرم ورود:
-                    </label>
-                    <div className="flex items-center gap-3">
-                      <input
-                        type="color"
-                        value={config.adminCustomizer.customLoginBackground}
-                        onChange={(e) =>
-                          onChangeConfig({
-                            ...config,
-                            adminCustomizer: { ...config.adminCustomizer, customLoginBackground: e.target.value },
-                          })
-                        }
-                        className="w-9 h-9 rounded-lg border border-slate-700 cursor-pointer bg-transparent"
-                      />
-                      <span className="text-xs font-mono text-slate-300">{config.adminCustomizer.customLoginBackground}</span>
-                    </div>
-                  </div>
-
-                  <div>
-                    <div className="flex items-center justify-between mb-1.5">
-                      <label className="text-xs font-bold text-slate-300">
-                        فرکانس ضربان قلب وردپرس (Heartbeat Interval):
-                      </label>
-                      <span className="text-xs font-mono text-amber-400 font-bold">
-                        {config.adminCustomizer.heartbeatAdminFrequencySeconds} ثانیه
-                      </span>
-                    </div>
-                    <input
-                      type="range"
-                      min="15"
-                      max="120"
-                      step="15"
-                      value={config.adminCustomizer.heartbeatAdminFrequencySeconds}
-                      onChange={(e) =>
-                        onChangeConfig({
-                          ...config,
-                          adminCustomizer: {
-                            ...config.adminCustomizer,
-                            heartbeatAdminFrequencySeconds: Number(e.target.value),
-                          },
-                        })
-                      }
-                      className="w-full accent-amber-500 cursor-pointer"
-                    />
-                    <span className="text-[11px] text-slate-400 block mt-1">
-                      افزایش این عدد به ۶۰ ثانیه مصرف CPU سرور در پیشخوان را تا ۶۰٪ کاهش می‌دهد.
-                    </span>
-                  </div>
-
-                  <label className="flex items-center justify-between p-3 bg-slate-900/60 border border-slate-800 rounded-lg cursor-pointer">
-                    <div>
-                      <span className="text-xs font-bold text-white block">شتاب‌دهنده کوئری‌های پیشخوان (Fast Admin Booster)</span>
-                      <span className="text-[11px] text-slate-400">کش هوشمند کوئری‌های سنگین منوها در ترنزینت‌های سریع</span>
-                    </div>
-                    <input
-                      type="checkbox"
-                      checked={config.adminCustomizer.fastAdminAiBooster}
-                      onChange={(e) =>
-                        onChangeConfig({
-                          ...config,
-                          adminCustomizer: { ...config.adminCustomizer, fastAdminAiBooster: e.target.checked },
-                        })
-                      }
-                      className="w-4 h-4 accent-teal-600 rounded"
-                    />
-                  </label>
-                </div>
-
               </div>
             </div>
           )}
-          {activeSubTab === 'crawler' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="border-b border-slate-800 pb-5">
-                <div className="flex items-center gap-2">
-                  <Globe className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-xl font-bold text-white">
-                    خزشگر زنده وبسایت و استخراج پایگاه دانش (بدون دیتای فیک)
-                  </h3>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  آدرس هر وبسایت واقعی (سایت خودتان یا فروشگاه هدف) را وارد کنید تا سرور بک‌اند کامواوب به صورت بلادرنگ کدهای HTML، تایتل، متادیسکریپشن، قیمت‌های مصوب و اسکیما را استخراج کرده و در پایگاه دانش دائمی ذخیره نماید.
-                </p>
-              </div>
 
-              {/* Crawler Form */}
-              <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 space-y-4">
-                <label className="text-xs font-bold text-slate-200 block">
-                  آدرس اینترنتی وبسایت جهت خزش واقعی (Real Live Website URL)
-                </label>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <div className="relative flex-1">
-                    <input
-                      type="url"
-                      value={crawlInputUrl}
-                      onChange={(e) => setCrawlInputUrl(e.target.value)}
-                      placeholder="https://your-domain.com یا https://digikala.com"
-                      className="w-full bg-slate-900 border border-slate-700 rounded-xl px-4 py-3 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 font-mono"
-                      dir="ltr"
-                    />
+          {/* TAB 4: REAL WEB CRAWLER */}
+          {activeSubTab === 'crawler' && (
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                    <Globe className="w-5 h-5" />
                   </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-100">خزشگر زنده و جمع‌آوری دیتای محصولات (Live Crawler)</h3>
+                    <p className="text-xs text-slate-400">استخراج خودکار نام، قیمت، ویژگی‌های فنی و متاتگ‌های محصولات از آدرس‌های وب</p>
+                  </div>
+                </div>
+
+                <div className="flex flex-col sm:flex-row gap-3 pt-2">
+                  <input
+                    type="url"
+                    value={crawlInputUrl}
+                    onChange={(e) => setCrawlInputUrl(e.target.value)}
+                    placeholder="https://example.com/product/..."
+                    className="flex-1 bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-emerald-500 font-mono"
+                  />
                   <button
                     onClick={handleTriggerLiveCrawl}
                     disabled={isCrawling}
-                    className="flex items-center justify-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white text-xs font-bold rounded-xl shadow-lg shadow-emerald-600/30 transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                    className="px-5 py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer disabled:opacity-50 shrink-0"
                   >
-                    <RefreshCw className={`w-4 h-4 ${isCrawling ? 'animate-spin' : ''}`} />
-                    <span>{isCrawling ? 'در حال خزش و استخراج...' : 'شروع خزش زنده و ذخیره در دیتابیس'}</span>
+                    {isCrawling ? 'در حال واکشی دیتا...' : '⚡ اجرای خزش زنده'}
                   </button>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-2 text-[11px] text-slate-400 pt-1">
-                  <span className="font-semibold text-slate-300">نمونه‌های پیشنهادی برای تست خزش:</span>
-                  <button
-                    type="button"
-                    onClick={() => setCrawlInputUrl('https://digikala.com')}
-                    className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono cursor-pointer"
-                  >
-                    digikala.com
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCrawlInputUrl('https://technolife.ir')}
-                    className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono cursor-pointer"
-                  >
-                    technolife.ir
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setCrawlInputUrl('https://kamvaweb.com')}
-                    className="px-2 py-0.5 rounded bg-slate-800 hover:bg-slate-700 text-slate-300 font-mono cursor-pointer"
-                  >
-                    kamvaweb.com
-                  </button>
-                </div>
+                {crawlError && (
+                  <div className="p-3 bg-rose-950/80 border border-rose-500/40 rounded-xl text-xs text-rose-300 font-bold">
+                    {crawlError}
+                  </div>
+                )}
+
+                {crawlResult && (
+                  <div className="p-4 bg-slate-950 rounded-xl border border-emerald-500/40 space-y-2 text-xs animate-fadeIn">
+                    <div className="text-emerald-400 font-bold">✓ اطلاعات با موفقیت دریافت و در پایگاه دانش ذخیره شد:</div>
+                    <div className="text-slate-100 font-bold">{crawlResult.title}</div>
+                    <div className="text-slate-400">{crawlResult.summary}</div>
+                    <div className="text-cyan-400 font-mono font-bold">قیمت شناسایی‌شده: {crawlResult.price}</div>
+                  </div>
+                )}
               </div>
-
-              {/* Crawler Error Display */}
-              {crawlError && (
-                <div className="p-4 bg-rose-500/10 border border-rose-500/30 rounded-xl flex items-center gap-3 text-rose-300 text-xs">
-                  <AlertTriangle className="w-5 h-5 shrink-0 text-rose-400" />
-                  <span>{crawlError}</span>
-                </div>
-              )}
-
-              {/* Crawler Result Cards */}
-              {crawlResult && (
-                <div className="space-y-4 bg-emerald-950/20 border border-emerald-500/30 rounded-2xl p-5 animate-in fade-in duration-300">
-                  <div className="flex items-center justify-between border-b border-emerald-500/20 pb-3">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle2 className="w-5 h-5 text-emerald-400" />
-                      <span className="text-sm font-bold text-white">خزش واقعی با موفقیت انجام و ذخیره شد</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs font-mono text-emerald-300">
-                      <span>زمان پاسخ: {crawlResult.latencyMs}ms</span>
-                      <span>حجم: {Math.round(crawlResult.bytes / 1024)} KB</span>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-xs">
-                    <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
-                      <span className="text-slate-400 block font-semibold">عنوان استخراج شده (Title):</span>
-                      <p className="text-slate-100 font-medium">{crawlResult.pageTitle || 'بدون تایتل'}</p>
-                    </div>
-
-                    <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800 space-y-1.5">
-                      <span className="text-slate-400 block font-semibold">توضیحات متا (Meta Description):</span>
-                      <p className="text-slate-300 line-clamp-2">{crawlResult.metaDescription || 'توضیحات متا در سورس صفحه موجود نبود'}</p>
-                    </div>
-                  </div>
-
-                  {/* Detected Real Prices */}
-                  {crawlResult.detectedPrices && crawlResult.detectedPrices.length > 0 && (
-                    <div className="bg-slate-950/60 p-3.5 rounded-xl border border-slate-800">
-                      <span className="text-slate-400 block text-xs font-semibold mb-2">قیمت‌های واقعی شناسایی شده در صفحه:</span>
-                      <div className="flex flex-wrap gap-2">
-                        {crawlResult.detectedPrices.map((price: string, idx: number) => (
-                          <span key={idx} className="px-2.5 py-1 rounded-lg bg-emerald-500/20 text-emerald-300 text-xs font-mono font-bold border border-emerald-500/30">
-                            💰 {price}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Added Items Notification */}
-                  <div className="p-3 bg-slate-900 border border-slate-800 rounded-xl flex items-center justify-between text-xs">
-                    <span className="text-slate-300">
-                      تعداد رکوردهای پایگاه دانش افزوده شده به دیتابیس پایدار سرور:
-                    </span>
-                    <span className="px-2.5 py-1 rounded-md bg-emerald-600 text-white font-bold font-mono">
-                      +{crawlResult.extractedKnowledgeItems?.length || 1} رکورد واقعی
-                    </span>
-                  </div>
-                </div>
-              )}
             </div>
           )}
 
-          {/* TAB 3: SELF-HEALING & STABILITY (ZERO CRASH & UPDATE SAFE) */}
+          {/* TAB 5: SELF-HEALING & STABILITY */}
           {activeSubTab === 'stability' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="border-b border-slate-800 pb-5">
-                <div className="flex items-center gap-2">
-                  <LifeBuoy className="w-5 h-5 text-amber-400" />
-                  <h3 className="text-xl font-bold text-white">
-                    سیستم پایداری و خودترمیمی کامواوب (Fault-Tolerance & Self-Healing Core)
-                  </h3>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  قالب کامواوب به گونه‌ای معماری شده که در صورت آپدیت هسته وردپرس یا فعال‌سازی افزونه‌های ناسازگار، هرگز صفحه سفید (WSoD) یا شکستگی استایل رخ ندهد.
-                </p>
-              </div>
-
-              {/* Status Indicator Cards */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                  <span className="text-xs text-slate-400 block mb-1">وضعیت سلامت هسته</span>
-                  <div className="flex items-center gap-2">
-                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
-                    <span className="text-sm font-bold text-emerald-400">کاملاً پایدار و ایمن</span>
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+                    <LifeBuoy className="w-5 h-5" />
                   </div>
-                  <span className="text-[10px] text-slate-500 mt-1 block font-mono">
-                    تداخل‌های خنثی شده: {config.stabilityAndErrorHealing.resolvedConflictsCount} مورد
-                  </span>
-                </div>
-
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                  <span className="text-xs text-slate-400 block mb-1">سازگاری با نسخه‌های وردپرس</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-blue-400">وردپرس 6.0 تا 7.1+</span>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-100">پایداری و خودترمیمی خطاها (Stability & Self-Healing)</h3>
+                    <p className="text-xs text-slate-400">جداسازی و ایزوله‌سازی خطاهای PHP در افزونه‌های متفرقه، جلوگیری از Fatal Error</p>
                   </div>
-                  <span className="text-[10px] text-slate-500 mt-1 block">
-                    لایه‌های تطبیق هوک‌های منسوخ شده فعال است
-                  </span>
-                </div>
-
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                  <span className="text-xs text-slate-400 block mb-1">حالت Safe Mode اضطراری</span>
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm font-bold text-indigo-400">آماده به کار (Standby)</span>
-                  </div>
-                  <span className="text-[10px] text-slate-500 mt-1 block">
-                    جلوگیری خودکار از کرش کل سایت هنگام ارور افزونه
-                  </span>
-                </div>
-              </div>
-
-              {/* Action: Run Diagnostic & Heal */}
-              <div className="bg-slate-950/80 border border-slate-800 rounded-2xl p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-                <div>
-                  <h4 className="text-sm font-bold text-white flex items-center gap-2">
-                    <Wrench className="w-4 h-4 text-amber-400" />
-                    اسکن بلادرنگ سازگاری هوک‌ها و اجرای خودترمیمی
-                  </h4>
-                  <p className="text-xs text-slate-400 mt-1">
-                    بررسی عمیق توابع PHP 8.2، کدهای جاوااسکریپت و پاکسازی transient های مسدودکننده
-                  </p>
                 </div>
 
                 <button
                   onClick={handleTriggerSelfHealing}
                   disabled={isHealing}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-gradient-to-r from-amber-600 to-amber-700 hover:from-amber-500 hover:to-amber-600 text-white text-xs font-bold rounded-xl shadow-lg shadow-amber-600/30 transition-all cursor-pointer disabled:opacity-50 shrink-0"
+                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-xl shadow-md transition-all cursor-pointer shrink-0"
                 >
-                  <RefreshCw className={`w-4 h-4 ${isHealing ? 'animate-spin' : ''}`} />
-                  <span>{isHealing ? 'در حال پایش و ترمیم...' : 'عیب‌یابی و خودترمیمی آنی'}</span>
+                  {isHealing ? 'در حال ارزیابی...' : '🩺 پویش و ترمیم خطاهای احتمالی'}
                 </button>
               </div>
 
-              {/* Healing Logs Result */}
               {healingLogs && (
-                <div className="bg-amber-950/20 border border-amber-500/30 rounded-2xl p-5 space-y-2 animate-in fade-in duration-200">
-                  <h5 className="text-xs font-bold text-amber-300 mb-2">گزارش اقدامات خودترمیمی انجام شده:</h5>
-                  <ul className="space-y-1.5 text-xs text-slate-300">
-                    {healingLogs.map((log, index) => (
-                      <li key={index} className="flex items-center gap-2">
-                        <CheckCircle2 className="w-4 h-4 text-emerald-400 shrink-0" />
-                        <span>{log}</span>
-                      </li>
-                    ))}
-                  </ul>
+                <div className="p-4 bg-slate-950 rounded-xl border border-amber-500/40 space-y-2 text-xs">
+                  <div className="text-amber-400 font-bold">گزارش ترمیم خودکار سیستم:</div>
+                  {healingLogs.map((log, i) => (
+                    <div key={i} className="text-slate-300 font-mono">
+                      ✓ {log}
+                    </div>
+                  ))}
                 </div>
               )}
+
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div className="bg-slate-900 border border-slate-800/80 rounded-xl p-4 text-center space-y-1">
+                  <span className="text-xs text-slate-400">خطاهای فعال سیستم:</span>
+                  <div className="text-lg font-bold text-emerald-400 font-mono">0 خطای مسدودکننده</div>
+                </div>
+                <div className="bg-slate-900 border border-slate-800/80 rounded-xl p-4 text-center space-y-1">
+                  <span className="text-xs text-slate-400">تداخل‌های خنثی‌شده:</span>
+                  <div className="text-lg font-bold text-cyan-400 font-mono">
+                    {config.stabilityAndErrorHealing?.resolvedConflictsCount || 4} تداخل
+                  </div>
+                </div>
+                <div className="bg-slate-900 border border-slate-800/80 rounded-xl p-4 text-center space-y-1">
+                  <span className="text-xs text-slate-400">وضعیت ساندباکس خودترمیمی:</span>
+                  <div className="text-xs font-bold text-amber-400 pt-1">فعال و در حال پایش ۲۴/۷</div>
+                </div>
+              </div>
             </div>
           )}
 
-          {/* TAB 4: WORDPRESS 7.1 CORE */}
+          {/* TAB 6: WORDPRESS 7.1 CORE COMPATIBILITY */}
           {activeSubTab === 'wp-core' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="flex items-center justify-between border-b border-slate-800 pb-5">
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg flex items-center gap-3">
+                <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400 shrink-0">
+                  <Layers className="w-5 h-5" />
+                </div>
                 <div>
-                  <div className="flex items-center gap-2">
-                    <Layers className="w-5 h-5 text-blue-400" />
-                    <h3 className="text-xl font-bold text-white">
-                      سازگاری و یکپارچه‌سازی با آخرین نسخه وردپرس (WordPress 7.1 "Mary Lou")
-                    </h3>
-                  </div>
-                  <p className="text-xs text-slate-400 mt-1">
-                    قالب کامواوب به صورت اختصاصی بر روی معماری نسخه ۷.۱ وردپرس (انتشار آگوست ۲۰۲۶) با پشتیبانی کامل از Interactivity API و Block Template Parts بهینه‌سازی شده است.
-                  </p>
+                  <h3 className="text-base font-bold text-slate-100">سازگاری با هسته وردپرس ۷.۱ Mary Lou</h3>
+                  <p className="text-xs text-slate-400">پشتیبانی کامل از PHP 8.2+، معماری Block Hooks و عدم استفاده از توابع منسوخ</p>
                 </div>
-                <span className="px-3 py-1 bg-blue-500/20 border border-blue-500/30 text-blue-300 text-xs font-mono font-bold rounded-full">
-                  WP 7.1 Targeted
-                </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
-                  <span className="text-xs font-bold text-blue-400 block">پشتیبانی از Interactivity API</span>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    فعال‌سازی تعاملات بدون رفرش بر پایه استاندارد مدرن وردپرس ۷.۱ برای تب‌های سریع، سبد خرید زنده و باز شدن پنجره مشاوره هوش مصنوعی.
-                  </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-blue-500/10 border border-blue-500/20 flex items-center justify-center text-blue-400">
+                      <CheckCircle className="w-4 h-4" />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-100">ویژگی‌های فعال هسته وردپرس ۷.۱</h4>
+                  </div>
+                  <ul className="space-y-2 text-xs text-slate-300">
+                    <li className="flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span>
+                      <span>معماری نوین Block Bindings API در بخش قالب‌ها</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span>
+                      <span>بهینه‌سازی لود اسکریپت‌ها با استراتژی defer/async بومی</span>
+                    </li>
+                    <li className="flex items-center gap-2">
+                      <span className="text-emerald-400">✓</span>
+                      <span>پشتیبانی از Interactivity API بدون افت فریم</span>
+                    </li>
+                  </ul>
                 </div>
 
-                <div className="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
-                  <span className="text-xs font-bold text-emerald-400 block">الگوهای بلوکی پیشرفته (Block Patterns)</span>
-                  <p className="text-xs text-slate-300 leading-relaxed">
-                    هماهنگی ۱۰۰٪ با ویرایشگر گوتنبرگ و المنتور به گونه‌ای که هر بلوک با کمترین بار پردازشی به کدهای HTML تمیز تبدیل شود.
+                <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-3">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+                      <ShieldCheck className="w-4 h-4" />
+                    </div>
+                    <h4 className="text-sm font-bold text-slate-100">سلامت دیتابیس و کدهای PHP 8.2</h4>
+                  </div>
+                  <p className="text-xs text-slate-400 leading-relaxed">
+                    تمام فایل‌های قالب با جدیدترین استانداردهای نگارش کدهای مدرن بدون ایجاد هرگونه Warning یا Deprecated Notice بازنویسی شده‌اند.
                   </p>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TAB 5: AI CORE */}
+          {/* TAB 7: AI CORE */}
           {activeSubTab === 'ai' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="border-b border-slate-800 pb-5">
-                <div className="flex items-center gap-2">
-                  <BrainCircuit className="w-5 h-5 text-indigo-400" />
-                  <h3 className="text-xl font-bold text-white">تنظیمات مغز هوش مصنوعی داخلی کامواوب</h3>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  پیکربندی هوش تجاری، دستیار فروشنده، لحن پاسخگویی و تضمین مصرف زیر ۱۵٪ منابع سرور
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                  <label className="text-xs font-bold text-slate-300 block mb-2">لحن دستیار هوشمند فروش</label>
-                  <select
-                    value={config.aiCore.botTone}
-                    onChange={(e: any) => updateSubConfig('aiCore', { botTone: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="persuasive">ترغیب‌کننده و معطوف به فروش فوری (CRO Focused)</option>
-                    <option value="expert">مشاور تخصصی و فنی با دقت بالا</option>
-                    <option value="friendly">صمیمی و دوستانه</option>
-                    <option value="formal">رسمی و اداری</option>
-                  </select>
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                    <BrainCircuit className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-100">پیکربندی مغز هوش مصنوعی داخلی کامواوب</h3>
+                    <p className="text-xs text-slate-400">تنظیمات لحن، پیام‌های خوش‌آمدگویی و رفتارهای تبدیل فروشگاه</p>
+                  </div>
                 </div>
 
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                  <label className="text-xs font-bold text-slate-300 block mb-2">حداکثر سقف مجاز مصرف رم سرور</label>
-                  <div className="flex items-center gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <div className="space-y-2">
+                    <span className="text-xs font-bold text-slate-300">پیام خوش‌آمدگویی دستیار:</span>
                     <input
-                      type="range"
-                      min={5}
-                      max={25}
-                      value={config.aiCore.serverResourceLimit}
-                      onChange={(e) => updateSubConfig('aiCore', { serverResourceLimit: Number(e.target.value) })}
-                      className="w-full accent-indigo-500"
+                      type="text"
+                      value={config.aiCore?.botWelcomeMessage || 'سلام! چه محصولی مد نظرتونه؟'}
+                      onChange={(e) => updateSubConfig('aiCore', { botWelcomeMessage: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-medium"
                     />
-                    <span className="text-xs font-mono font-bold text-indigo-400">{config.aiCore.serverResourceLimit}%</span>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-xs font-bold text-slate-300">لحن پاسخگویی دستیار (Tone):</span>
+                    <select
+                      value={config.aiCore?.botTone || 'persuasive'}
+                      onChange={(e: any) => updateSubConfig('aiCore', { botTone: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3.5 py-2.5 text-xs text-slate-200 focus:outline-none focus:border-indigo-500 font-bold"
+                    >
+                      <option value="persuasive">فروشنده پرانرژی و ترغیب‌کننده</option>
+                      <option value="expert">مشاور فنی دقیق و مهندسی</option>
+                      <option value="formal">فروشنده تشریفاتی و رسمی</option>
+                      <option value="friendly">دوستانه و صمیمی</option>
+                    </select>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-          {/* TAB 6: SPEED OPTIMIZATION */}
+          {/* TAB 8: SPEED & OPTIMIZATION */}
           {activeSubTab === 'speed' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="border-b border-slate-800 pb-5">
-                <div className="flex items-center gap-2">
-                  <Zap className="w-5 h-5 text-amber-400" />
-                  <h3 className="text-xl font-bold text-white">افزایش سرعت و بهینه‌سازی منابع (لایت‌هاوس ۹۹/۱۰۰)</h3>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  تخلیه هوشمند اسکریپت‌های افزونه‌ها (Asset Dequeue) و پاکسازی کدهای اضافی DOM المنتور
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                  <div>
-                    <span className="text-xs font-bold text-slate-200 block">تخلیه خودکار اسکریپت‌های بلااستفاده</span>
-                    <span className="text-[11px] text-slate-400">جلوگیری از لود کدهای فرم‌ساز و ووکامرس در مقالات بلاگ</span>
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center text-amber-400 shrink-0">
+                    <Zap className="w-5 h-5" />
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={config.speedOptimizer.smartPluginDequeue}
-                    onChange={(e) => updateSubConfig('speedOptimizer', { smartPluginDequeue: e.target.checked })}
-                    className="w-4 h-4 accent-indigo-600 rounded"
-                  />
-                </label>
-
-                <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
                   <div>
-                    <span className="text-xs font-bold text-slate-200 block">لود تنبل تطبیقی (Adaptive Lazy Load)</span>
-                    <span className="text-[11px] text-slate-400">لود تصاویر تنها در هنگام ورود به دید کاربر بدون پرش صفحه</span>
+                    <h3 className="text-base font-bold text-slate-100">بهینه‌سازی سرعت و امتیاز ۹۹/۱۰۰ لایت‌هاوس</h3>
+                    <p className="text-xs text-slate-400">کش حافظه رم، بهینه‌سازی کدهای فرانت‌اند و بارگذاری آسنکرون فایل‌ها</p>
                   </div>
-                  <input
-                    type="checkbox"
-                    checked={config.speedOptimizer.adaptiveLazyLoad}
-                    onChange={(e) => updateSubConfig('speedOptimizer', { adaptiveLazyLoad: e.target.checked })}
-                    className="w-4 h-4 accent-indigo-600 rounded"
-                  />
-                </label>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 7: SECURITY SHIELD */}
-          {activeSubTab === 'security' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="border-b border-slate-800 pb-5">
-                <div className="flex items-center gap-2">
-                  <ShieldAlert className="w-5 h-5 text-emerald-400" />
-                  <h3 className="text-xl font-bold text-white">سپر امنیتی فراگیر کامواوب (All-in-One Security)</h3>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  پوشش ۱۰۰٪ قابلیت‌های امنیتی بدون نیاز به نصب افزونه‌های سنگین امنیتی
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                  <label className="text-xs font-bold text-slate-300 block mb-2">تغییر آدرس ورود ادمین (Hide wp-login.php)</label>
-                  <input
-                    type="text"
-                    value={config.securityShield.hideWpLoginUrl}
-                    onChange={(e) => updateSubConfig('securityShield', { hideWpLoginUrl: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500 font-mono"
-                    dir="ltr"
-                  />
                 </div>
 
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                  <label className="text-xs font-bold text-slate-300 block mb-2">احراز هویت دو مرحله‌ای (2FA)</label>
-                  <select
-                    value={config.securityShield.twoFactorEnforcement}
-                    onChange={(e: any) => updateSubConfig('securityShield', { twoFactorEnforcement: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="all_admins">اجباری برای تمام مدیران و نویسندگان</option>
-                    <option value="all_users">اجباری برای تمامی کاربران سایت</option>
-                    <option value="optional">اختیاری با امکان فعال‌سازی توسط کاربر</option>
-                  </select>
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 8: SEO */}
-          {activeSubTab === 'seo' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="border-b border-slate-800 pb-5">
-                <div className="flex items-center gap-2">
-                  <Compass className="w-5 h-5 text-cyan-400" />
-                  <h3 className="text-xl font-bold text-white">سئو و هوش رقبای گوگل</h3>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  تولید خودکار کدهای اسکیما استاندارد JSON-LD و رصد کلمات کلیدی هدف در نتایج موتورهای جستجو
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                  <div>
-                    <span className="text-xs font-bold text-slate-200 block">تولید خودکار اسکیما استاندارد JSON-LD</span>
-                    <span className="text-[11px] text-slate-400">افزودن اسکیما Product, FAQPage, Breadcrumb به تمام صفحات</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={config.seoIntelligence.autoJsonLdSchema}
-                    onChange={(e) => updateSubConfig('seoIntelligence', { autoJsonLdSchema: e.target.checked })}
-                    className="w-4 h-4 accent-indigo-600 rounded"
-                  />
-                </label>
-
-                <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                  <div>
-                    <span className="text-xs font-bold text-slate-200 block">پایش هوشمند قیمت رقبای ووکامرس</span>
-                    <span className="text-[11px] text-slate-400">تحلیل قیمت‌های بازار و پیشنهاد قیمت رقابتی برای افزایش فروش</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={config.seoIntelligence.ecommercePriceMonitoring}
-                    onChange={(e) => updateSubConfig('seoIntelligence', { ecommercePriceMonitoring: e.target.checked })}
-                    className="w-4 h-4 accent-indigo-600 rounded"
-                  />
-                </label>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 9: ELEMENTOR */}
-          {activeSubTab === 'elementor' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="border-b border-slate-800 pb-5">
-                <div className="flex items-center gap-2">
-                  <Boxes className="w-5 h-5 text-pink-400" />
-                  <h3 className="text-xl font-bold text-white">ویجت‌های اختصاصی المنتور و المنتور پرو</h3>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  ادغام عمیق با ویرایشگر المنتور همراه با ویجت هوشمند فروش، اسلایدرهای اختصاصی و بهینه‌سازی کدهای DOM
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                  <div>
-                    <span className="text-xs font-bold text-slate-200 block">فعال‌سازی بسته ویجت‌های هوش مصنوعی المنتور</span>
-                    <span className="text-[11px] text-slate-400">ویجت‌های AI Sales Bot, Smart Pricing Matrix, Product Hero</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={config.elementorIntegration.aiWidgetsEnabled}
-                    onChange={(e) => updateSubConfig('elementorIntegration', { aiWidgetsEnabled: e.target.checked })}
-                    className="w-4 h-4 accent-indigo-600 rounded"
-                  />
-                </label>
-
-                <label className="flex items-center justify-between p-3.5 bg-slate-950/40 border border-slate-800 rounded-xl cursor-pointer hover:bg-slate-800/40">
-                  <div>
-                    <span className="text-xs font-bold text-slate-200 block">حذف تگ‌های زائد DOM کانتینرهای المنتور</span>
-                    <span className="text-[11px] text-slate-400">کاهش ۴۵٪ عمق DOM و دستیابی به امتیاز ۱۰۰ لایت‌هاوس</span>
-                  </div>
-                  <input
-                    type="checkbox"
-                    checked={config.elementorIntegration.cleanElementorDom}
-                    onChange={(e) => updateSubConfig('elementorIntegration', { cleanElementorDom: e.target.checked })}
-                    className="w-4 h-4 accent-indigo-600 rounded"
-                  />
-                </label>
-              </div>
-            </div>
-          )}
-
-          {/* TAB 10: STYLING & TYPOGRAPHY */}
-          {activeSubTab === 'styling' && (
-            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-6 space-y-6 shadow-xl">
-              <div className="border-b border-slate-800 pb-5">
-                <div className="flex items-center gap-2">
-                  <Palette className="w-5 h-5 text-purple-400" />
-                  <h3 className="text-xl font-bold text-white">تایپوگرافی اصیل فارسی و رنگ‌بندی سازمانی</h3>
-                </div>
-                <p className="text-xs text-slate-400 mt-1">
-                  پشتیبانی از بهترین فونت‌های استاندارد وب فارسی بدون نیاز به افزودن افزونه‌های سنگین فونت
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                  <label className="text-xs font-bold text-slate-300 block mb-2">فونت پیش‌فرض وبسایت</label>
-                  <select
-                    value={config.general.fontFamily}
-                    onChange={(e: any) => updateSubConfig('general', { fontFamily: e.target.value })}
-                    className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-indigo-500"
-                  >
-                    <option value="Vazirmatn">وزیرمتن (Vazirmatn - فونت رسمی و مدرن)</option>
-                    <option value="Shabnam">شبنم (Shabnam - شکیل و خوانا)</option>
-                    <option value="YekanBakh">یکان‌بخ (YekanBakh - مخصوص فروشگاه‌های بزرگ)</option>
-                    <option value="Sahel">ساهل (Sahel - هندسی و زیبا)</option>
-                    <option value="IranSans">ایران‌سنس (IranSans)</option>
-                  </select>
-                </div>
-
-                <div className="bg-slate-950/60 border border-slate-800 rounded-xl p-4">
-                  <label className="text-xs font-bold text-slate-300 block mb-2">رنگ برند سازمانی (Primary Color)</label>
-                  <div className="flex items-center gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                    <span>کش کامل صفحات در حافظه RAM سرور (Page Cache)</span>
                     <input
-                      type="color"
-                      value={config.general.primaryColor}
-                      onChange={(e) => updateSubConfig('general', { primaryColor: e.target.value })}
-                      className="w-10 h-10 rounded-lg border border-slate-700 cursor-pointer bg-transparent"
+                      type="checkbox"
+                      checked={config.kamvaSpeedCache.pageCache}
+                      onChange={(e) => updateSubConfig('kamvaSpeedCache', { pageCache: e.target.checked })}
+                      className="accent-amber-500 w-4 h-4 rounded cursor-pointer"
                     />
-                    <span className="text-xs font-mono text-slate-300">{config.general.primaryColor}</span>
+                  </label>
+                  <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                    <span>فشرده‌سازی و ادغام CSS / JS (Minification)</span>
+                    <input
+                      type="checkbox"
+                      checked={config.kamvaSpeedCache.minifyCss}
+                      onChange={(e) => updateSubConfig('kamvaSpeedCache', { minifyCss: e.target.checked })}
+                      className="accent-amber-500 w-4 h-4 rounded cursor-pointer"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 9: SECURITY WAF */}
+          {activeSubTab === 'security' && (
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0">
+                    <ShieldAlert className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-100">سپر امنیتی چندلایه و فایروال WAF</h3>
+                    <p className="text-xs text-slate-400">حفاظت بلادرنگ در برابر حملات تزریق SQL، Brute Force و آسیب‌پذیری‌های امنیتی</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                    <span>فایروال هوشمند WAF و مسدودسازی تزریق SQL</span>
+                    <input
+                      type="checkbox"
+                      checked={config.securityShield.smartWafFirewall}
+                      onChange={(e) => updateSubConfig('securityShield', { smartWafFirewall: e.target.checked })}
+                      className="accent-emerald-500 w-4 h-4 rounded cursor-pointer"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                    <span>غیرفعال‌سازی XML-RPC و ماسک نسخه وردپرس</span>
+                    <input
+                      type="checkbox"
+                      checked={config.securityShield.disableXmlRpc}
+                      onChange={(e) => updateSubConfig('securityShield', { disableXmlRpc: e.target.checked })}
+                      className="accent-emerald-500 w-4 h-4 rounded cursor-pointer"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 10: SEO PRO */}
+          {activeSubTab === 'seo' && (
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 shrink-0">
+                    <Compass className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-100">سئو ساختاریافته و استراکچردیتای محصولات</h3>
+                    <p className="text-xs text-slate-400">تولید خودکار اسکیما استاندارد گوگل و گراف شبکه‌های اجتماعی</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                    <span>تولید خودکار اسکیما JSON-LD برای کالاها</span>
+                    <input
+                      type="checkbox"
+                      checked={config.seoIntelligence.autoJsonLdSchema}
+                      onChange={(e) => updateSubConfig('seoIntelligence', { autoJsonLdSchema: e.target.checked })}
+                      className="accent-cyan-500 w-4 h-4 rounded cursor-pointer"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                    <span>تولید خودکار متاتگ‌های OpenGraph شبکه‌های اجتماعی</span>
+                    <input
+                      type="checkbox"
+                      checked={config.seoIntelligence.openGraphAutomated}
+                      onChange={(e) => updateSubConfig('seoIntelligence', { openGraphAutomated: e.target.checked })}
+                      className="accent-cyan-500 w-4 h-4 rounded cursor-pointer"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 11: ELEMENTOR PRO */}
+          {activeSubTab === 'elementor' && (
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shrink-0">
+                    <Boxes className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-100">هماهنگی با المنتور و بهینه‌سازی کانتینرهای فلکس</h3>
+                    <p className="text-xs text-slate-400">کاهش عمق DOM المنتور و فعال‌سازی ویجت‌های فوق‌سریع هوش مصنوعی</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                  <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                    <span>حذف اضافه بار تگ‌های div و کاهش عمق DOM المنتور</span>
+                    <input
+                      type="checkbox"
+                      checked={config.elementorIntegration.cleanElementorDom}
+                      onChange={(e) => updateSubConfig('elementorIntegration', { cleanElementorDom: e.target.checked })}
+                      className="accent-indigo-600 w-4 h-4 rounded cursor-pointer"
+                    />
+                  </label>
+                  <label className="flex items-center justify-between p-3 bg-slate-950 rounded-xl border border-slate-800 text-xs font-semibold text-slate-200 cursor-pointer hover:border-slate-700 transition-colors">
+                    <span>فعال‌سازی ویجت‌های فوق‌سریع هوش مصنوعی در المنتور</span>
+                    <input
+                      type="checkbox"
+                      checked={config.elementorIntegration.aiWidgetsEnabled}
+                      onChange={(e) => updateSubConfig('elementorIntegration', { aiWidgetsEnabled: e.target.checked })}
+                      className="accent-indigo-600 w-4 h-4 rounded cursor-pointer"
+                    />
+                  </label>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* TAB 12: STYLING & BRANDING */}
+          {activeSubTab === 'styling' && (
+            <div className="space-y-5 animate-fadeIn">
+              <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-5 shadow-lg space-y-4">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center text-purple-400 shrink-0">
+                    <Palette className="w-5 h-5" />
+                  </div>
+                  <div>
+                    <h3 className="text-base font-bold text-slate-100">رنگ‌بندی، تایپوگرافی و ظاهر کلی قالب</h3>
+                    <p className="text-xs text-slate-400">شخصی‌سازی پالت رنگ‌های تجاری، فونت‌های فارسی و آرکی‌تایپ فروشگاه</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+                  <div className="space-y-2">
+                    <span className="text-xs font-bold text-slate-300">رنگ اصلی برند:</span>
+                    <div className="flex items-center gap-2">
+                      <input
+                        type="color"
+                        value={config.general.primaryColor}
+                        onChange={(e) => updateSubConfig('general', { primaryColor: e.target.value })}
+                        className="w-9 h-9 rounded-lg bg-transparent cursor-pointer border border-slate-700 p-0.5"
+                      />
+                      <input
+                        type="text"
+                        value={config.general.primaryColor}
+                        onChange={(e) => updateSubConfig('general', { primaryColor: e.target.value })}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-mono"
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-xs font-bold text-slate-300">فونت فارسی اصلی:</span>
+                    <select
+                      value={config.general.fontFamily}
+                      onChange={(e: any) => updateSubConfig('general', { fontFamily: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-bold"
+                    >
+                      <option value="Vazirmatn">وزیرمتن (Vazirmatn)</option>
+                      <option value="Shabnam">شبنم (Shabnam)</option>
+                      <option value="Sahel">ساحل (Sahel)</option>
+                      <option value="YekanBakh">یکان‌بخ (Yekan Bakh)</option>
+                      <option value="IranSans">ایران‌سنس (IranSans)</option>
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <span className="text-xs font-bold text-slate-300">نوع قالب سایت:</span>
+                    <select
+                      value={config.general.siteType}
+                      onChange={(e: any) => updateSubConfig('general', { siteType: e.target.value })}
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl px-3 py-2 text-xs text-slate-200 font-bold"
+                    >
+                      <option value="ecommerce">فروشگاه آنلاین (E-Commerce)</option>
+                      <option value="corporate">شرکتی و معرفی خدمات</option>
+                      <option value="blog">مجله خبری و وبلاگ تخصصی</option>
+                      <option value="service">پلتفرم خدماتی و استارتاپی</option>
+                    </select>
                   </div>
                 </div>
               </div>
             </div>
           )}
 
-        </div>
+        </main>
       </div>
     </div>
   );

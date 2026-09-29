@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { ThemeOptionsConfig } from '../types/theme';
 import { KamvaLogo } from './KamvaLogo';
+import { CoreWebVitalsHeatmap } from './CoreWebVitalsHeatmap';
 
 interface HealthReportDashboardProps {
   config: ThemeOptionsConfig;
@@ -33,7 +34,7 @@ interface HealthReportDashboardProps {
 export const HealthReportDashboard: React.FC<HealthReportDashboardProps> = ({ config }) => {
   const [report, setReport] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<'overview' | 'performance' | 'security' | 'database' | 'pdf-preview'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'performance' | 'vitals-heatmap' | 'security' | 'database' | 'pdf-preview'>('overview');
 
   const fetchReport = async () => {
     setIsLoading(true);
@@ -128,6 +129,7 @@ export const HealthReportDashboard: React.FC<HealthReportDashboardProps> = ({ co
         {[
           { id: 'overview' as const, label: 'خلاصه مدیریتی و هوش مصنوعی', icon: Sparkles },
           { id: 'performance' as const, label: 'شاخص‌های سرعت و لایت‌هاوس', icon: Zap },
+          { id: 'vitals-heatmap' as const, label: 'نقشه حرارتی Core Web Vitals', icon: Flame },
           { id: 'security' as const, label: 'امنیت، فایروال و آسیب‌پذیری', icon: ShieldCheck },
           { id: 'database' as const, label: 'سلامت پایگاه داده MySQL', icon: Database },
           { id: 'pdf-preview' as const, label: 'سند رسمی ماهانه (Print Ready)', icon: FileText },
@@ -320,6 +322,16 @@ export const HealthReportDashboard: React.FC<HealthReportDashboardProps> = ({ co
             </div>
           </div>
         </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* 2.5 CORE WEB VITALS HEATMAP                               */}
+      {/* ======================================================== */}
+      {(activeSection === 'vitals-heatmap' || activeSection === 'performance') && report.coreWebVitalsHeatmap && (
+        <CoreWebVitalsHeatmap
+          data={report.coreWebVitalsHeatmap}
+          onRefresh={fetchReport}
+        />
       )}
 
       {/* ======================================================== */}

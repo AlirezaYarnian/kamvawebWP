@@ -43,11 +43,22 @@ class KamvaWeb_Elementor_Price_Drop_Alert_Widget extends \Elementor\Widget_Base 
 
     protected function render() {
         $settings = $this->get_settings_for_display();
+        global $product;
+
+        $currency = function_exists('get_woocommerce_currency_symbol') ? get_woocommerce_currency_symbol() : 'تومان';
+        $lowest_price_display = '';
+
+        if (is_a($product, 'WC_Product') && $product->get_price()) {
+            $price_val = floatval($product->get_price());
+            $lowest_price_display = number_format($price_val) . ' ' . $currency;
+        } else {
+            $lowest_price_display = esc_html__('قیمت روز و تخفیفات فعال', 'kamvaweb');
+        }
         ?>
-        <div class="kamvaweb-elementor-price-drop-widget p-4 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between gap-3 text-xs">
+        <div class="kamvaweb-elementor-price-drop-widget p-4 bg-slate-900 border border-slate-800 rounded-2xl flex items-center justify-between gap-3 text-xs" dir="rtl">
             <div>
-                <span class="text-slate-400 block text-[11px]">کمترین قیمت ۳۰ روز گذشته</span>
-                <span class="text-emerald-400 font-bold font-mono text-sm">۲۸,۵۰۰,۰۰۰ تومان</span>
+                <span class="text-slate-400 block text-[11px]"><?php esc_html_e('کمترین قیمت ۳۰ روز گذشته', 'kamvaweb'); ?></span>
+                <span class="text-emerald-400 font-bold font-mono text-sm"><?php echo esc_html($lowest_price_display); ?></span>
             </div>
             <button class="px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white font-bold rounded-xl transition-all cursor-pointer">
                 <?php echo esc_html($settings['alert_button_label']); ?>

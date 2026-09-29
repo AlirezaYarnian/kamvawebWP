@@ -648,9 +648,9 @@ export const AiLearningAnalytics: React.FC = () => {
               {/* Simulated Screen Viewport Container */}
               <div className="relative w-full h-[420px] bg-slate-950 rounded-2xl border border-slate-800 overflow-hidden shadow-inner group">
                 
-                {/* Visual Wireframe Mock of Store Page */}
+                {/* Visual Wireframe Preview of Store Page */}
                 <div className="absolute inset-0 p-6 space-y-4 opacity-30 select-none pointer-events-none">
-                  {/* Header bar mock */}
+                  {/* Header bar */}
                   <div className="h-8 bg-slate-800 rounded-xl flex items-center justify-between px-4">
                     <div className="w-20 h-3 bg-slate-700 rounded" />
                     <div className="flex gap-2">
@@ -659,7 +659,7 @@ export const AiLearningAnalytics: React.FC = () => {
                     </div>
                   </div>
 
-                  {/* Body content mock depending on selected page */}
+                  {/* Body content preview depending on selected page */}
                   {selectedPage === 'product' && (
                     <div className="grid grid-cols-12 gap-4 h-[300px]">
                       <div className="col-span-5 bg-slate-800/80 rounded-2xl flex items-center justify-center">

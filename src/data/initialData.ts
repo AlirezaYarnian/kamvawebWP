@@ -366,7 +366,7 @@ export const sampleKnowledgeBase: KnowledgeItem[] = [
     conversionTrigger: 'خرید ۱۰۰٪ بدون ریسک با ۳۰ روز گارانتی رسمی بازگشت وجه',
     inStock: true,
     sourceUrl: 'https://kamvaweb.com/guarantee',
-    extractedAt: '۲۰۲6-۰۹-۲۸T۰۴:۱۰:۰۰Z',
+    extractedAt: '۲۰۲۶-۰۹-۲۸T۰۴:۱۰:۰۰Z',
   },
   {
     id: 'k4',
@@ -390,6 +390,66 @@ export const sampleKnowledgeBase: KnowledgeItem[] = [
     inStock: true,
     sourceUrl: 'https://kamvaweb.com/faq/ai-pricing',
     extractedAt: '۲۰۲۶-۰۹-۲۸T۰۴:۲۰:۰۰Z',
+  },
+  // 1. DATASET: SEO & TECHNICAL SEARCH INTELLIGENCE
+  {
+    id: 'kb-seo-01',
+    category: 'service',
+    title: 'دیتاست سئو تکنیکال: استانداردهای اسکیما JSON-LD و رتبه ۱ گوگل',
+    content: 'پیاده‌سازی دقیق اسکیماهای Product، Offer، AggregateRating، FAQPage، BreadcrumbList و Organization بر اساس داکیومنت رسمی Google Search Central. بهینه‌سازی بودجه خزش (Crawl Budget)، تگ‌های کانونیکال هوشمند، تولید خودکار متاتگ‌های OpenGraph برای سوشیال مدیا و رعایت کامل فاکتورهای E-E-A-T گوگل در کدهای قالب.',
+    keywords: ['سئو تکنیکال', 'اسکیما', 'schema json-ld', 'rich snippets', 'core web vitals', 'e-e-a-t'],
+    conversionTrigger: 'افزایش نرخ کلیک (CTR) ارگانیک گوگل تا ۴۲٪',
+    inStock: true,
+    sourceUrl: 'https://kamvaweb.com/kb/seo-technical-dataset',
+    extractedAt: '۲۰۲۶-۰۹-۲۹T۱۰:۰۰:۰۰Z',
+  },
+  // 2. DATASET: SECURITY & WAF HARDENING
+  {
+    id: 'kb-sec-01',
+    category: 'policy',
+    title: 'دیتاست امنیت پیشرفته: فایروال WAF، مقابله با SQLi و ایمن‌سازی وردپرس',
+    content: 'ایمن‌سازی جامع وردپرس با فایروال لایه ۷ (WAF)، پاکسازی خودکار ورودی‌ها با wpdb->prepare، اعتبارسنجی CSRF با توکن‌های Nonce، تغییر مسیر اختصاصی لاگین ادمین، محدودسازی حملات Brute Force با مسدودسازی خودکار IP، غیرفعال‌سازی XML-RPC، مخفی‌سازی شماره نسخه وردپرس و اسکن ۲۴/۷ تغییر فایل‌های هسته.',
+    keywords: ['امنیت وردپرس', 'فایروال waf', 'sql injection', 'xss prevention', 'brute force', 'امنیت'],
+    conversionTrigger: 'حفاظت ۱۰۰٪ سایت در برابر حملات سایبری و نفوذ',
+    inStock: true,
+    sourceUrl: 'https://kamvaweb.com/kb/security-waf-dataset',
+    extractedAt: '۲۰۲۶-۰۹-۲۹T۱۰:۰۵:۰۰Z',
+  },
+  // 3. DATASET: SPEED OPTIMIZATION & LIGHTHOUSE 99
+  {
+    id: 'kb-spd-01',
+    category: 'service',
+    title: 'دیتاست شتاب و سرعت: لود زیر ۰.۸ ثانیه و گواهی Core Web Vitals',
+    content: 'معماری کش دوگانه (Full-Page RAM Cache + Redis Object Cache)، استخراج خودکار Critical CSS و اینلاین‌سازی در هدر، اجرای Defer/Async اسکریپت‌های سنگین، تبدیل خودکار تصاویر به WebP/AVIF بدون افت کیفیت، کاهش تگ‌های توخالی DOM المنتور تا ۶۰٪ و سازگاری با پروتکل HTTP/3 QUIC.',
+    keywords: ['افزایش سرعت سایت', 'لایت هاوس ۹۹', 'core web vitals', 'lcp', 'کش redis', 'webp'],
+    conversionTrigger: 'زمان لود زیر ۰.۸ ثانیه با امتیاز ۹۹/۱۰۰ لایت‌هاوس',
+    inStock: true,
+    sourceUrl: 'https://kamvaweb.com/kb/speed-optimization-dataset',
+    extractedAt: '۲۰۲۶-۰۹-۲۹T۱۰:۱۰:۰۰Z',
+  },
+  // 4. DATASET: WORDPRESS DEVELOPMENT & WP 7.1 ARCHITECTURE
+  {
+    id: 'kb-wp-01',
+    category: 'product',
+    title: 'دیتاست توسعه وردپرس: معماری استاندارد WP 7.1 Mary Lou و PHP 8.2+',
+    content: 'کدنویسی استاندارد با اصول شیءگرایی (Singleton/MVC)، پشتیبانی کامل از قابلیت‌های نوین Block Bindings API و Block Hooks در وردپرس ۷.۱، استفاده از Transients API برای کوئری‌های بهینه، مدیریت نسخه پایگاه داده با KamvaMigrationManager و عدم استفاده از توابع منسوخ شده (Zero Deprecated Notices).',
+    keywords: ['توسعه وردپرس', 'کدنویسی قالب', 'وردپرس 7.1', 'php 8.2', 'block bindings', 'قالب اختصاصی'],
+    conversionTrigger: 'پایداری دائمی و سازگاری ۱۰۰٪ با نسخه‌های جدید وردپرس',
+    inStock: true,
+    sourceUrl: 'https://kamvaweb.com/kb/wp-development-dataset',
+    extractedAt: '۲۰۲۶-۰۹-۲۹T۱۰:۱۵:۰۰Z',
+  },
+  // 5. DATASET: SALES PSYCHOLOGY & CRO MARKETING
+  {
+    id: 'kb-mkt-01',
+    category: 'pricing',
+    title: 'دیتاست روانشناسی فروش: اصول چالدینی، تست A/B و افزایش نرخ تبدیل ووکامرس',
+    content: 'موتور تحلیل رفتار مشتری (KamvaSalesPsychology) با ۶ اصل اثرگذاری چالدینی: ایجاد حس کمیابی (Scarcity/FOMO)، اثبات اجتماعی پویا (Social Proof Ticker)، کاهش ریسک با ضمانت ۳۰ روزه، تخفیف‌های داینامیک سبد خرید بر اساس Dwell Time، تسویه‌حساب اقساطی اسنپ‌پی بدون کارمزد و تست A/B با تحلیل آماری بیزین.',
+    keywords: ['روانشناسی فروش', 'افزایش نرخ تبدیل', 'تست ab', 'سبد خرید رها شده', 'اسنپ پی', 'cro'],
+    conversionTrigger: 'رشد نرخ تبدیل تا ۴۹.۳٪ و کاهش سبدهای خرید رهاشده',
+    inStock: true,
+    sourceUrl: 'https://kamvaweb.com/kb/sales-psychology-dataset',
+    extractedAt: '۲۰۲۶-۰۹-۲۹T۱۰:۲۰:۰۰Z',
   },
 ];
 

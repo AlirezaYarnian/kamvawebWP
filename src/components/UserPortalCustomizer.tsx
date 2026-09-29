@@ -331,11 +331,11 @@ export const UserPortalCustomizer: React.FC<UserPortalCustomizerProps> = ({
               <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 space-y-3 text-right text-xs">
                 <div className="flex items-center gap-3 p-3 bg-slate-900 rounded-xl border border-slate-800">
                   <div className="w-10 h-10 rounded-full bg-indigo-600 flex items-center justify-center text-white font-bold">
-                    علی
+                    کاربر
                   </div>
                   <div>
-                    <span className="font-bold text-white block">علی یاری</span>
-                    <span className="text-[10px] text-slate-400">عضویت ویژه • مشتری وفادار</span>
+                    <span className="font-bold text-white block">کاربر گرامی (پیش‌نمایش حساب)</span>
+                    <span className="text-[10px] text-slate-400">عضویت ویژه • مشتری وفادار فروشگاه</span>
                   </div>
                 </div>
 
