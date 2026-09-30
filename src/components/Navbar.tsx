@@ -130,6 +130,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         { id: 'db-migrator', label: 'مایگریشن دیتابیس', icon: Database, badge: 'v1.4' },
         { id: 'workflow-automator', label: 'اتوماسیون جریان کاری', icon: Workflow, badge: 'Scheduler' },
         { id: 'deploy-helper', label: 'استقرار پروداکشن', icon: Rocket },
+        { id: 'theme-package-generator', label: 'سازنده پکیج نهایی قالب', icon: Rocket, badge: '.ZIP' },
         { id: 'disaster-recovery', label: 'بک‌آپ و بازیابی', icon: LifeBuoy },
         { id: 'health-report', label: 'گزارش سلامت', icon: Activity },
         { id: 'updater', label: 'آپدیت هوشمند', icon: ArrowUpCircle },

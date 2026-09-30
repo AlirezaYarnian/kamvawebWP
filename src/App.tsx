@@ -42,6 +42,7 @@ import { AiLandingPageOptimizer } from './components/AiLandingPageOptimizer';
 import { AiDesignSystemManager } from './components/AiDesignSystemManager';
 import { KamvaLocalNeuralHub } from './components/KamvaLocalNeuralHub';
 import { AiErrorReportDiagnostic } from './components/AiErrorReportDiagnostic';
+import { ThemePackageGenerator } from './components/ThemePackageGenerator';
 import { 
   Store, 
   LifeBuoy, 
@@ -250,6 +251,11 @@ export default function App() {
           <ProductionDeployer
             config={themeConfig}
           />
+        )}
+
+        {/* Tab: Theme Package Generator */}
+        {activeTab === 'theme-package-generator' && (
+          <ThemePackageGenerator />
         )}
 
         {/* Tab: AI Disaster Recovery & Incremental Backups */}
