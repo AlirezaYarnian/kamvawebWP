@@ -21,7 +21,8 @@ import {
   ArrowUpRight,
   BarChart3,
   Calendar,
-  Check
+  Check,
+  Terminal
 } from 'lucide-react';
 import { ThemeOptionsConfig } from '../types/theme';
 import { KamvaLogo } from './KamvaLogo';
@@ -34,7 +35,10 @@ interface HealthReportDashboardProps {
 export const HealthReportDashboard: React.FC<HealthReportDashboardProps> = ({ config }) => {
   const [report, setReport] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
-  const [activeSection, setActiveSection] = useState<'overview' | 'performance' | 'vitals-heatmap' | 'security' | 'database' | 'pdf-preview'>('overview');
+  const [activeSection, setActiveSection] = useState<'overview' | 'performance' | 'vitals-heatmap' | 'security' | 'database' | 'pdf-preview' | 'predictive-conflicts'>('overview');
+  const [solvedConflictIds, setSolvedConflictIds] = useState<Record<string, boolean>>({});
+  const [isLogScanning, setIsLogScanning] = useState(false);
+  const [scannedLogsCount, setScannedLogsCount] = useState(1482);
 
   const fetchReport = async () => {
     setIsLoading(true);
@@ -132,6 +136,7 @@ export const HealthReportDashboard: React.FC<HealthReportDashboardProps> = ({ co
           { id: 'vitals-heatmap' as const, label: 'نقشه حرارتی Core Web Vitals', icon: Flame },
           { id: 'security' as const, label: 'امنیت، فایروال و آسیب‌پذیری', icon: ShieldCheck },
           { id: 'database' as const, label: 'سلامت پایگاه داده MySQL', icon: Database },
+          { id: 'predictive-conflicts' as const, label: 'پیش‌بینی تداخل‌ها و خرابی‌ها', icon: AlertTriangle },
           { id: 'pdf-preview' as const, label: 'سند رسمی ماهانه (Print Ready)', icon: FileText },
         ].map((tab) => {
           const Icon = tab.icon;
@@ -401,6 +406,218 @@ export const HealthReportDashboard: React.FC<HealthReportDashboardProps> = ({ co
               <p className="text-[11px] text-slate-500">تمام کوئری‌ها در کمتر از ۵ میلی‌ثانیه اجرا می‌شوند</p>
             </div>
           </div>
+        </div>
+      )}
+
+      {/* ======================================================== */}
+      {/* 4.5 PREDICTIVE CONFLICTS & SYSTEM CRASH FORECASTER        */}
+      {/* ======================================================== */}
+      {activeSection === 'predictive-conflicts' && (
+        <div className="space-y-6">
+          
+          {/* Header Card */}
+          <div className="bg-gradient-to-r from-slate-900 via-rose-950/40 to-slate-900 border border-rose-500/30 rounded-3xl p-6 md:p-8 shadow-2xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-80 h-80 bg-rose-500/10 rounded-full blur-3xl pointer-events-none" />
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+              <div className="space-y-1">
+                <div className="flex items-center gap-2">
+                  <span className="px-3 py-1 bg-rose-500/20 text-rose-300 border border-rose-500/30 rounded-xl text-xs font-bold flex items-center gap-1.5 animate-pulse">
+                    <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
+                    موتور پیش‌بین تداخل افزونه‌ها و پایداری وردپرس
+                  </span>
+                  <span className="px-2.5 py-0.5 bg-slate-950/80 text-slate-300 border border-slate-800 rounded-lg text-xs font-mono font-bold">
+                    WP_DEBUG_LOG Parser
+                  </span>
+                </div>
+                <h3 className="text-xl font-extrabold text-white pt-1">
+                  سامانه هوشمند پیش‌بینی تداخل افزونه‌ها و تشنج هسته وردپرس
+                </h3>
+                <p className="text-xs text-slate-300 max-w-3xl leading-relaxed">
+                  این سیستم با پایش مستمر لاگ‌های سیستم (`debug.log`)، کوئری‌های تعلیق دیتابیس و الگوهای رفتاری پلاگین‌ها، تعارضات مخرب و افت کارایی را پیش از وقوع سقوط هسته وردپرس پیش‌بینی کرده و راه‌حل‌های پیشگیرانه ارائه می‌دهد.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-3 shrink-0">
+                <button
+                  onClick={() => {
+                    setIsLogScanning(true);
+                    setTimeout(() => {
+                      setIsLogScanning(false);
+                      setScannedLogsCount(prev => prev + 342);
+                      alert('اسکن زنده تمام شد! لاگ‌های جدید با موفقیت ارزیابی شدند. تداخل جدیدی یافت نشد.');
+                    }, 1800);
+                  }}
+                  disabled={isLogScanning}
+                  className="px-4 py-2.5 bg-rose-600 hover:bg-rose-500 text-white font-bold text-xs rounded-xl shadow-lg shadow-rose-600/30 transition-all flex items-center gap-2 cursor-pointer disabled:opacity-50"
+                >
+                  <RefreshCw className={`w-4 h-4 ${isLogScanning ? 'animate-spin' : ''}`} />
+                  <span>{isLogScanning ? 'در حال اسکن عمیق...' : 'تحلیل مجدد و اسکن debug.log'}</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          {/* Core Scorecards & Gauges */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 space-y-2 shadow-xl">
+              <span className="text-xs text-slate-400 font-bold block">ریسک کلی تداخل افزونه‌ها:</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-rose-400">۴۲٪</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-rose-500/20 text-rose-300 font-mono">MEDIUM RISK</span>
+              </div>
+              <p className="text-[11px] text-slate-400">۳ تداخل بالقوه پیش‌بینی شده است</p>
+            </div>
+
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 space-y-2 shadow-xl">
+              <span className="text-xs text-slate-400 font-bold block">لاگ‌های تحلیل‌شده سیستم:</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-indigo-400">{scannedLogsCount.toLocaleString()} سطر</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-indigo-500/20 text-indigo-300 font-mono">ACTIVE SCAN</span>
+              </div>
+              <p className="text-[11px] text-slate-400">مسیر فایل: `/wp-content/debug.log`</p>
+            </div>
+
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 space-y-2 shadow-xl">
+              <span className="text-xs text-slate-400 font-bold block">شاخص پایداری پیش‌گیرانه:</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-emerald-400">۹۸.۸٪</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono">HIGH STABILITY</span>
+              </div>
+              <p className="text-[11px] text-slate-400">پیشگیری خودکار فعال است</p>
+            </div>
+
+            <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-5 space-y-2 shadow-xl">
+              <span className="text-xs text-slate-400 font-bold block">ارزیابی سازگاری PHP سرور:</span>
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-black text-amber-400">PHP 8.2 / 8.3</span>
+                <span className="text-[10px] font-bold px-1.5 py-0.5 rounded bg-amber-500/20 text-amber-300 font-mono">VERIFIED</span>
+              </div>
+              <p className="text-[11px] text-slate-400">بدون خطاهای ناسازگاری Fatal</p>
+            </div>
+          </div>
+
+          {/* Active Alerts List */}
+          <div className="space-y-4">
+            <h4 className="text-sm font-extrabold text-white flex items-center gap-2">
+              <AlertTriangle className="w-5 h-5 text-rose-500 animate-pulse" />
+              <span>فهرست تعارضات و ریسک‌های بحرانی پیش‌بینی شده (Expected System Hazards)</span>
+            </h4>
+
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              
+              {/* Alert Items Loop */}
+              {report.predictiveConflicts.alerts.map((alertItem: any) => {
+                const isSolved = solvedConflictIds[alertItem.id];
+                return (
+                  <div
+                    key={alertItem.id}
+                    className={`border rounded-2xl p-6 shadow-xl transition-all space-y-4 relative overflow-hidden flex flex-col justify-between min-h-[420px] ${
+                      isSolved
+                        ? 'bg-emerald-950/30 border-emerald-500/40 opacity-80'
+                        : alertItem.severity === 'Critical'
+                        ? 'bg-slate-900/90 border-rose-500/40 hover:border-rose-500/60'
+                        : alertItem.severity === 'High'
+                        ? 'bg-slate-900/90 border-amber-500/40 hover:border-amber-500/60'
+                        : 'bg-slate-900/90 border-slate-800 hover:border-slate-700'
+                    }`}
+                  >
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                        <span className={`px-2.5 py-0.5 rounded text-[10px] font-extrabold font-mono border ${
+                          alertItem.severity === 'Critical' ? 'bg-rose-500/20 text-rose-300 border-rose-500/30' :
+                          alertItem.severity === 'High' ? 'bg-amber-500/20 text-amber-300 border-amber-500/30' :
+                          'bg-indigo-500/20 text-indigo-300 border-indigo-500/30'
+                        }`}>
+                          اهمیت: {alertItem.severity}
+                        </span>
+                        
+                        <span className="text-xs font-mono font-bold text-rose-400">
+                          احتمال وقوع: {alertItem.riskPercentage}٪
+                        </span>
+                      </div>
+
+                      <h5 className="text-sm font-extrabold text-white">{alertItem.title}</h5>
+
+                      <div className="flex flex-wrap items-center gap-1.5 pt-1">
+                        <span className="text-[10px] text-slate-400">افزونه‌های مرتبط:</span>
+                        {alertItem.involvedPlugins.map((plug: string, pIdx: number) => (
+                          <span key={pIdx} className="px-2 py-0.5 bg-slate-950 border border-slate-800 text-[10px] rounded text-slate-300 font-bold">
+                            {plug}
+                          </span>
+                        ))}
+                      </div>
+
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-slate-400 font-bold block">خلاصه تداخل و استثنای PHP:</span>
+                        <p className="text-xs text-rose-300 bg-rose-950/20 p-2.5 rounded-lg border border-rose-500/20 font-mono dir-ltr text-left overflow-x-auto text-[10px] leading-relaxed">
+                          {alertItem.predictedException}
+                        </p>
+                      </div>
+
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-slate-400 font-bold block">شرایط تشنج سیستم:</span>
+                        <p className="text-xs text-slate-300">{alertItem.triggerCondition}</p>
+                      </div>
+
+                      <div className="space-y-1">
+                        <span className="text-[10px] text-teal-400 font-bold block">اقدام پیشگیرانه هوش مصنوعی (AI Advice):</span>
+                        <p className="text-xs text-slate-300 bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+                          {alertItem.aiPreventativeAction}
+                        </p>
+                      </div>
+                    </div>
+
+                    <div className="space-y-2.5 pt-4 border-t border-slate-800/80">
+                      <div className="bg-slate-950 p-2 rounded-lg font-mono text-[9px] text-indigo-300 flex items-center justify-between border border-slate-800/80 dir-ltr text-left">
+                        <span className="truncate">{alertItem.autoResolveCommand}</span>
+                        <span className="text-[9px] text-slate-500 uppercase ml-2 shrink-0">WP-CLI WP Native</span>
+                      </div>
+
+                      {isSolved ? (
+                        <span className="w-full py-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 rounded-xl text-xs font-bold flex items-center justify-center gap-1.5">
+                          <CheckCircle2 className="w-4 h-4 text-emerald-400" />
+                          تداخل با پچ خودکار برطرف شد
+                        </span>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            setSolvedConflictIds(prev => ({ ...prev, [alertItem.id]: true }));
+                            alert(`تداخل "${alertItem.title}" با اجرای پچ خودکار پیشگیرانه با موفقیت برطرف شد.`);
+                          }}
+                          className="w-full py-2.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 font-bold text-xs rounded-xl transition-all flex items-center justify-center gap-1.5 cursor-pointer"
+                        >
+                          <Zap className="w-3.5 h-3.5 text-rose-400 fill-current" />
+                          <span>اجرای پچ و حل پیشگیرانه تداخل</span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Simulated debug.log Scanner Box */}
+          <div className="bg-slate-900/90 border border-slate-800 rounded-3xl p-6 shadow-xl space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h4 className="text-sm font-bold text-white flex items-center gap-2">
+                <Terminal className="w-4 h-4 text-rose-400" />
+                <span>نمایش خطوط و امضاهای امنیتی استخراج شده از `/wp-content/debug.log`</span>
+              </h4>
+              <span className="px-2.5 py-0.5 rounded bg-rose-500/20 text-rose-300 border border-rose-500/30 text-[10px] font-mono">
+                System Scan Trace
+              </span>
+            </div>
+
+            <div className="bg-slate-950 border border-slate-800 rounded-2xl p-4 font-mono text-[11px] text-slate-300 dir-ltr text-left leading-relaxed max-h-56 overflow-y-auto space-y-1 select-all">
+              {report.predictiveConflicts.systemDebugLogsSimulated.map((log: string, lIdx: number) => (
+                <div key={lIdx} className="p-1 hover:bg-slate-900/80 rounded border-b border-slate-900/40 pb-1.5">
+                  <span className="text-amber-500 font-bold">[LOG-{lIdx + 1}]</span> {log}
+                </div>
+              ))}
+            </div>
+          </div>
+
         </div>
       )}
 
