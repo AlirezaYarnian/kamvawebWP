@@ -57,6 +57,9 @@ require_once KAMVAWEB_THEME_DIR . '/inc/class-kamva-sales-psychology.php';
 // ۱۲. موتور قالب و رابط کاربری فروشگاهی سبک ESCMarket (تجهیزات اندازه‌گیری و ابزار)
 require_once KAMVAWEB_THEME_DIR . '/inc/class-escmarket-ui-engine.php';
 
+// ۱۳. بریج اختصاصی برای هندل کردن درخواست‌های API ری‌اکت در وردپرس
+require_once KAMVAWEB_THEME_DIR . '/inc/api-bridge.php';
+
 // راه‌اندازی کنترل‌پنل تم‌آپشن در پیشخوان وردپرس
 if (is_admin()) {
     require_once KAMVAWEB_THEME_DIR . '/admin/theme-options.php';

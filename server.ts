@@ -1984,10 +1984,33 @@ get_footer();`;
   const rootFolder = zipInstance.folder('KamvaPro-Theme');
 
   if (rootFolder) {
+    // Recursive directory copier helper
+    const addDirectoryToZip = (zipFolder: any, sourceDir: string) => {
+      if (fs.existsSync(sourceDir)) {
+        const files = fs.readdirSync(sourceDir);
+        for (const file of files) {
+          const filePath = path.join(sourceDir, file);
+          if (fs.statSync(filePath).isDirectory()) {
+            const nextFolder = zipFolder.folder(file);
+            addDirectoryToZip(nextFolder, filePath);
+          } else {
+            const content = fs.readFileSync(filePath);
+            zipFolder.file(file, content);
+          }
+        }
+      }
+    };
+
+    // First copy ALL original theme PHP and assets directories recursively
+    const themeSourceDir = path.join(ROOT_DIR, 'kamva-theme');
+    addDirectoryToZip(rootFolder, themeSourceDir);
+
+    // Overwrite style.css and functions.php with dynamic metadata customizations
     rootFolder.file('style.css', styleCss);
     rootFolder.file('functions.php', functionsPhp);
     rootFolder.file('index.php', indexPhp);
 
+    // Copy built React assets into admin-hub folder in the zip
     const adminHub = rootFolder.folder('admin-hub');
     if (adminHub) {
       const assetsDir = path.join(ROOT_DIR, 'dist/assets');

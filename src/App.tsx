@@ -43,6 +43,7 @@ import { AiDesignSystemManager } from './components/AiDesignSystemManager';
 import { KamvaLocalNeuralHub } from './components/KamvaLocalNeuralHub';
 import { AiErrorReportDiagnostic } from './components/AiErrorReportDiagnostic';
 import { ThemePackageGenerator } from './components/ThemePackageGenerator';
+import { wpApiFetch, WordPressApiError } from './utils/wpApiFetch';
 import { 
   Store, 
   LifeBuoy, 
@@ -59,6 +60,7 @@ export default function App() {
   const [knowledgeBase, setKnowledgeBase] = useState<KnowledgeItem[]>(sampleKnowledgeBase);
   const [isLivePreviewMode, setIsLivePreviewMode] = useState<boolean>(false);
   const [isAutoTuningOpen, setIsAutoTuningOpen] = useState<boolean>(false);
+  const [isUnauthorized, setIsUnauthorized] = useState<boolean>(false);
 
   // Apply best-practice cross-module configurations
   const handleApplyAutoTuning = async () => {
@@ -128,27 +130,35 @@ export default function App() {
   useEffect(() => {
     const loadRealData = async () => {
       try {
-        const kbRes = await fetch('/api/knowledge-base');
-        if (kbRes.ok) {
-          const kbData = await kbRes.json();
-          if (kbData.items && kbData.items.length > 0) {
-            setKnowledgeBase(kbData.items);
-          }
+        const kbData = await wpApiFetch<any>({ path: '/api/knowledge-base' });
+        if (kbData && kbData.items && kbData.items.length > 0) {
+          setKnowledgeBase(kbData.items);
+        } else {
+          console.log('WordPress database returned no knowledge base records. Falling back to default baseline.');
+          setKnowledgeBase(sampleKnowledgeBase);
         }
-      } catch (e) {
-        console.warn('Using local baseline knowledge items');
+      } catch (e: any) {
+        console.warn('Failed loading knowledge base. Falling back to default baseline.', e);
+        setKnowledgeBase(sampleKnowledgeBase);
+        if (e instanceof WordPressApiError && e.status === 401) {
+          setIsUnauthorized(true);
+        }
       }
 
       try {
-        const confRes = await fetch('/api/theme-options');
-        if (confRes.ok) {
-          const confData = await confRes.json();
-          if (confData && confData.general) {
-            setThemeConfig(confData);
-          }
+        const confData = await wpApiFetch<any>({ path: '/api/theme-options' });
+        if (confData && confData.general) {
+          setThemeConfig(confData);
+        } else {
+          console.log('WordPress database returned no theme options. Falling back to default baseline config.');
+          setThemeConfig(defaultThemeConfig);
         }
-      } catch (e) {
-        console.warn('Using local baseline config');
+      } catch (e: any) {
+        console.warn('Failed loading theme options. Falling back to default baseline config.', e);
+        setThemeConfig(defaultThemeConfig);
+        if (e instanceof WordPressApiError && e.status === 401) {
+          setIsUnauthorized(true);
+        }
       }
     };
 
@@ -157,13 +167,12 @@ export default function App() {
 
   const refreshKnowledgeBaseFromServer = async () => {
     try {
-      const res = await fetch('/api/knowledge-base');
-      const data = await res.json();
-      if (data.items) {
+      const data = await wpApiFetch<any>({ path: '/api/knowledge-base' });
+      if (data && data.items) {
         setKnowledgeBase(data.items);
       }
     } catch (e) {
-      console.error(e);
+      console.error('Failed refreshing knowledge base', e);
     }
   };
 
@@ -181,6 +190,29 @@ export default function App() {
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col selection:bg-[#f05023] selection:text-white">
       
+      {/* 401 Unauthorized Session Expired Re-authentication Overlay */}
+      {isUnauthorized && (
+        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4">
+          <div className="max-w-md w-full bg-slate-900 border border-red-500/30 rounded-3xl p-6 shadow-2xl text-center space-y-4 animate-in fade-in zoom-in-95 duration-200">
+            <div className="w-16 h-16 bg-red-500/10 border border-red-500/20 text-red-500 rounded-2xl flex items-center justify-center mx-auto text-3xl">
+              ⚠️
+            </div>
+            <h3 className="text-lg font-black text-white">نشست امنیتی وردپرس منقضی شده است!</h3>
+            <p className="text-xs text-slate-300 leading-relaxed">
+              برای برقراری ارتباط ایمن با هسته وردپرس و فعال‌سازی قابلیت‌های هوش مصنوعی محلی، لطفاً مجدداً در پیشخوان مدیریت وردپرس وارد شوید یا صفحه را تازه کنید.
+            </p>
+            <div className="pt-2">
+              <button 
+                onClick={() => window.location.reload()}
+                className="w-full py-2.5 bg-red-600 hover:bg-red-500 text-white font-bold text-xs rounded-xl shadow-lg transition-all cursor-pointer"
+              >
+                تلاش مجدد و بارگذاری نشست (Refresh Session)
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Top Navigation */}
       <Navbar
         activeTab={activeTab}
