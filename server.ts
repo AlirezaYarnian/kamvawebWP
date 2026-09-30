@@ -4,6 +4,7 @@ import path from 'path';
 import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { GoogleGenAI } from '@google/genai';
+import JSZip from 'jszip';
 
 dotenv.config();
 
@@ -1836,6 +1837,181 @@ app.get('/api/traffic/forecasting', (req, res) => {
       lastCalculated: new Date().toISOString()
     }
   });
+});
+
+// ==========================================
+// 5.5.2 REAL INSTALLABLE WORDPRESS THEME PACKAGER API
+// ==========================================
+app.post('/api/export-theme-zip', express.json(), async (req, res) => {
+  const { themeName, themeUri, author, authorUri, version, description, tags } = req.body || {};
+
+  const themeNameStr = themeName || 'KamvaPro - AI Powered WordPress Theme';
+  const themeUriStr = themeUri || 'https://kamvaweb.com';
+  const authorStr = author || 'Alireza';
+  const authorUriStr = authorUri || 'https://github.com/Alireza';
+  const versionStr = version || '1.2.0';
+  const descriptionStr = description || 'قالب چندمنظوره و فوق‌سریع کاموا پرو مجهز به موتور عصبی محلی، مانیتورینگ زنده ترافیک AIOS و عیب‌یاب هوشمند خطاها.';
+  const tagsStr = tags || 'e-commerce, full-site-editing, custom-colors, translation-ready, neural-hub';
+
+  const styleCss = `/*
+Theme Name: \${themeNameStr}
+Theme URI: \s\${themeUriStr}
+Author: \${authorStr}
+Author URI: \${authorUriStr}
+Description: \${descriptionStr}
+Version: \${versionStr}
+License: GNU General Public License v2 or later
+License URI: http://www.gnu.org/licenses/gpl-2.0.html
+Tags: \${tagsStr}
+Text Domain: kamvapro-theme
+
+This theme was generated automatically by KamvaWeb Master AI Studio.
+*/
+
+body {
+    background-color: #080c14;
+    color: #f8fafc;
+    font-family: 'Vazirmatn', Tahoma, sans-serif;
+}`;
+
+  const functionsPhp = `<?php
+/**
+ * \${themeNameStr} functions and definitions
+ *
+ * Generated automatically by KamvaWeb AI Studio.
+ */
+
+if ( ! defined( 'ABSPATH' ) ) {
+	exit; // Exit if accessed directly.
+}
+
+// ۱. افزودن منوی کنترل پنل هوشمند به پیشخوان مدیریت وردپرس
+add_action('admin_menu', 'kamvapro_register_ai_control_panel');
+
+function kamvapro_register_ai_control_panel() {
+    add_menu_page(
+        'پیشخوان هوشمند کاموا پرو',           // عنوان صفحه
+        'پیشخوان هوش مصنوعی کاموا',           // عنوان منو در سایدبار
+        'manage_options',                    // سطح دسترسی (فقط مدیر)
+        'kamva-ai-hub',                      // شناسه یکتای منو
+        'kamvapro_render_react_app',         // تابع بارگذاری کدهای پنل
+        'dashicons-performance',             // آیکون پیشخوان
+        2                                    // اولویت ترتیب منو
+    );
+}
+
+// ۲. واکشی خودکار آخرین اسکریپت‌های بیلدشده ری‌اکت و لود آن‌ها در مدیریت وردپرس
+function kamvapro_render_react_app() {
+    $theme_dir = get_template_directory() . '/admin-hub';
+    $theme_url = get_template_directory_uri() . '/admin-hub';
+    
+    if (is_dir($theme_dir)) {
+        $files = scandir($theme_dir);
+        foreach ($files as $file) {
+            if ($file === '.' || $file === '..') continue;
+            $ext = pathinfo($file, PATHINFO_EXTENSION);
+            if ($ext === 'css') {
+                echo '<link rel="stylesheet" href="' . esc_url($theme_url . '/' . $file) . '" type="text/css" />' . "\\n";
+            }
+            if ($ext === 'js') {
+                echo '<script type="module" src="' . esc_url($theme_url . '/' . $file) . '"></script>' . "\\n";
+            }
+        }
+    }
+
+    // رندر تگ ریشه سوار شدن پیشخوان ری‌اکت
+    echo '
+    <div class="wrap" style="margin: 20px 20px 0 0; padding-left: 20px;">
+        <div id="root">
+            <div style="padding: 50px; text-align: center; color: #475569; font-family: Tahoma;">
+                <h3 style="font-weight: bold;">در حال بارگذاری موتور عصبی و پیشخوان هوش مصنوعی کاموا پرو...</h3>
+                <p style="font-size: 12px; color: #94a3b8;">لطفاً شکیبا باشید.</p>
+            </div>
+        </div>
+    </div>';
+}
+
+// ۳. بازکردن اندپوینت بومی REST API برای ارتباط زنده پنل با دیتابیس وردپرس
+add_action('rest_api_init', function () {
+    register_rest_route('kamvapro/v1', '/realtime-metrics', array(
+        'methods' => 'GET',
+        'callback' => 'kamvapro_get_realtime_metrics',
+        'permission_callback' => function () {
+            return current_user_can('manage_options');
+        }
+    ));
+});
+
+function kamvapro_get_realtime_metrics() {
+    global $wpdb;
+    
+    $tables = $wpdb->get_results("SHOW TABLE STATUS", ARRAY_A);
+    $overhead_bytes = 0;
+    foreach ($tables as $table) {
+        $overhead_bytes += $table['Data_free'];
+    }
+    
+    return array(
+        'success' => true,
+        'database' => array(
+            'total_tables' => count($tables),
+            'overhead_mb' => round($overhead_bytes / 1024 / 1024, 2)
+        )
+    );
+}`;
+
+  const indexPhp = `<?php
+/**
+ * Standard index.php for WordPress Theme
+ *
+ * Generated automatically by KamvaWeb AI Studio.
+ */
+
+get_header(); ?>
+
+<main id="primary" class="site-main" style="padding: 100px 20px; text-align: center; background-color: #080c14; color: #fff;">
+    <div style="max-width: 600px; margin: 0 auto; font-family: Tahoma;">
+        <h1 style="font-size: 28px; font-weight: bold;">قالب اختصاصی \${themeNameStr}</h1>
+        <p style="color: #94a3b8; margin-top: 15px; font-size: 14px;">این وب‌سایت با تکیه بر هسته پردازش عصبی کاموا پرو و فایروال هوشمند AIOS پیکربندی شده است.</p>
+        <a href="<?php echo esc_url(admin_url('admin.php?page=kamva-ai-hub')); ?>" style="display: inline-block; margin-top: 25px; padding: 12px 24px; background-color: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: bold;">ورود به پنل توسعه هوشمند</a>
+    </div>
+</main>
+
+<?php
+get_footer();`;
+
+  const zipInstance = new JSZip();
+  const rootFolder = zipInstance.folder('KamvaPro-Theme');
+
+  if (rootFolder) {
+    rootFolder.file('style.css', styleCss);
+    rootFolder.file('functions.php', functionsPhp);
+    rootFolder.file('index.php', indexPhp);
+
+    const adminHub = rootFolder.folder('admin-hub');
+    if (adminHub) {
+      const assetsDir = path.join(ROOT_DIR, 'dist/assets');
+      if (fs.existsSync(assetsDir)) {
+        const files = fs.readdirSync(assetsDir);
+        for (const file of files) {
+          const filePath = path.join(assetsDir, file);
+          if (fs.statSync(filePath).isFile()) {
+            const content = fs.readFileSync(filePath);
+            adminHub.file(file, content);
+          }
+        }
+      }
+    }
+  }
+
+  try {
+    const buffer = await zipInstance.generateAsync({ type: 'nodebuffer' });
+    res.setHeader('Content-Type', 'application/zip');
+    res.setHeader('Content-Disposition', 'attachment; filename=KamvaPro-Theme.zip');
+    res.end(buffer);
+  } catch (err: any) {
+    res.status(500).json({ error: 'Failed to generate theme zip package', message: err.message });
+  }
 });
 
 // ==========================================

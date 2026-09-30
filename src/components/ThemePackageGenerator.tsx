@@ -203,71 +203,54 @@ get_footer();`;
     setIsGenerating(true);
     setIsSuccess(false);
     setProgressPercent(10);
-    setGenerationSteps(['شروع فرآیند تولید ساختار پکیج قالب...']);
+    setGenerationSteps(['شروع فرآیند تولید ساختار پکیج واقعی قالب...']);
 
-    await new Promise(r => setTimeout(r, 600));
+    await new Promise(r => setTimeout(r, 400));
     setProgressPercent(25);
-    setGenerationSteps(prev => [...prev, 'در حال واکشی آخرین فایل‌های کامپایل‌شده جاوااسکریپت و استایل‌های ری‌اکت...']);
+    setGenerationSteps(prev => [...prev, 'در حال واکشی کدهای بیلدشده و بهینه جاوااسکریپت و استایل‌های ری‌اکت از پوشه dist/assets دیسک...']);
 
-    let cssBundle = '';
-    let jsBundle = '';
-
-    // Simulate fetching latest build files
-    try {
-      const res = await fetch('/api/traffic/realtime'); // Wake server/check
-      await res.json();
-    } catch(e) {}
-
-    await new Promise(r => setTimeout(r, 700));
+    await new Promise(r => setTimeout(r, 400));
     setProgressPercent(45);
-    setGenerationSteps(prev => [...prev, 'در حال نوشتن متادیتا و هدرهای قالب در style.css بومی وردپرس...']);
+    setGenerationSteps(prev => [...prev, 'در حال اعمال متادیتا و هدرهای قالب در style.css بومی وردپرس...']);
 
-    await new Promise(r => setTimeout(r, 600));
-    setProgressPercent(65);
-    setGenerationSteps(prev => [...prev, 'در حال تولید هوشمند فایل functions.php (کلاس‌ها و کدهای لود پیشخوان)...']);
+    await new Promise(r => setTimeout(r, 400));
+    setProgressPercent(70);
+    setGenerationSteps(prev => [...prev, 'در حال پیکربندی و تزریق فایل لودر اسکریپت‌های پویا در functions.php...']);
 
-    await new Promise(r => setTimeout(r, 600));
-    setProgressPercent(80);
-    setGenerationSteps(prev => [...prev, 'در حال تولید قالب‌های لایه نمایش وردپرس (index.php, header.php)...']);
-
-    await new Promise(r => setTimeout(r, 500));
+    await new Promise(r => setTimeout(r, 400));
     setProgressPercent(90);
-    setGenerationSteps(prev => [...prev, 'بسته‌بندی نهایی کل ساختار و فشرده‌سازی در قالب فایل ZIP...']);
+    setGenerationSteps(prev => [...prev, 'بسته‌بندی نهایی کل ساختار و فشرده‌سازی در سرور بک‌اند...']);
 
-    // Build the ZIP with JSZip
-    const zip = new JSZip();
-    const rootFolder = zip.folder('KamvaPro-Theme');
+    try {
+      const response = await fetch('/api/export-theme-zip', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(metadata)
+      });
 
-    if (rootFolder) {
-      rootFolder.file('style.css', styleCssContent);
-      rootFolder.file('functions.php', functionsPhpContent);
-      rootFolder.file('index.php', indexPhpContent);
-
-      const adminHub = rootFolder.folder('admin-hub');
-      if (adminHub) {
-        // Enqueue mock compiled bundle files for installation tracing
-        adminHub.file('index-Ckd02WG3.js', `/* Compiled React SPA Bundle */\nconsole.log("KamvaPro AI Dashboard loaded.");`);
-        adminHub.file('index-V9uLhQLB.css', `/* Compiled Tailwind CSS Bundle */\n#root { font-family: 'Vazirmatn'; }`);
+      if (!response.ok) {
+        throw new Error('تولید پکیج در سرور با خطا مواجه شد.');
       }
 
-      // Generate the zip and trigger browser download
-      try {
-        const content = await zip.generateAsync({ type: 'blob' });
-        const link = document.createElement('a');
-        link.href = URL.createObjectURL(content);
-        link.download = 'KamvaPro-Theme.zip';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      } catch (e) {
-        console.error('ZIP generation failed', e);
-      }
+      const blob = await response.blob();
+      const link = document.createElement('a');
+      link.href = URL.createObjectURL(blob);
+      link.download = 'KamvaPro-Theme.zip';
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+
+      setProgressPercent(100);
+      setGenerationSteps(prev => [...prev, '🟢 پکیج کامل، واقعی و نصب‌شدنی قالب کاموا پرو با موفقیت تولید و بارگیری شد!']);
+      setIsSuccess(true);
+    } catch (err: any) {
+      console.error('ZIP generation failed', err);
+      setGenerationSteps(prev => [...prev, `❌ خطا در بسته‌بندی: ${err.message}`]);
+    } finally {
+      setIsGenerating(false);
     }
-
-    setProgressPercent(100);
-    setGenerationSteps(prev => [...prev, '🟢 پکیج قالب با موفقیت تولید شد و دانلود فایل آغاز گردید.']);
-    setIsGenerating(false);
-    setIsSuccess(true);
   };
 
   return (
